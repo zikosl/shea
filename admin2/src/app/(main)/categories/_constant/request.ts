@@ -1,0 +1,8 @@
+import { CREATE_CATEGORY, DELETE_CATEGORY, UPDATE_CATEGORY } from "@/api/mutations";
+import { FIND_MANY_CATEGORIES, FIND_ONE_CATEGORY } from "@/api/queries";
+
+export const CREATE_ITEM = CREATE_CATEGORY;
+export const DELETE_ITEM = DELETE_CATEGORY;
+export const FIND_MANY_ITEMS = FIND_MANY_CATEGORIES;
+export const FIND_ONE_ITEM = FIND_ONE_CATEGORY;
+export const UPDATE_ITEM = UPDATE_CATEGORY;

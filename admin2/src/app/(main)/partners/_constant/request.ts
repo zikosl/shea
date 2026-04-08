@@ -1,0 +1,8 @@
+import { CREATE_PARTNER, DELETE_PARTNER, UPDATE_PARTNER } from "@/api/mutations";
+import { FIND_MANY_PARTNERS, FIND_ONE_PARTNER } from "@/api/queries";
+
+export const CREATE_ITEM = CREATE_PARTNER;
+export const DELETE_ITEM = DELETE_PARTNER;
+export const FIND_MANY_ITEMS = FIND_MANY_PARTNERS;
+export const FIND_ONE_ITEM = FIND_ONE_PARTNER;
+export const UPDATE_ITEM = UPDATE_PARTNER;

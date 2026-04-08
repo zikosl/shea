@@ -1,0 +1,462 @@
+generator client {
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "linux-arm64-openssl-1.1.x"]
+  previewFeatures = ["views"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+  PARTNER
+  DRIVER
+}
+
+model PartnerDeliverySchedule {
+  id Int @id @default(autoincrement())
+
+  time     String // "17:00"
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+}
+
+// enum DeliveryStatus {
+//   PARTNER_ACCEPTED
+//   PARTNER_REJECTED
+//   PARTNER_PENDING
+//   DELEVRY_ACCEPTED
+//   DELEVRY_PENDING
+// }
+
+enum AuthMethod {
+  EMAIL_PASSWORD
+  GOOGLE
+  OTP
+}
+
+model User {
+  id           Int        @id @default(autoincrement())
+  email        String?    @unique
+  passwordHash String? // only set when authMethod = EMAIL_PASSWORD
+  phone        String?    @unique // only set when using OTP
+  oauthId      String? // e.g. Google sub
+  authMethod   AuthMethod
+  role         Role
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // one‐to‐one relations for role‐specific data
+  client     Client?
+  partner    Partner?
+  driver     Driver?
+  admin      Admin?
+  tokens     Token[]
+  logs       Log[]
+  addresses  Address[]
+  pushTokens PushToken[]
+}
+
+model Address {
+  id         Int        @id @default(autoincrement())
+  userId     Int
+  label      String
+  address    String     @default("")
+  latitude   Float
+  longitude  Float
+  isDefault  Boolean    @default(false)
+  createdAt  DateTime   @default(now())
+  user       User       @relation(fields: [userId], references: [id])
+  deliveries Delivery[]
+  orders     Order[]
+}
+
+model Token {
+  id           String   @id @default(uuid())
+  userId       Int
+  refreshToken String
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Client {
+  id        Int     @id @default(autoincrement())
+  user      User    @relation(fields: [userId], references: [id])
+  firstname String  @default("")
+  lastname  String  @default("")
+  avatar    String  @default("")
+  language  String  @default("en")
+  theme     Boolean @default(false) //0 DARK 1 LIGHT
+  userId    Int     @unique
+  // add any client-only fields here
+  Order     Order[]
+}
+
+model Partner_Niche {
+  id Int @id @default(autoincrement())
+
+  partner   Partner? @relation(fields: [partnerId], references: [id])
+  partnerId Int?
+  niche     Niche?   @relation(fields: [niche_id], references: [id])
+  niche_id  Int?
+
+  @@unique([niche_id, partnerId])
+}
+
+model Partner {
+  id            Int             @id @default(autoincrement())
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int             @unique
+  // partner-only fields
+  companyName   String
+  online        Boolean         @default(false)
+  avatar        String?
+  latitude      Float           @default(0)
+  longitude     Float           @default(0)
+  address       String?
+  Product       Product[]
+  Order         Order[]
+  partnerNiches Partner_Niche[]
+}
+
+model Driver {
+  id             Int             @id @default(autoincrement())
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         Int             @unique
+  firstname      String
+  lastname       String
+  latitude       Float           @default(0)
+  longitude      Float           @default(0)
+  online         Boolean         @default(false)
+  isAvailable    Boolean         @default(true)
+  orderDispatchs OrderDispatch[]
+  deliveries     Delivery[]
+  deliveryGroups DeliveryGroup[]
+}
+
+model Admin {
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int      @unique
+  // admin-only fields
+  firstname  String
+  lastname   String
+  birthday   DateTime @default(now())
+  city       Int      @default(16)
+  privileges String[]
+}
+
+model Niche {
+  id         Int             @id @default(autoincrement())
+  name       String
+  name_ar    String
+  image      String
+  categories Category[]
+  partners   Partner_Niche[]
+}
+
+model Category {
+  id           Int           @id @default(autoincrement())
+  name         String
+  name_ar      String
+  image        String
+  productTypes ProductType[]
+  niche        Niche?        @relation(fields: [niche_id], references: [id])
+  niche_id     Int?
+}
+
+model Brand {
+  id               Int               @id @default(autoincrement())
+  name             String
+  image            String
+  productTemplates ProductTemplate[]
+}
+
+model Product {
+  id        Int     @id @default(autoincrement())
+  price     Float   @default(0)
+  available Boolean @default(true)
+  stock     Int     @default(0)
+
+  partnerId Int
+  variantId Int
+
+  partner Partner @relation(fields: [partnerId], references: [userId])
+  variant Variant @relation(fields: [variantId], references: [id])
+
+  OrderItem OrderItem[]
+
+  @@unique([partnerId, variantId])
+}
+
+model ProductTemplate {
+  id          Int    @id @default(autoincrement())
+  name        String
+  name_ar     String @default("")
+  description String @default("")
+
+  product_type_id Int
+  productType     ProductType @relation(fields: [product_type_id], references: [id])
+
+  Brand    Brand? @relation(fields: [brand_id], references: [id])
+  brand_id Int?
+
+  variants Variant[]
+  images   ProductImage[]
+}
+
+// ---------- VARIANTS ----------
+model Variant {
+  id   Int     @id @default(autoincrement())
+  name String? // e.g. "Banana flavor", "Red color"
+  sku  String? @unique
+
+  productId Int
+  product   ProductTemplate @relation(fields: [productId], references: [id])
+
+  images   ProductImage[]
+  products Product[]
+  tags     Tag[]
+}
+
+model Tag {
+  id        Int     @id @default(autoincrement())
+  value     String
+  variant   Variant @relation(fields: [variantId], references: [id])
+  variantId Int
+}
+
+// ---------- IMAGES (Reusable) ----------
+model ProductImage {
+  id      Int     @id @default(autoincrement())
+  url     String  @unique
+  altText String?
+
+  variantId           Int?
+  product_template_id Int?
+  variant             Variant?         @relation(fields: [variantId], references: [id])
+  ProductTemplate     ProductTemplate? @relation(fields: [product_template_id], references: [id])
+}
+
+model ProductType {
+  id              Int               @id @default(autoincrement())
+  name            String
+  name_ar         String
+  category_id     Int
+  category        Category          @relation(fields: [category_id], references: [id])
+  ProductTemplate ProductTemplate[]
+}
+
+model Order {
+  id   Int      @id @default(autoincrement())
+  date DateTime @default(now())
+
+  deliveryTax Int @default(0)
+  appTax      Int @default(0)
+  storeTax    Int @default(0)
+
+  partnerId Int
+  clientId  Int
+  addressId Int
+
+  client  Client  @relation(fields: [clientId], references: [userId])
+  partner Partner @relation(fields: [partnerId], references: [userId])
+  address Address @relation(fields: [addressId], references: [id])
+
+  createdAt      DateTime        @default(now())
+  items          OrderItem[]
+  orderDispatchs OrderDispatch[]
+  delivery       Delivery?
+}
+
+model Delivery {
+  id      Int @id @default(autoincrement())
+  orderId Int @unique
+
+  type   Int
+  status Int @default(1)
+
+  price       Float     @default(0)
+  addressId   Int?
+  scheduledAt DateTime?
+
+  driverId        Int?
+  deliveryGroupId Int?
+
+  order         Order          @relation(fields: [orderId], references: [id])
+  driver        Driver?        @relation(fields: [driverId], references: [userId])
+  address       Address?       @relation(fields: [addressId], references: [id])
+  deliveryGroup DeliveryGroup? @relation(fields: [deliveryGroupId], references: [id])
+
+  dispatches OrderDispatch[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([status])
+}
+
+model DeliveryGroup {
+  id          Int      @id @default(autoincrement())
+  scheduledAt DateTime
+  status      Int      @default(0) // PLANNED | IN_PROGRESS | COMPLETED
+
+  driverId Int?
+  driver   Driver? @relation(fields: [driverId], references: [userId])
+
+  deliveries Delivery[]
+
+  createdAt DateTime @default(now())
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  quantity  Int
+  price     Float
+  product   Product @relation(fields: [productId], references: [id])
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId Int
+  orderId   Int
+}
+
+model OrderDispatch {
+  id         Int @id @default(autoincrement())
+  deliveryId Int
+  driverId   Int
+
+  status    Int      @default(0) // SENT | EXPIRED | ACCEPTED | REJECTED
+  sentAt    DateTime
+  expiresAt DateTime
+
+  delivery Delivery @relation(fields: [deliveryId], references: [id])
+  driver   Driver   @relation(fields: [driverId], references: [userId])
+  order    Order?   @relation(fields: [orderId], references: [id])
+  orderId  Int?
+
+  @@index([deliveryId])
+  @@index([driverId])
+}
+
+model Otp {
+  id        String   @id @default(cuid())
+  phone     String   @unique // Phone number in E.164 format (+1234567890)
+  code      String // The OTP code (6-8 digits)
+  expiresAt DateTime // When the OTP expires
+  attempts  Int      @default(0) // Verification attempts counter
+  verified  Boolean  @default(false) // Mark as verified after successful validation
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("otps")
+}
+
+model Log {
+  id        Int      @id @default(autoincrement())
+  title     String
+  body      String
+  title_ar  String
+  body_ar   String
+  type      Int
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    Int?
+}
+
+model Pricing {
+  id    Int         @id @default(autoincrement())
+  name  PricingName @unique
+  price Int
+}
+
+model PushToken {
+  id       String   @id @default(cuid())
+  userId   Int
+  token    String   @unique
+  platform Platform
+  deviceId String?
+  isActive Boolean  @default(true)
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  lastUsedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([platform])
+}
+
+enum Platform {
+  ANDROID
+  IOS
+  WEB
+}
+
+// VIEWS
+
+view ProductView {
+  id                  Int     @unique
+  name                String
+  name_ar             String
+  sku                 String
+  variantName         String
+  price               Float
+  stock               Int
+  available           Boolean
+  product_template_id Int
+  partnerId           Int
+  variantId           Int
+  brand_id            Int
+  product_type_id     Int
+  category_id         Int
+}
+
+view ProductTemplateView {
+  id              Int
+  name            String
+  name_ar         String
+  description     String
+  product_type_id Int
+  brand_id        Int?
+  category_id     Int
+  niche_id        Int?
+}
+
+enum PricingName {
+  APP_TAX
+  NORMAL_DELIVERY_TAX
+  GROUP_DELIVERY_TAX
+  STORE_TAX
+  PICKUP_TAX
+}
+
+view ProductTemplatePartnerPreview {
+  product_template_id Int
+  partnerId           Int
+
+  name            String
+  name_ar         String
+  description     String
+  product_type_id Int
+  category_id     Int
+  brand_id        Int?
+
+  variantId    Int
+  variant_name String?
+  variant_sku  String?
+
+  product_id Int
+  price      Float
+  available  Boolean
+  stock      Int
+
+  @@unique([product_template_id, partnerId])
+  @@map("ProductTemplatePartnerPreview")
+}

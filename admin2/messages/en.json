@@ -1,0 +1,91 @@
+{
+    "LocaleSwitcher": {
+        "fr": "Franch",
+        "en": "English",
+        "label": "Language"
+    },
+    "home": {
+        "section1": {
+            "title": "get ready to experience the best events",
+            "subtitle": "welcome to our ticketing platform, your one-step-shop for all your event needs! whether you're looking to attend a events",
+            "description": "buying ticket through our platfrom is easy and convenient",
+            "button": "Get ticket"
+        },
+        "header": {
+            "home": "home",
+            "ticket": "get a ticket",
+            "about": "about us",
+            "login": "Login",
+            "profile": "profile",
+            "dashboard": "Dashboard",
+            "account": "Account",
+            "logout": "sign out"
+        },
+        "section2": {
+            "title": "Last event in this month",
+            "subtitle": "Explore the legendary origins of piracy in Algeria with the gripping tale of the first pirate ship—a captivating saga now brought to life on our website"
+        },
+        "section3": {
+            "title": "don't miss out & Get your ticket now !",
+            "button": "Get ticket"
+        },
+        "section4": {
+            "title": "We are a passionate team dedicated to innovation and digitalization. Our mission is to assist event organizers in efficiently reaching their audiences. If you're interested in becoming a partner, please get in touch with us.",
+            "button": "Reach Us"
+        },
+        "footer": {
+            "title1": "Build by shea",
+            "title2": "All right reserved"
+        },
+        "ticket": {
+            "ticket1": "get your ticket",
+            "ticket2": "enjoy The experience",
+            "ticket3": "don't miss the chance"
+        },
+        "login": {
+            "title": "Authenticate",
+            "subtitle": "Please set your password and Email .",
+            "tab1": "Authenticate",
+            "tab2": "Request Verification",
+            "email": "Email",
+            "emailmsg": "Please put your email",
+            "password": "Password",
+            "passwordmsg": "Please put your password",
+            "button": "submit",
+            "verification": "Verification Email"
+        },
+        "getTicket": {
+            "title": "Get Ticket",
+            "subtitle": "Please All your information and ticket will be sent to email .",
+            "event": "Event",
+            "eventplaceholder": "Select an Event",
+            "eventmsg": "Please select event.",
+            "eventdate": "Event Date",
+            "eventdatemsg": "Your ticket date.",
+            "fname": "First Name",
+            "fnamemsg": "Please put your First Name.",
+            "lname": "Family Name",
+            "lnamemsg": "Please put your Family Name",
+            "phone": "Phone",
+            "phonemsg": "Please put your Phone Number.",
+            "email": "Email",
+            "emailmsg": "Please put your email",
+            "nin": "National Identification N°",
+            "ninmsg": "Please put your NIN.",
+            "button": "submit"
+        },
+        "contact": {
+            "title": "Reach Us",
+            "subtitle": "For Any Inquiers Fill this Form .",
+            "fullname": "Full Name",
+            "fullnamemsg": "Please put your Full Name.",
+            "phone": "Phone",
+            "phonemsg": "Please put your Phone Number.",
+            "email": "Email",
+            "emailmsg": "Please put your Email.",
+            "text": "Description",
+            "textmsg": "Please fill your inquiery.",
+            "button": "submit"
+        }
+    }
+}

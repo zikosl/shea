@@ -1,0 +1,24 @@
+# ─── Backend Development Image ───────────────────────────────────────────────
+# Lightweight image with all deps (including devDependencies) installed.
+# Source code is NOT copied — it is mounted as a volume at runtime so
+# changes on the host are reflected immediately without rebuilding.
+#
+# Usage: referenced by docker-compose.dev.yml
+FROM node:22-alpine
+RUN apk add --no-cache libc6-compat wget dumb-init
+WORKDIR /app
+# Install ALL deps (including devDependencies for ts-node, nodemon, etc.)
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
+# Generate Prisma client (needs the schema, not the source)
+COPY prisma ./prisma
+COPY .env .env
+COPY prisma.config.ts ./prisma.config.ts
+RUN yarn prisma generate
+# Create persistent dirs
+RUN mkdir -p logs uploads/logos
+EXPOSE 3001
+# Use dumb-init so Ctrl-C / docker stop works cleanly
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+# Run migrations then start the dev server with hot reload
+CMD ["sh", "-c", "yarn prisma migrate deploy && yarn dev"]

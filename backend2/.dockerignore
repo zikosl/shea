@@ -1,0 +1,11 @@
+node_modules
+npm-debug.log
+test.ts
+README.md
+index.pdf
+index.html
+Dockerfile
+.gitignore
+schema.graphql
+.vscode
+.git

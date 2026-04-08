@@ -1,0 +1,1 @@
+export const ORDER_DELAY = 600_000

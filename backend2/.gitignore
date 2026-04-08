@@ -1,0 +1,10 @@
+node_modules/
+dist/
+src/generated/
+uploads/
+.env
+.env.*
+*.local
+*.db
+Dockerfilev2
+*firebase-adminsdk*.json

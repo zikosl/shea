@@ -1,0 +1,91 @@
+{
+    "LocaleSwitcher": {
+        "fr": "Français",
+        "en": "Anglais",
+        "label": "Langue"
+    },
+    "home": {
+        "section1": {
+            "title": "préparez-vous à vivre les meilleurs événements",
+            "subtitle": "bienvenue sur notre plateforme de billetterie, votre guichet unique pour tous vos besoins événementiels ! ",
+            "description": "acheter un billet via notre plateforme est simple et pratique",
+            "button": "Obtenir un billet"
+        },
+        "header": {
+            "home": "accueil",
+            "ticket": "obtenir un billet",
+            "about": "à propos de nous",
+            "login": "se connecter",
+            "profile": "profil",
+            "dashboard": "Tableau de bord",
+            "account": "Compte",
+            "logout": "se déconnecter"
+        },
+        "section2": {
+            "title": "Dernier événement de ce mois",
+            "subtitle": "Explorez les origines légendaires de la piraterie en Algérie avec l'histoire captivante du premier bateau pirate, une saga captivante désormais animée sur notre site Web."
+        },
+        "section3": {
+            "title": "ne manquez pas cette opportunité, et achetez votre billet maintenant !",
+            "button": "Obtenir un billet"
+        },
+        "section4": {
+            "title": "Nous sommes une équipe passionnée dédiée à l'innovation et à la numérisation. Notre mission est d'aider les organisateurs d'événements à atteindre efficacement leurs publics. Si vous êtes intéressé à devenir partenaire, veuillez nous contacter.",
+            "button": "Rejoins-Nous"
+        },
+        "footer": {
+            "title1": "Construit par shea",
+            "title2": "Tous droits réservés"
+        },
+        "ticket": {
+            "ticket1": "obtenez votre billet",
+            "ticket2": "profitez de l'expérience",
+            "ticket3": "ne manquez pas l'occasion"
+        },
+        "login": {
+            "title": "Authentifier",
+            "subtitle": "Veuillez définir votre mot de passe et votre e-mail.",
+            "tab1": "Authentifier",
+            "tab2": "Demander une vérification",
+            "email": "E-mail",
+            "emailmsg": "S'il vous plaît mettre votre email",
+            "password": "Mot de passe",
+            "passwordmsg": "Veuillez mettre votre mot de passe",
+            "button": "soumettre",
+            "verification": "E-mail de vérification"
+        },
+        "getTicket": {
+            "title": "Obtenir un billet",
+            "subtitle": "S'il vous plaît, toutes vos informations et votre billet seront envoyés par e-mail.",
+            "event": "Événement",
+            "eventplaceholder": "Selectioner un événement",
+            "eventmsg": "Veuillez sélectionner un événement.",
+            "eventdate": "Date de l'événement",
+            "eventdatemsg": "La date de votre billet.",
+            "fname": "Prénom",
+            "fnamemsg": "Merci de mettre votre prénom.",
+            "lname": "Nom de famille",
+            "lnamemsg": "Veuillez mettre votre nom de famille",
+            "phone": "Téléphone",
+            "phonemsg": "Veuillez mettre votre numéro de téléphone.",
+            "email": "E-mail",
+            "emailmsg": "S'il vous plaît mettre votre email",
+            "nin": "N° d’identification national",
+            "ninmsg": "Veuillez mettre votre NIN.",
+            "button": "soumettre"
+        },
+        "contact": {
+            "title": "Rejoins-Nous",
+            "subtitle": "Pour toute demande de renseignements, remplissez ce formulaire.",
+            "fullname": "Nom et prénom",
+            "fullnamemsg": "Veuillez mettre votre nom complet.",
+            "phone": "Téléphone",
+            "phonemsg": "Veuillez mettre votre numéro de téléphone.",
+            "email": "E-mail",
+            "emailmsg": "Veuillez mettre votre email.",
+            "text": "Description",
+            "textmsg": "Veuillez remplir votre demande.",
+            "button": "soumettre"
+        }
+    }
+}
