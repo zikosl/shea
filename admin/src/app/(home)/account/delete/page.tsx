@@ -4,7 +4,6 @@ import * as React from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { motion } from 'framer-motion';
 
 import {
     Card,
@@ -82,12 +81,7 @@ export default function AccountDeletionPage() {
 
     return (
         <div className="min-h-[80vh] w-full grid place-items-center p-4">
-            <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="w-full max-w-md"
-            >
+            <div className="w-full max-w-md animate-fade-in-up">
                 <Card className="rounded-2xl shadow">
                     <CardHeader>
                         <CardTitle>Delete your account</CardTitle>
@@ -161,7 +155,7 @@ export default function AccountDeletionPage() {
                         </CardFooter>
                     </form>
                 </Card>
-            </motion.div>
+            </div>
         </div>
     );
 }

@@ -18,7 +18,7 @@ export default async function ItemViewPage({
     if (!item) {
       notFound();
     }
-    pageTitle = `Edit Partner`;
+    pageTitle = `Edit ${title_singular}`;
   }
 
   return <Form initialData={item} pageTitle={pageTitle} />;

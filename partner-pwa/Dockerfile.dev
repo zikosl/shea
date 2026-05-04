@@ -1,0 +1,21 @@
+FROM node:22-alpine
+
+RUN apk add --no-cache libc6-compat wget
+
+WORKDIR /app
+ENV YARN_CACHE_FOLDER=/tmp/.yarn-cache
+RUN mkdir -p /tmp/.yarn-cache
+
+COPY package.json ./
+RUN yarn install --non-interactive
+
+COPY next.config.ts ./
+COPY public ./public
+
+ENV NODE_ENV=development
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
+
+EXPOSE 3000
+
+CMD ["yarn", "dev"]

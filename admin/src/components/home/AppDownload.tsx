@@ -1,101 +1,79 @@
-
-import { Apple, Smartphone, Download, Zap, User, Bell } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
+import { Apple, Bell, ShieldCheck, Smartphone } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
-const AppDownload = () => {
+import { Button } from "@/components/ui/button";
+
+const benefitKeys = ["guided", "reminders", "privacy"] as const;
+const benefitIcons = [Smartphone, Bell, ShieldCheck];
+
+const AppDownload = async () => {
+  const t = await getTranslations("home.download");
+
   return (
-    <section id="download" className="py-24  bg-secondary/50">
+    <section id="download" className="px-4 pb-24 pt-18 md:px-6 md:pb-28 md:pt-24">
       <div className="container">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <span className="subtitle text-primary">Mobile App</span>
-            <h2 className="title text-primay">Experience Shea</h2>
-            <p className="description mx-auto text-[#8E9196]">
-              Download our app and transform your beauty routine with personalized recommendations,
-              routine tracking, and exclusive offers.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 items-center gap-8">
-            <div className="p-8 space-y-6">
-              <div className="space-y-4">
-                <div className="flex items-start gap-4">
-                  <div className="bg-scondary p-2 rounded-full">
-                    <Zap className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium mb-1 text-primary">Fast & Intuitive</h3>
-                    <p className="text-accent text-sm">
-                      Navigate effortlessly with our clean, simple interface designed for speed.
-                    </p>
-                  </div>
+        <div className="marketing-card overflow-hidden p-6 md:p-10">
+          <div className="grid items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
+            <div className="relative order-2 lg:order-1">
+              <div className="absolute inset-x-8 top-10 h-28 rounded-full bg-rose-200/70 blur-3xl" />
+              <div className="relative mx-auto max-w-[20rem] rounded-[34px] border border-white/80 bg-white/70 p-4 shadow-[0_28px_60px_-36px_rgba(166,74,116,0.42)]">
+                <div className="rounded-[28px] bg-gradient-to-br from-rose-50 via-white to-orange-50 p-3">
+                  <Image
+                    width={320}
+                    height={640}
+                    src="/screenshoot.png"
+                    alt={t("imageAlt")}
+                    className="w-full rounded-[22px] object-cover"
+                  />
                 </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="bg-secondary p-2 rounded-full">
-                    <User className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium mb-1 text-primary">Personalized For You</h3>
-                    <p className="text-accent text-sm">
-                      Get recommendations tailored to your skin type, preferences, and beauty goals.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="bg-secondary p-2 rounded-full">
-                    <Bell className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium mb-1 text-primary">Routine Reminders</h3>
-                    <p className="text-accent text-sm">
-                      Never miss a step with gentle reminders for your morning and evening routines.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Button size="lg" className="group bg-primary hover:bg-[#333333]">
-                  <Apple className="mr-2 h-5 w-5" />
-                  App Store
-                </Button>
-                <Button size="lg" variant="outline" className="border-[#8E9196] text-[#8E9196]">
-                  <Smartphone className="mr-2 h-5 w-5" />
-                  Google Play
-                </Button>
               </div>
             </div>
 
-            <div className="relative h-full flex items-center justify-center p-8">
-              <div className="animate-float">
-                <div className="relative w-[240px] h-[480px]">
-                  <div className="absolute inset-0 rounded-[30px] border-4 border-primary/20 bg-white shadow-lg"></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Image
-                      width={240}
-                      height={480}
-                      src="/screenshoot.png"
-                      alt="App screenshot"
-                      className="w-full h-full object-cover rounded-[26px] p-2"
-                    />
-                  </div>
-                </div>
+            <div className="order-1 lg:order-2">
+              <div className="marketing-kicker">{t("eyebrow")}</div>
+              <h2 className="mt-5 font-display text-4xl text-rose-950 dark:text-rose-50 md:text-5xl">{t("title")}</h2>
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-rose-950/68 dark:text-rose-50/72">{t("description")}</p>
 
-                <div className="absolute -bottom-6 -right-6 bg-secondary/50 border border-[#C8C8C9] p-3 rounded-lg shadow-md">
-                  <div className="flex items-center gap-2">
-                    <div className="flex">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <svg key={star} className="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      ))}
+              <div className="mt-8 space-y-4">
+                {benefitKeys.map((key, index) => {
+                  const Icon = benefitIcons[index];
+
+                  return (
+                    <div key={key} className="flex items-start gap-4 rounded-[24px] border border-rose-100/80 bg-white/70 p-4 dark:border-rose-400/16 dark:bg-white/5">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-100 to-orange-100 text-rose-600">
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-base font-semibold text-rose-950 dark:text-rose-50">{t(`benefits.${key}.title`)}</p>
+                        <p className="mt-1 text-sm leading-7 text-rose-950/68 dark:text-rose-50/68">
+                          {t(`benefits.${key}.description`)}
+                        </p>
+                      </div>
                     </div>
-                    <span className="text-sm text-dark font-medium">4.9/5</span>
-                  </div>
-                </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Button asChild size="lg" className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-400 dark:text-slate-950 dark:hover:bg-rose-300">
+                  <Link href="/">
+                    <Apple className="h-5 w-5" />
+                    {t("appStore")}
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="border-rose-200 bg-white/80 text-rose-700 hover:bg-rose-50 dark:border-rose-400/20 dark:bg-white/6 dark:text-rose-100 dark:hover:bg-white/10"
+                >
+                  <Link href="/">
+                    <Smartphone className="h-5 w-5" />
+                    {t("playStore")}
+                  </Link>
+                </Button>
               </div>
             </div>
           </div>

@@ -1,0 +1,8 @@
+CREATE TYPE "OrderSource" AS ENUM ('ONLINE', 'POS');
+
+ALTER TABLE "Order"
+ADD COLUMN "discount" DOUBLE PRECISION NOT NULL DEFAULT 0,
+ADD COLUMN "source" "OrderSource" NOT NULL DEFAULT 'ONLINE',
+ADD COLUMN "walkInCustomerName" TEXT,
+ADD COLUMN "note" TEXT,
+ADD COLUMN "paymentMethod" TEXT;

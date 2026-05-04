@@ -96,7 +96,8 @@ services:
       - .env
     environment:
       NODE_ENV: development
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001/api}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost/api}
+      INTERNAL_API_URL: http://backend:3001
       WATCHPACK_POLLING: "true"
     volumes:
       - ./admin:/app
@@ -113,6 +114,45 @@ services:
     networks:
       - shea-dev-network
 
+  partner-pwa:
+    build:
+      context: ./partner-pwa
+      dockerfile: Dockerfile.dev
+    container_name: shea-dev-partner-pwa
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_GRAPHQL_URL: ${PARTNER_PWA_GRAPHQL_URL:-http://localhost/api/graphql}
+      NEXT_PUBLIC_PUBLIC_URL: ${NEXT_PUBLIC_PUBLIC_URL:-http://localhost}
+      NEXT_PUBLIC_BASE_PATH: ${PARTNER_PWA_BASE_PATH:-/store}
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - ./partner-pwa/src:/app/src
+      - ./partner-pwa/public:/app/public
+      - ./partner-pwa/package.json:/app/package.json:ro
+      - ./partner-pwa/next.config.ts:/app/next.config.ts:ro
+      - ./partner-pwa/tsconfig.json:/app/tsconfig.json
+      - ./partner-pwa/postcss.config.mjs:/app/postcss.config.mjs:ro
+      - ./partner-pwa/eslint.config.mjs:/app/eslint.config.mjs:ro
+      - ./partner-pwa/next-env.d.ts:/app/next-env.d.ts
+      - dev_partner_pwa_node_modules:/app/node_modules
+      - dev_partner_pwa_next:/app/.next
+    ports:
+      - "3002:3000"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/store/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - shea-dev-network
+
   caddy:
     image: caddy:2-alpine
     container_name: shea-dev-caddy
@@ -120,6 +160,7 @@ services:
     depends_on:
       - admin
       - backend
+      - partner-pwa
     ports:
       - "80:80"
     volumes:
@@ -133,6 +174,8 @@ volumes:
   dev_redis_data:
   dev_backend_logs:
   dev_uploads:
+  dev_partner_pwa_node_modules:
+  dev_partner_pwa_next:
 
 networks:
   shea-dev-network:

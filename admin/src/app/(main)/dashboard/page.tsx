@@ -1,4 +1,5 @@
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import {
   ArrowRight,
   Boxes,
@@ -20,9 +21,16 @@ import {
   CardTitle
 } from "@/components/ui/card";
 
-import { Overview } from "./_components/overview";
 import { RecentSales } from "./_components/recent-sales";
 import { Search } from "./_components/search";
+import { OverviewSkeleton } from "./_components/overview-skeleton";
+
+const Overview = dynamic(
+  () => import("./_components/overview").then((module) => module.Overview),
+  {
+    loading: () => <OverviewSkeleton />,
+  },
+);
 
 const stats = [
   {
@@ -87,23 +95,23 @@ export default function DashboardPage() {
     >
       <div className="space-y-6">
         <section className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,0.9fr)]">
-          <Card className="overflow-hidden border-primary/10 bg-gradient-to-br from-primary/12 via-background to-background">
+          <Card className="overflow-hidden border-primary/10 bg-gradient-to-br from-primary/12 via-background to-background dark:border-sky-400/12 dark:from-sky-400/10 dark:via-[#111827] dark:to-[#0f1726]">
             <CardHeader className="pb-4">
-              <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-full bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+              <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-full bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary dark:bg-white/6 dark:text-sky-200">
                 <ChartNoAxesCombined className="h-3.5 w-3.5" />
                 Performance pulse
               </div>
               <CardTitle className="text-2xl sm:text-3xl">
                 Keep merchandising and operations aligned from one polished workspace.
               </CardTitle>
-              <CardDescription className="max-w-2xl text-sm sm:text-base">
+              <CardDescription className="max-w-2xl text-sm sm:text-base dark:text-slate-300">
                 Review today&apos;s momentum, jump into the busiest sections, and keep the catalog moving without hunting through scattered screens.
               </CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-4 border-t border-border/70 pt-6 sm:grid-cols-3">
+            <CardContent className="grid gap-4 border-t border-border/70 pt-6 dark:border-slate-400/10 sm:grid-cols-3">
               {highlights.map((item) => (
-                <div key={item.label} className="rounded-2xl border border-border/70 bg-background/75 p-4">
-                  <p className="text-sm text-muted-foreground">{item.label}</p>
+                <div key={item.label} className="rounded-2xl border border-border/70 bg-background/75 p-4 dark:border-slate-400/10 dark:bg-white/4">
+                  <p className="text-sm text-muted-foreground dark:text-slate-400">{item.label}</p>
                   <p className="mt-2 text-2xl font-semibold tracking-tight">{item.value}</p>
                 </div>
               ))}
@@ -125,16 +133,16 @@ export default function DashboardPage() {
                   <Link
                     key={action.title}
                     href={action.href}
-                    className="group flex items-center gap-4 rounded-2xl border border-border/70 bg-background/55 p-4 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-background/80"
-                  >
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  className="group flex items-center gap-4 rounded-2xl border border-border/70 bg-background/55 p-4 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-background/80 dark:border-slate-400/10 dark:bg-white/4 dark:hover:border-sky-400/20 dark:hover:bg-white/7"
+                >
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary dark:bg-sky-400/12 dark:text-sky-200">
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold">{action.title}</p>
-                      <p className="text-sm text-muted-foreground">{action.description}</p>
+                      <p className="text-sm text-muted-foreground dark:text-slate-400">{action.description}</p>
                     </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
+                    <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary dark:text-slate-500 dark:group-hover:text-sky-200" />
                   </Link>
                 );
               })}
@@ -153,12 +161,12 @@ export default function DashboardPage() {
                     <CardDescription className="text-sm">{stat.title}</CardDescription>
                     <CardTitle className="mt-3 text-3xl tracking-tight">{stat.value}</CardTitle>
                   </div>
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary text-primary">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary text-primary dark:bg-sky-400/10 dark:text-sky-200">
                     <Icon className="h-5 w-5" />
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm font-medium text-muted-foreground">{stat.change}</p>
+                  <p className="text-sm font-medium text-muted-foreground dark:text-slate-400">{stat.change}</p>
                 </CardContent>
               </Card>
             );
@@ -167,10 +175,10 @@ export default function DashboardPage() {
 
         <section className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.85fr)]">
           <Card>
-            <CardHeader className="flex flex-col gap-2 border-b border-border/70 pb-5 sm:flex-row sm:items-end sm:justify-between">
+            <CardHeader className="flex flex-col gap-2 border-b border-border/70 pb-5 dark:border-slate-400/10 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <CardTitle>Revenue overview</CardTitle>
-                <CardDescription>
+                <CardDescription className="dark:text-slate-300">
                   Stable month-by-month performance to guide merchandising and partner planning.
                 </CardDescription>
               </div>
@@ -186,7 +194,7 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>Recent sales</CardTitle>
-              <CardDescription>
+              <CardDescription className="dark:text-slate-300">
                 The latest customer payments recorded across the platform.
               </CardDescription>
             </CardHeader>

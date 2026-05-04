@@ -1,91 +1,221 @@
 {
-    "LocaleSwitcher": {
-        "fr": "Franch",
-        "en": "English",
-        "label": "Language"
+  "LocaleSwitcher": {
+    "fr": "French",
+    "en": "English",
+    "label": "Language"
+  },
+  "home": {
+    "header": {
+      "home": "Home",
+      "ticket": "Get a ticket",
+      "about": "About us",
+      "login": "Log in",
+      "profile": "Profile",
+      "dashboard": "Dashboard",
+      "account": "Account",
+      "logout": "Sign out"
     },
-    "home": {
-        "section1": {
-            "title": "get ready to experience the best events",
-            "subtitle": "welcome to our ticketing platform, your one-step-shop for all your event needs! whether you're looking to attend a events",
-            "description": "buying ticket through our platfrom is easy and convenient",
-            "button": "Get ticket"
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in with your admin email and password.",
+      "tab1": "Sign in",
+      "tab2": "Request verification",
+      "email": "Email",
+      "emailmsg": "Enter your email address.",
+      "password": "Password",
+      "passwordmsg": "Enter your password.",
+      "button": "Continue",
+      "verification": "Verification email"
+    },
+    "navbar": {
+      "tagline": "Beauty, curated softly",
+      "features": "Features",
+      "products": "Products",
+      "testimonials": "Reviews",
+      "download": "Download",
+      "cta": "Enter admin",
+      "themeToggle": "Toggle theme",
+      "menu": "Toggle menu"
+    },
+    "hero": {
+      "eyebrow": "Designed for beauty routines with intention",
+      "title": "A softer, smarter beauty companion for every ritual.",
+      "description": "Shea helps you discover products, organize routines, and shop with more confidence through guided recommendations and elegant daily care flows.",
+      "primaryCta": "Open admin",
+      "secondaryCta": "Explore collection",
+      "imageAlt": "Shea mobile app preview",
+      "trust": {
+        "personalization": "Personalized care suggestions",
+        "rituals": "Morning and evening ritual planning",
+        "delivery": "Fast product discovery and reorder"
+      },
+      "stats": {
+        "glowPlans": {
+          "value": "12k+",
+          "label": "routine plans created with guided care steps"
         },
-        "header": {
-            "home": "home",
-            "ticket": "get a ticket",
-            "about": "about us",
-            "login": "Login",
-            "profile": "profile",
-            "dashboard": "Dashboard",
-            "account": "Account",
-            "logout": "sign out"
+        "consultants": {
+          "value": "150+",
+          "label": "beauty consultants and partner brands onboarded"
         },
-        "section2": {
-            "title": "Last event in this month",
-            "subtitle": "Explore the legendary origins of piracy in Algeria with the gripping tale of the first pirate ship—a captivating saga now brought to life on our website"
-        },
-        "section3": {
-            "title": "don't miss out & Get your ticket now !",
-            "button": "Get ticket"
-        },
-        "section4": {
-            "title": "We are a passionate team dedicated to innovation and digitalization. Our mission is to assist event organizers in efficiently reaching their audiences. If you're interested in becoming a partner, please get in touch with us.",
-            "button": "Reach Us"
-        },
-        "footer": {
-            "title1": "Build by shea",
-            "title2": "All right reserved"
-        },
-        "ticket": {
-            "ticket1": "get your ticket",
-            "ticket2": "enjoy The experience",
-            "ticket3": "don't miss the chance"
-        },
-        "login": {
-            "title": "Authenticate",
-            "subtitle": "Please set your password and Email .",
-            "tab1": "Authenticate",
-            "tab2": "Request Verification",
-            "email": "Email",
-            "emailmsg": "Please put your email",
-            "password": "Password",
-            "passwordmsg": "Please put your password",
-            "button": "submit",
-            "verification": "Verification Email"
-        },
-        "getTicket": {
-            "title": "Get Ticket",
-            "subtitle": "Please All your information and ticket will be sent to email .",
-            "event": "Event",
-            "eventplaceholder": "Select an Event",
-            "eventmsg": "Please select event.",
-            "eventdate": "Event Date",
-            "eventdatemsg": "Your ticket date.",
-            "fname": "First Name",
-            "fnamemsg": "Please put your First Name.",
-            "lname": "Family Name",
-            "lnamemsg": "Please put your Family Name",
-            "phone": "Phone",
-            "phonemsg": "Please put your Phone Number.",
-            "email": "Email",
-            "emailmsg": "Please put your email",
-            "nin": "National Identification N°",
-            "ninmsg": "Please put your NIN.",
-            "button": "submit"
-        },
-        "contact": {
-            "title": "Reach Us",
-            "subtitle": "For Any Inquiers Fill this Form .",
-            "fullname": "Full Name",
-            "fullnamemsg": "Please put your Full Name.",
-            "phone": "Phone",
-            "phonemsg": "Please put your Phone Number.",
-            "email": "Email",
-            "emailmsg": "Please put your Email.",
-            "text": "Description",
-            "textmsg": "Please fill your inquiery.",
-            "button": "submit"
+        "satisfaction": {
+          "value": "4.9/5",
+          "label": "average satisfaction across our curated journeys"
         }
+      },
+      "routineCard": {
+        "eyebrow": "Routine planner",
+        "title": "Build rituals that actually fit your day",
+        "description": "Organize products by time, concern, and texture so every step feels clear."
+      },
+      "communityCard": {
+        "eyebrow": "Community picks",
+        "title": "See what people with similar needs love most",
+        "description": "Compare products through skin goals, ingredient comfort, and proven favorites."
+      },
+      "floatingCard": {
+        "eyebrow": "Glow notes",
+        "title": "Track what makes your skin feel better week after week",
+        "description": "Save formulas, reorders, and progress in one calm place."
+      }
+    },
+    "features": {
+      "eyebrow": "What makes Shea different",
+      "title": "A cleaner experience from discovery to daily use",
+      "description": "Every feature is shaped to make shopping and care routines feel lighter, more personal, and easier to trust.",
+      "items": {
+        "diagnosis": {
+          "title": "Smart beauty diagnosis",
+          "description": "Start from skin needs, product textures, and comfort preferences instead of endless product lists."
+        },
+        "pairing": {
+          "title": "Routine pairing",
+          "description": "Match serums, cleansers, oils, and creams in a sequence that feels simple and well balanced."
+        },
+        "rituals": {
+          "title": "Soft daily rituals",
+          "description": "Create morning and evening routines with reminders that support consistency without pressure."
+        },
+        "community": {
+          "title": "Trusted recommendations",
+          "description": "See products loved by shoppers with similar concerns and beauty goals."
+        },
+        "ingredients": {
+          "title": "Ingredient clarity",
+          "description": "Understand formulas in a more human way with deeper ingredient guidance and comfort notes."
+        },
+        "delivery": {
+          "title": "Smooth reorder flow",
+          "description": "Come back to your favorites quickly and keep essentials close when you need them most."
+        }
+      }
+    },
+    "showcase": {
+      "eyebrow": "Curated favorites",
+      "title": "Products chosen for texture, comfort, and glow",
+      "description": "Explore a more editorial product presentation with focused picks designed to feel premium and easy to compare.",
+      "cta": "Add to routine",
+      "previous": "Previous product",
+      "next": "Next product",
+      "items": {
+        "serum": {
+          "badge": "Glow favorite",
+          "name": "Rose Dew Serum",
+          "description": "A lightweight brightening serum with a silky finish that layers beautifully under makeup and SPF.",
+          "price": "$49",
+          "reviews": "4.9 rating from 124 reviews"
+        },
+        "cream": {
+          "badge": "Comfort essential",
+          "name": "Cloud Veil Cream",
+          "description": "A cushiony moisturizer that keeps skin soft, calm, and hydrated from morning through late evening.",
+          "price": "$38",
+          "reviews": "4.8 rating from 98 reviews"
+        },
+        "lipOil": {
+          "badge": "Trend pick",
+          "name": "Velvet Bloom Lip Oil",
+          "description": "A nourishing lip finish with shine, tint, and all-day comfort in one effortless swipe.",
+          "price": "$24",
+          "reviews": "4.7 rating from 156 reviews"
+        }
+      }
+    },
+    "testimonials": {
+      "eyebrow": "Loved by the community",
+      "title": "Women use Shea to shop with more confidence",
+      "description": "Short, real stories from customers who wanted a softer beauty experience with better guidance.",
+      "items": {
+        "amina": {
+          "name": "Amina B.",
+          "meta": "Sensitive skin, daily skincare shopper",
+          "quote": "Shea made my routine feel elegant instead of overwhelming. I finally know which products work together and what to reorder."
+        },
+        "sarah": {
+          "name": "Sarah K.",
+          "meta": "Busy professional, makeup lover",
+          "quote": "I love how calm the app feels. It gives me beautiful recommendations without making me dig through cluttered product pages."
+        },
+        "nour": {
+          "name": "Nour H.",
+          "meta": "Fragrance and body care customer",
+          "quote": "The product guidance is thoughtful and feminine. It feels more like a personal boutique than a generic shopping app."
+        }
+      }
+    },
+    "download": {
+      "eyebrow": "Take Shea with you",
+      "title": "A feminine mobile experience built for beauty routines on the go",
+      "description": "Download the app to keep your recommendations, rituals, saved products, and reminders close wherever your day takes you.",
+      "imageAlt": "Shea app screen",
+      "appStore": "Download on the App Store",
+      "playStore": "Get it on Google Play",
+      "benefits": {
+        "guided": {
+          "title": "Guided product journeys",
+          "description": "Move from concern to purchase through a calmer flow with clearer steps and less noise."
+        },
+        "reminders": {
+          "title": "Gentle reminders",
+          "description": "Keep morning and evening routines consistent with helpful nudges that never feel intrusive."
+        },
+        "privacy": {
+          "title": "Private by design",
+          "description": "Save your beauty preferences and order history in one secure, easy-to-return space."
+        }
+      }
+    },
+    "footer": {
+      "description": "Shea brings together premium beauty discovery, thoughtful routines, and a softer shopping experience.",
+      "shop": {
+        "title": "Shop",
+        "items": {
+          "routine": "Routine sets",
+          "makeup": "Makeup edits",
+          "body": "Body and bath",
+          "gifts": "Gift selections"
+        }
+      },
+      "company": {
+        "title": "Company",
+        "items": {
+          "story": "Our story",
+          "partners": "Partner with Shea",
+          "journal": "Beauty journal",
+          "careers": "Careers"
+        }
+      },
+      "support": {
+        "title": "Support",
+        "items": {
+          "help": "Help center",
+          "shipping": "Shipping",
+          "privacy": "Privacy policy",
+          "terms": "Terms of service"
+        }
+      },
+      "copyright": "© {year} Shea. All rights reserved.",
+      "signature": "Built for a softer beauty journey."
     }
+  }
 }

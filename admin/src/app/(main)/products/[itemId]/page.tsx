@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import FormCardSkeleton from '@/components/form-card-skeleton';
 import ViewPage from '../_components/view-page';
 import { name_singular } from '../_constant';
-import { client } from '@/lib/client';
+import { requestServerGraphQL } from '@/lib/server-request';
 import { GET_ALL_CATEGORIES } from '@/api/queries';
 
 export const metadata = {
@@ -13,7 +13,7 @@ interface PageProps { params: Promise<{ itemId: string }> };
 
 const getCategories = async () => {
   try {
-    const res: any = await client.request(GET_ALL_CATEGORIES);
+    const res: any = await requestServerGraphQL(GET_ALL_CATEGORIES);
     return res.getAllCategories;
   } catch (error) {
     return [];

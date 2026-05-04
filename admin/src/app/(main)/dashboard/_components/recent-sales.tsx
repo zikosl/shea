@@ -16,16 +16,16 @@ export function RecentSales() {
       {recentSales.map((sale) => (
         <div
           key={sale.email}
-          className="flex items-center gap-4 rounded-2xl border border-border/70 bg-background/55 p-3 transition-colors hover:bg-background/80"
+          className="flex items-center gap-4 rounded-2xl border border-border/70 bg-background/55 p-3 transition-colors hover:bg-background/80 dark:border-slate-400/10 dark:bg-white/4 dark:hover:bg-white/7"
         >
-          <Avatar className="h-11 w-11 border border-primary/15 bg-primary/10">
-            <AvatarFallback className="bg-primary/10 font-semibold text-primary">
+          <Avatar className="h-11 w-11 border border-primary/15 bg-primary/10 dark:border-sky-400/12 dark:bg-sky-400/10">
+            <AvatarFallback className="bg-primary/10 font-semibold text-primary dark:bg-sky-400/10 dark:text-sky-200">
               {sale.initials}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold leading-none">{sale.name}</p>
-            <p className="mt-1 truncate text-sm text-muted-foreground">{sale.email}</p>
+            <p className="mt-1 truncate text-sm text-muted-foreground dark:text-slate-400">{sale.email}</p>
           </div>
           <div className="text-right">
             <p className="text-sm font-semibold">{sale.amount}</p>

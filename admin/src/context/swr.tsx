@@ -1,203 +1,181 @@
 "use client";
-import { SWRConfig, useSWRConfig } from "swr";
-import request from "graphql-request";
 
-import { endpoint } from "@/constant";
-// import { subscribe } from "@/lib/subscribe";
-import { client } from "@/lib/server";
-
+import { ReactNode, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
+import { SWRConfig, useSWRConfig } from "swr";
 import useSWR from "swr";
-import { ReactNode, useEffect, useState } from "react";
 
+import { requestPublicGraphQL } from "@/lib/graphql";
 
-
-
-export const SWRProvider = ({ children, session }: { children: ReactNode, session: any }) => {
-
-    return (
-        <SWRConfig
-            value={{
-                provider: () => new Map(),
-                // provider: localStorageProvider,
-                fetcher: ({ query = "", variables }, params) => {
-                    // if (query.includes("subscription"))
-                    //     return subscribe({ query, variables, next: params.next, session })
-                    return request(
-                        endpoint,
-                        query,
-                        variables,
-                        {
-                            authorization: `Bearer ${session?.accessToken}`,
-                        }
-                    );
-                },
-            }
-            }
-        >
-            {children}
-        </SWRConfig >
-    );
+type SessionShape = {
+  accessToken?: string;
 };
 
+type SessionProp = {
+  accessToken?: string;
+} | null;
 
-//with caching mecanisme
-export const useLazyQuery = ({ query }: { query: any }) => {
-    const session = useSession()
-    const [loading, setLoading] = useState(false)
-    const [data, setData] = useState(null)
-    const { cache, mutate } = useSWRConfig()
-    const trigger = ({ variables }) => {
-        return new Promise(async (resolve, reject) => {
-            setLoading(true)
-            try {
-                let value = cache.get(JSON.stringify({ query, variables }))
-                if (value) {
-                    setData(value.data)
-                    resolve(value.data)
-                }
-                else {
-                    const response = await client.request(
-                        query,
-                        variables,
-                        {
-                            authorization: `Bearer ${session?.data?.accessToken}`
-                        }
-                    )
-                    mutate(JSON.stringify({ query, variables }), response, { revalidate: false })
-                    setData(response)
-                    resolve(response)
-                }
-                setLoading(false)
-            }
-            catch (e) {
-                setLoading(false)
-                reject(e)
-            }
-        })
-    };
-    return { trigger, loading, data }
-}
+type Variables = Record<string, unknown>;
 
+type CacheEntry<TData> = {
+  data: TData;
+};
 
-export const useQuery = ({ query, variables = {} }) => {
-    const session = useSession()
-    const [loading, setLoading] = useState(true)
-    const [data, setData] = useState(null)
-    const [error, setError] = useState()
-    useEffect(() => {
-        if (query) {
-            client.request(
-                query,
-                variables,
-                {
-                    authorization: `Bearer ${session?.data?.accessToken}`
-                }
-            ).then((e) => {
-                setData(e)
-                setLoading(false)
-            }).catch(e => {
-                setError(e)
-            })
-        }
-    }, [query, variables, session])
-    return { loading, data, error }
-}
-
-export const useMutation = ({ query }) => {
-    const [loading, setLoading] = useState(false)
-    const [data, setData] = useState(null)
-    // const { cache, mutate } = useSWRConfig()
-    const trigger = ({ variables }) => {
-        return new Promise(async (resolve, reject) => {
-            setLoading(true)
-            try {
-                // let value = cache.get(JSON.stringify({ query, variables }))
-                // if (value) {
-                //     setData(value.data)
-                //     resolve(value.data)
-                // }
-                // else {
-                const response = await client.request(
-                    query,
-                    variables
-                )
-                // mutate(JSON.stringify({ query, variables }), response, { revalidate: false })
-                setData(response)
-                resolve(response)
-                // }
-                setLoading(false)
-            }
-            catch (e) {
-                setLoading(false)
-                reject(e)
-            }
-        })
-    };
-    return { trigger, loading, data }
-}
-
-export const useSWRMutation = ({ query }) => {
-    const session = useSession()
-    const [loading, setLoading] = useState(false)
-    const [data, setData] = useState(null)
-    // const { cache, mutate } = useSWRConfig()
-    const trigger = ({ variables }) => {
-        return new Promise(async (resolve, reject) => {
-            setLoading(true)
-            try {
-                // let value = cache.get(JSON.stringify({ query, variables }))
-                // if (value) {
-                //     setData(value.data)
-                //     resolve(value.data)
-                // }
-                // else {
-                const response = await client.request(
-                    query,
-                    variables,
-                    {
-                        authorization: `Bearer ${session?.data?.accessToken}`
-                    }
-                )
-                // mutate(JSON.stringify({ query, variables }), response, { revalidate: false })
-                setData(response)
-                resolve(response)
-                // }
-                setLoading(false)
-            }
-            catch (e) {
-                setLoading(false)
-                reject(e)
-            }
-        })
-    };
-    return { trigger, loading, data }
-}
-
-export const useSWROffline = ({
-    key,
-    defaultValue
+export const SWRProvider = ({
+  children,
+  session
+}: {
+  children: ReactNode;
+  session: SessionProp;
 }) => {
-    const { cache, mutate: update, ...extraConfig } = useSWRConfig()
+  return (
+    <SWRConfig
+      value={{
+        provider: () => new Map(),
+        fetcher: ({ query = "", variables }: { query?: string; variables?: Variables }) =>
+          requestPublicGraphQL(query, variables, session?.accessToken),
+      }}
+    >
+      {children}
+    </SWRConfig>
+  );
+};
 
-    const trigger = () => {
-        let value = cache.get(key)
-        if (!value)
-            update(key, defaultValue)
-        value = cache.get(key)
-        return value?.data
+export const useLazyQuery = <TData,>({ query }: { query: string }) => {
+  const session = useSession();
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<TData | null>(null);
+  const { cache, mutate } = useSWRConfig();
+
+  const trigger = async ({ variables }: { variables?: Variables }) => {
+    setLoading(true);
+    try {
+      const cacheKey = JSON.stringify({ query, variables });
+      const cachedValue = cache.get(cacheKey) as CacheEntry<TData> | undefined;
+
+      if (cachedValue?.data) {
+        setData(cachedValue.data);
+        return cachedValue.data;
+      }
+
+      const response = await requestPublicGraphQL<TData>(
+        query,
+        variables,
+        (session.data as SessionShape | null)?.accessToken,
+      );
+
+      await mutate(cacheKey, response, { revalidate: false });
+      setData(response);
+      return response;
+    } finally {
+      setLoading(false);
     }
-    const mutate = (value) => {
-        update(key, value, {
-            revalidate: false
-        })
+  };
+
+  return { trigger, loading, data };
+};
+
+export const useQuery = <TData,>({
+  query,
+  variables = {}
+}: {
+  query: string;
+  variables?: Variables;
+}) => {
+  const session = useSession();
+  const accessToken = (session.data as SessionShape | null)?.accessToken;
+  const key = useMemo(
+    () => (query ? JSON.stringify({ query, variables, accessToken }) : null),
+    [query, variables, accessToken],
+  );
+
+  const { data, error, isLoading } = useSWR<TData>(
+    key,
+    () => requestPublicGraphQL<TData>(query, variables, accessToken),
+    {
+      revalidateOnFocus: false,
+      keepPreviousData: true,
+    },
+  );
+
+  return {
+    loading: isLoading,
+    data: data ?? null,
+    error,
+  };
+};
+
+export const useMutation = <TData,>({ query }: { query: string }) => {
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<TData | null>(null);
+
+  const trigger = async ({ variables }: { variables?: Variables }) => {
+    setLoading(true);
+    try {
+      const response = await requestPublicGraphQL<TData>(query, variables);
+      setData(response);
+      return response;
+    } finally {
+      setLoading(false);
     }
-    return { data: trigger(), mutate }
-}
+  };
 
+  return { trigger, loading, data };
+};
 
+export const useSWRMutation = <TData,>({ query }: { query: string }) => {
+  const session = useSession();
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<TData | null>(null);
 
-export const useSWRNoFocus = (key) => useSWR(key, {
-    // revalidateIfStale: false,
+  const trigger = async ({ variables }: { variables?: Variables }) => {
+    setLoading(true);
+    try {
+      const response = await requestPublicGraphQL<TData>(
+        query,
+        variables,
+        (session.data as SessionShape | null)?.accessToken,
+      );
+      setData(response);
+      return response;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { trigger, loading, data };
+};
+
+export const useSWROffline = <TData,>({
+  key,
+  defaultValue
+}: {
+  key: string;
+  defaultValue: TData;
+}) => {
+  const { cache, mutate: update } = useSWRConfig();
+
+  const trigger = () => {
+    let value = cache.get(key) as CacheEntry<TData> | undefined;
+    if (!value) {
+      void update(key, defaultValue, {
+        revalidate: false
+      });
+      value = cache.get(key) as CacheEntry<TData> | undefined;
+    }
+    return value?.data;
+  };
+
+  const mutate = (value: TData) => {
+    void update(key, value, {
+      revalidate: false
+    });
+  };
+
+  return { data: trigger(), mutate };
+};
+
+export const useSWRNoFocus = (key: string) =>
+  useSWR(key, {
     revalidateOnFocus: false,
-});
+  });

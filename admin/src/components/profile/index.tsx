@@ -35,8 +35,7 @@ import { toast } from "@/components/ui/use-toast"
 import dayjs from "dayjs"
 import { CommandList } from "cmdk"
 import { ScrollArea } from "@radix-ui/react-scroll-area"
-import { signIn, useSession } from "next-auth/react"
-import { Session } from "next-auth"
+import { useSession } from "next-auth/react"
 
 const languages = [
     { label: "English", value: "en" },
@@ -80,16 +79,24 @@ const accountFormSchema = z.object({
 type AccountFormValues = z.infer<typeof accountFormSchema>
 
 // This can come from your database or API.
+type ProfileUser = {
+    admin?: {
+        firstname?: string
+        lastname?: string
+        birthday?: string
+        city?: number
+    } | null
+}
 
-
-export function Profile({ user }: { user: User }) {
+export function Profile({ user }: { user?: ProfileUser | null }) {
     const { update } = useSession()
+    const admin = user?.admin
 
     const defaultValues: Partial<AccountFormValues> = {
-        firstname: user.admin.firstname ?? "",
-        lastname: user.admin.lastname ?? "",
-        birthday: user.admin.birthday ? dayjs(user.admin.birthday).toDate() : dayjs().toDate(),
-        city: user.admin.city ?? 16
+        firstname: admin?.firstname ?? "",
+        lastname: admin?.lastname ?? "",
+        birthday: admin?.birthday ? dayjs(admin.birthday).toDate() : dayjs().toDate(),
+        city: admin?.city ?? 16
     }
 
     const form = useForm<AccountFormValues>({

@@ -18,10 +18,9 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { redirect } from 'next/navigation';
 import { toast } from 'sonner';
 import { createItem, updateItem } from '../actions';
-import { Item, link, name_plural, title_singular } from '../_constant';
+import { Item, link, title_singular } from '../_constant';
 import { useRouter } from 'next/navigation';
 import {
   Select,
@@ -66,20 +65,17 @@ export default function ItemForm({
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
     setLoading(true)
-    const data: any = {
-      ...values
-    }
-    if (!isNaN(Number(values.category_id))) {
-      data.category_id = parseInt(values.category_id)
+    const payload = {
+      name: values.name,
+      name_ar: values.name_ar,
+      category_id: values.category_id,
     }
     if (initialData) {
-      await updateItem(initialData.id, data)
+      await updateItem(initialData.id, payload)
     }
     else {
-      await createItem(data)
+      await createItem(payload)
       form.reset()
     }
     router.replace(`/${link}`)
@@ -120,7 +116,7 @@ export default function ItemForm({
                     <Input placeholder="" {...field} />
                   </FormControl>
                   <FormDescription>
-                    This is your public display arabic name.
+                    This is the Arabic display name shown in localized views.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -145,7 +141,7 @@ export default function ItemForm({
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    Select A category related to this product
+                    Select a category related to this product type.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

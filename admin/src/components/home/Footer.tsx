@@ -1,80 +1,48 @@
+import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
-import { Facebook, Instagram, Twitter } from "lucide-react";
-
-const Footer = () => {
-  const currentYear = new Date().getFullYear();
+const Footer = async () => {
+  const t = await getTranslations("home.footer");
+  const columns = [
+    { title: t("shop.title"), items: ["routine", "makeup", "body", "gifts"] as const },
+    { title: t("company.title"), items: ["story", "partners", "journal", "careers"] as const },
+    { title: t("support.title"), items: ["help", "shipping", "privacy", "terms"] as const },
+  ];
 
   return (
-    <footer className="bg-secondary/50 py-16">
+    <footer className="border-t border-rose-100/70 bg-white/65 px-4 py-12 backdrop-blur-sm dark:border-rose-400/12 dark:bg-white/4 md:px-6">
       <div className="container">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-          <div>
-            <h3 className="font-display text-xl font-medium mb-4">Shea</h3>
-            <p className="text-muted-foreground mb-4">
-              Your personal beauty assistant for discovering and shopping premium cosmetic products.
-            </p>
-            <div className="flex gap-4">
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                <Instagram className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                <Twitter className="h-5 w-5" />
-              </a>
-            </div>
+        <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="max-w-md">
+            <p className="font-display text-4xl text-rose-950 dark:text-rose-50">Shea</p>
+            <p className="mt-4 text-base leading-7 text-rose-950/68 dark:text-rose-50/68">{t("description")}</p>
           </div>
 
-          <div>
-            <h4 className="font-medium mb-4">Shop</h4>
-            <ul className="space-y-2">
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Skincare</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Makeup</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Fragrance</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Tools</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Gift Sets</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-medium mb-4">Company</h4>
-            <ul className="space-y-2">
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">About Us</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Careers</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Press</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Partnerships</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Blog</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-medium mb-4">Support</h4>
-            <ul className="space-y-2">
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Contact Us</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">FAQs</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Shipping</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Returns</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</a></li>
-            </ul>
+          <div className="grid gap-8 sm:grid-cols-3">
+            {columns.map((column, index) => (
+              <div key={index}>
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-rose-500 dark:text-rose-200/78">
+                  {column.title}
+                </p>
+                <div className="mt-4 space-y-3">
+                  {column.items.map((item) => (
+                    <Link
+                      key={item}
+                      href="/"
+                      className="block text-sm text-rose-950/68 transition-colors hover:text-rose-600 dark:text-rose-50/68 dark:hover:text-rose-200"
+                    >
+                      {t(`${["shop", "company", "support"][index]}.items.${item}`)}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-muted-foreground text-sm">
-            © {currentYear} Shea Beauty. All rights reserved.
-          </p>
-          <div className="flex gap-6">
-            <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Terms
-            </a>
-            <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Privacy
-            </a>
-            <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Cookies
-            </a>
-          </div>
+        <div className="mt-10 flex flex-col gap-3 border-t border-rose-100/80 pt-6 text-sm text-rose-950/60 dark:border-rose-400/12 dark:text-rose-50/60 md:flex-row md:items-center md:justify-between">
+          <p>{t("copyright", { year: new Date().getFullYear() })}</p>
+          <p>{t("signature")}</p>
         </div>
       </div>
     </footer>

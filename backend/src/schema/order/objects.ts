@@ -6,6 +6,11 @@ const Order = objectType({
     definition(t) {
         t.nonNull.int('id')
         t.field('date', { type: "DateTime" })
+        t.string('source')
+        t.string('walkInCustomerName')
+        t.string('note')
+        t.string('paymentMethod')
+        t.float('discount')
         t.int('partnerId')
         t.float('appTax')
         t.float('deliveryTax')
@@ -193,6 +198,17 @@ const OrderInput = inputObjectType({
     }
 })
 
+const PartnerPosOrderInput = inputObjectType({
+    name: "PartnerPosOrderInput",
+    definition(t) {
+        t.string('customerName')
+        t.string('note')
+        t.string('paymentMethod')
+        t.float('discount')
+        t.nonNull.list.field('items', { type: OrderItemInput })
+    }
+})
+
 const OrderItemInput = inputObjectType({
     name: "OrderItemInput",
     definition(t) {
@@ -201,4 +217,4 @@ const OrderItemInput = inputObjectType({
         t.int('productId')
     }
 })
-export default { DeliveryStatus, DeliveryType, Delivery, OrderDispatch, DispatchStatus, OrderItemInput, OrderInput, OrderResult, Order, OrderItem } 
+export default { DeliveryStatus, DeliveryType, Delivery, OrderDispatch, DispatchStatus, OrderItemInput, OrderInput, PartnerPosOrderInput, OrderResult, Order, OrderItem } 

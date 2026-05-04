@@ -30,16 +30,19 @@ export default function SelectLanguage() {
         });
     }
     const item = React.useMemo(() => {
-        return languages.find(v => v.label == locale)
+        return languages.find((v) => v.label === locale) ?? languages[0]
     }, [locale])
     return (
         <DropdownMenu>
             <DropdownMenuTrigger
-                className="border-0 outline-0 shadow-none cursor-pointer"
+                className="cursor-pointer rounded-full border border-rose-100 bg-white/75 p-2 outline-0 shadow-none transition-colors hover:bg-rose-50 dark:border-rose-400/16 dark:bg-white/8 dark:hover:bg-white/12"
                 asChild
             >
-                <div>
+                <div className="flex items-center gap-2">
                     <Image alt={item.label} width={18} height={16} src={item.image} />
+                    <span className="hidden text-xs font-semibold uppercase tracking-[0.18em] text-rose-700 dark:text-rose-100 sm:inline">
+                        {item.label}
+                    </span>
                 </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent>

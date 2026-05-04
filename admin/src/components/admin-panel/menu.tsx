@@ -33,7 +33,7 @@ export function Menu({ isOpen }: MenuProps) {
           {menuList.map(({ groupLabel, menus }, index) => (
             <li className={cn("w-full", groupLabel ? "pt-5" : "")} key={index}>
               {(isOpen && groupLabel) || isOpen === undefined ? (
-                <p className="max-w-[248px] truncate px-4 pb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground/80">
+                <p className="max-w-[248px] truncate px-4 pb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground/80 dark:text-slate-400">
                   {groupLabel}
                 </p>
               ) : !isOpen && isOpen !== undefined && groupLabel ? (
@@ -64,7 +64,7 @@ export function Menu({ isOpen }: MenuProps) {
                               className={cn(
                                 "mb-1 h-11 w-full justify-start rounded-2xl px-3",
                                 active &&
-                                  "bg-primary/10 text-primary shadow-none hover:bg-primary/15"
+                                  "bg-primary/10 text-primary shadow-none hover:bg-primary/15 dark:bg-sky-400/12 dark:text-sky-200 dark:hover:bg-sky-400/16"
                               )}
                               asChild
                             >
@@ -121,7 +121,7 @@ export function Menu({ isOpen }: MenuProps) {
                       })
                     }}
                     variant="outline"
-                    className="mt-5 h-11 w-full justify-center rounded-2xl border-dashed bg-background/70"
+                    className="mt-5 h-11 w-full justify-center rounded-2xl border-dashed bg-background/70 dark:border-slate-400/12 dark:bg-white/5 dark:text-slate-100"
                   >
                     <span className={cn(isOpen === false ? "" : "mr-4")}>
                       <ExitIcon width={18} height={18} />

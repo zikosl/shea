@@ -18,6 +18,15 @@ export function createBadRequestError(message: string) {
   })
 }
 
+export function createForbiddenError(message = 'Forbidden') {
+  return new GraphQLError(message, {
+    extensions: {
+      code: 'FORBIDDEN',
+      http: { status: 403 },
+    },
+  })
+}
+
 export function createNotFoundError(message: string) {
   return new GraphQLError(message, {
     extensions: {

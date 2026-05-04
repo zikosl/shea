@@ -3,6 +3,7 @@ import { extendType, intArg, nonNull } from "nexus"
 import { Context } from "../../context"
 import { getUserId } from "../../utils"
 import { DispatchStatus, DeliveryStatus, DeliveryType } from "../../types"
+import { buildPartnerPosEmail } from "./pos"
 
 export const Query = extendType({
     type: 'Query',
@@ -39,7 +40,6 @@ export const Query = extendType({
             type: 'Order',
             resolve: async (_parent, _, ctx: Context) => {
                 const partnerId = getUserId(ctx)
-                console.log(partnerId)
                 return ctx.prisma.order.findMany({
                     where: {
                         partnerId,
@@ -60,15 +60,51 @@ export const Query = extendType({
                 })
             },
         })
+        t.nonNull.list.field('listPartnerPosOrders', {
+            type: 'Order',
+            resolve: async (_parent, _, ctx: Context) => {
+                const partnerId = getUserId(ctx)
+                return ctx.prisma.order.findMany({
+                    where: {
+                        partnerId,
+                        OR: [
+                            {
+                                source: 'POS',
+                            },
+                            {
+                                client: {
+                                    user: {
+                                        email: buildPartnerPosEmail(partnerId),
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                    orderBy: {
+                        id: "desc"
+                    }
+                })
+            },
+        })
         t.field('getOrder', {
             type: 'Order',
             args: {
                 id: nonNull(intArg())
             },
             resolve: async (_parent, { id }, ctx: Context) => {
-                return ctx.prisma.order.findUnique({
+                const userId = getUserId(ctx)
+                return ctx.prisma.order.findFirst({
                     where: {
-                        id: id
+                        id,
+                        OR: [
+                            { partnerId: userId },
+                            { clientId: userId },
+                            {
+                                delivery: {
+                                    driverId: userId,
+                                },
+                            },
+                        ],
                     }
                 })
             },

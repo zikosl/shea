@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { createBadRequestError } from '../../core/errors/app-error'
+import { createBadRequestError, createForbiddenError, createNotFoundError } from '../../core/errors/app-error'
 import { LogSatus } from '../../types'
 
 export async function createProduct(
@@ -39,7 +39,7 @@ export async function createProduct(
 export async function createManyProducts(
   prisma: PrismaClient,
   userId: number,
-  products: Array<{ price: number; variantId: number }>,
+  products: Array<{ price: number; variantId: number; stock?: number | null; available?: boolean | null }>,
 ) {
   if (!products || products.length === 0) {
     throw createBadRequestError('At least one product is required')
@@ -50,6 +50,8 @@ export async function createManyProducts(
       price: product.price,
       variantId: product.variantId,
       partnerId: userId,
+      stock: product.stock ?? 0,
+      available: product.available ?? true,
     })),
     skipDuplicates: true,
   })
@@ -70,8 +72,22 @@ export async function createManyProducts(
 
 export async function updateProduct(
   prisma: PrismaClient,
+  userId: number,
   input: { id: number; price?: number | null; available?: boolean | null; stock?: number | null },
 ) {
+  const product = await prisma.product.findUnique({
+    where: { id: input.id },
+    select: { partnerId: true },
+  })
+
+  if (!product) {
+    throw createNotFoundError('Product not found')
+  }
+
+  if (product.partnerId !== userId) {
+    throw createForbiddenError('You can only update your own products')
+  }
+
   await prisma.product.update({
     where: { id: input.id },
     data: {

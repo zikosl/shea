@@ -6,6 +6,7 @@ import { GraphQLError } from "graphql"
 import { DispatchStatus, DeliveryStatus, DeliveryType, LogSatus, PricingName } from "../../types"
 import { pickSchedule, todayAt } from "../../utils/order"
 import { sendNotification } from "../../servers/firebase"
+import { ensurePartnerPosIdentity } from "./pos"
 // import { DeliveryStatus } from "../../types"
 
 const Mutation = extendType({
@@ -477,6 +478,111 @@ const Mutation = extendType({
                     })
                 }
                 return new GraphQLError("Invalid State")
+            },
+        })
+        t.field('createPartnerPosOrder', {
+            type: 'Order',
+            args: {
+                data: nonNull(arg({ type: "PartnerPosOrderInput" }))
+            },
+            resolve: async (_parent, { data }, ctx: Context) => {
+                const partnerId = getUserId(ctx)
+
+                if (!data.items?.length) {
+                    throw new GraphQLError("INVALID_POS_ORDER")
+                }
+
+                return ctx.prisma.$transaction(async (tx: any) => {
+                    const identity = await ensurePartnerPosIdentity(tx, partnerId)
+                    const productIds = data.items.map((item: any) => item.productId)
+                    const products = await tx.product.findMany({
+                        where: {
+                            id: {
+                                in: productIds
+                            },
+                            partnerId,
+                        },
+                        select: {
+                            id: true,
+                            stock: true,
+                            available: true,
+                        }
+                    })
+
+                    for (const item of data.items) {
+                        const product = products.find((entry: any) => entry.id === item.productId)
+                        if (!product) {
+                            throw new GraphQLError("PRODUCT_NOT_FOUND")
+                        }
+                        if (!product.available) {
+                            throw new GraphQLError("PRODUCT_UNAVAILABLE")
+                        }
+                        if (product.stock < item.quantity) {
+                            throw new GraphQLError("INSUFFICIENT_STOCK")
+                        }
+                    }
+
+                    const order = await tx.order.create({
+                        data: {
+                            partnerId,
+                            clientId: identity.user.id,
+                            addressId: identity.address.id,
+                            deliveryTax: 0,
+                            appTax: 0,
+                            storeTax: 0,
+                            discount: data.discount ?? 0,
+                            source: "POS",
+                            walkInCustomerName: data.customerName ?? null,
+                            note: data.note ?? null,
+                            paymentMethod: data.paymentMethod ?? null,
+                            items: {
+                                create: data.items.map((item: any) => ({
+                                    productId: item.productId,
+                                    quantity: item.quantity,
+                                    price: item.price,
+                                })),
+                            },
+                        },
+                    })
+
+                    for (const item of data.items) {
+                        await tx.product.update({
+                            where: { id: item.productId },
+                            data: {
+                                stock: {
+                                    decrement: item.quantity,
+                                },
+                            },
+                        })
+                    }
+
+                    await tx.delivery.create({
+                        data: {
+                            orderId: order.id,
+                            type: DeliveryType.PICKUP,
+                            status: DeliveryStatus.DELIVERED,
+                            addressId: identity.address.id,
+                            price: 0,
+                        }
+                    })
+
+                    await tx.log.create({
+                        data: {
+                            title: `POS sale #${order.id} created`,
+                            body: `An in-store point-of-sale order has been completed${data.customerName ? ` for ${data.customerName}` : ""}.`,
+                            title_ar: `تم إنشاء عملية بيع نقطة بيع رقم #${order.id}`,
+                            body_ar: `تم إتمام طلب نقطة بيع داخل المتجر${data.customerName ? ` للعميل ${data.customerName}` : ""}.`,
+                            type: LogSatus.ORDER_UPDATE,
+                            userId: partnerId
+                        }
+                    })
+
+                    return tx.order.findUnique({
+                        where: {
+                            id: order.id
+                        }
+                    })
+                })
             },
         })
     },

@@ -10,6 +10,16 @@ export const FIND_ONE_BRAND = gql`
   }
 `;
 
+export const GET_ALL_BRANDS = gql`
+  query getAllBrands {
+    getAllBrands {
+      id
+      name
+      image
+    }
+  }
+`;
+
 export const FIND_MANY_BRANDS = gql`
   query findManyBrands($search: String, $page: Int!, $limit: Int!, $isFull: Boolean) {
     findManyBrands(search: $search, page: $page, limit: $limit, isFull: $isFull) {

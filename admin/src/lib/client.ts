@@ -1,4 +1,3 @@
-import { GraphQLClient } from 'graphql-request'
-import { serverEndpoint } from "@/constant";
+import { createInternalGraphQLClient } from "@/lib/graphql";
 
-export const client = new GraphQLClient(serverEndpoint);
+export const client = createInternalGraphQLClient();

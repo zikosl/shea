@@ -58,7 +58,7 @@ export function Overview() {
             borderRadius: "16px",
             border: "1px solid hsl(var(--border))",
             background: "hsl(var(--card))",
-            boxShadow: "0 20px 40px -28px rgba(33,24,18,0.4)"
+            boxShadow: "0 20px 40px -28px rgba(15,23,42,0.5)"
           }}
           formatter={(value: number, name: string) => [
             name === "revenue" ? `$${value.toLocaleString()}` : value.toLocaleString(),

@@ -22,9 +22,6 @@ const LOGIN = gql`
   }
 `;
 
-
-
-
 const UPDATE_PROFILE = gql`
   mutation updateProfile($firstname: String!, $lastname: String!,$birthday: DateTime!, $city: Int!) {
     updateProfile(firstname: $firstname, lastname: $lastname, birthday: $birthday, city: $city) {
@@ -47,9 +44,9 @@ const UPDATE_PROFILE = gql`
 `;
 
 
-const REFRECH = gql`
-  mutation refrechToken {
-    refrechToken {
+const REFRESH_TOKEN = gql`
+  mutation refreshToken($data: String!) {
+    refreshToken(data: $data) {
       accessToken
       refreshToken
       tokenId
@@ -69,10 +66,8 @@ const REFRECH = gql`
 `;
 
 const LOGOUT = gql`
-  mutation signOut {
-    signOut {
-      id
-    }
+  mutation logout {
+    logout
   }
 `;
 
@@ -80,6 +75,6 @@ const LOGOUT = gql`
 export {
   LOGIN,
   UPDATE_PROFILE,
-  REFRECH,
+  REFRESH_TOKEN,
   LOGOUT
 }

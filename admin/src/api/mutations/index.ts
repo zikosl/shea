@@ -2,6 +2,8 @@ export * from "./partner";
 export * from "./profile";
 export * from "./category";
 export * from "./brand";
+export * from "./niche";
 export * from "./upload";
 export * from "./productType";
+export * from "./productTemplate";
 export * from "./driver";

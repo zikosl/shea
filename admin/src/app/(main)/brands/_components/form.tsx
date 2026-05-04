@@ -26,6 +26,7 @@ import { FileUploader } from '@/components/ui/file-upload';
 import { useUploadFile } from '@/hooks/use-upload-file';
 import { FILE_UPLOAD } from '@/api/mutations';
 import Image from 'next/image';
+import { resolvePublicAssetUrl } from '@/constant';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -46,10 +47,6 @@ export default function ItemForm({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  const loaderProp = ({ src }) => {
-    return src;
-  }
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -57,7 +54,7 @@ export default function ItemForm({
       image: initialData?.image ?? "",
     },
   })
-  const [image, setImage] = useState(initialData?.image ? process.env.NEXT_PUBLIC_PUBLIC_URL + initialData?.image : "")
+  const [image, setImage] = useState(() => resolvePublicAssetUrl(initialData?.image))
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
@@ -79,8 +76,9 @@ export default function ItemForm({
 
   useEffect(() => {
     if (uploadedFiles.length > 0) {
-      form.setValue("image", uploadedFiles[uploadedFiles.length - 1].url)
-      setImage(process.env.NEXT_PUBLIC_PUBLIC_URL + uploadedFiles[uploadedFiles.length - 1].url)
+      const latestFile = uploadedFiles[uploadedFiles.length - 1]
+      form.setValue("image", latestFile.url)
+      setImage(resolvePublicAssetUrl(latestFile.url))
     }
   }
     , [uploadedFiles, form])
@@ -89,7 +87,7 @@ export default function ItemForm({
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-1 space-y-8 mx-auto">
         <div className="flex flex-row">
           <div className="w-[300px] h-[300px] p-4">
-            {image && <Image loader={loaderProp} width="450" height="450" src={image} alt="Image" className="rounded-md object-cover" />}
+            {image && <Image unoptimized width={450} height={450} src={image} alt="Image" className="rounded-md object-cover" />}
           </div>
           <div className="flex-1 gap-4 flex flex-col">
             <FormField

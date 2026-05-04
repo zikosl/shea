@@ -1,5 +1,6 @@
 import { PrismaClient, User } from '@prisma/client'
 import bcrypt, { hash } from 'bcryptjs'
+import dayjs from 'dayjs'
 import { GraphQLError } from 'graphql'
 import {
   getAccessExpiry,
@@ -49,7 +50,6 @@ export async function signInWithEmailPassword(
   const user = await prisma.user.findUnique({
     where: { email: normalizedEmail },
   })
-
   if (!user || !user.passwordHash) {
     throw createUnauthorizedError('Invalid credentials')
   }
@@ -57,13 +57,40 @@ export async function signInWithEmailPassword(
   if (!bcrypt.compareSync(password, user.passwordHash)) {
     throw createUnauthorizedError('Invalid credentials')
   }
-
   return createSession(user, prisma)
 }
 
 export async function refreshUserSession(prisma: PrismaClient, refreshToken: string) {
   try {
     const userId = getUserIdFromRefreshToken(refreshToken)
+    const now = dayjs().toDate()
+
+    const persistedTokens = await prisma.token.findMany({
+      where: {
+        userId,
+        expiresAt: {
+          gt: now,
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    let matchingToken: { id: string } | null = null
+
+    for (const token of persistedTokens) {
+      const isMatch = await bcrypt.compare(refreshToken, token.refreshToken)
+      if (isMatch) {
+        matchingToken = token
+        break
+      }
+    }
+
+    if (!matchingToken) {
+      throw createUnauthorizedError('Invalid refresh token')
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
     })

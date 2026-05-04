@@ -1,7 +1,7 @@
 import AdminPanelLayout from "@/components/admin-panel/admin-panel-layout";
 import { SWRProvider } from "@/context/swr";
 import { getServerSession } from "next-auth";
-import Forbidden from "@/components/forbidden";
+import { redirect } from "next/navigation";
 import { options } from "../api/auth/[...nextauth]/options";
 
 export default async function DemoLayout({
@@ -11,7 +11,10 @@ export default async function DemoLayout({
 }) {
   let session = await getServerSession(options)
 
-  if (!session) return <Forbidden />
+  if (!session?.accessToken || session.error === "RefreshAccessTokenError") {
+    redirect("/login")
+  }
+
   return <SWRProvider session={session}>
     <AdminPanelLayout>{children}</AdminPanelLayout>
   </SWRProvider>;

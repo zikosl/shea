@@ -52,7 +52,8 @@ const ProductMutation = extendType({
                 stock: intArg(),
             },
             resolve: async (_parent, data, ctx: Context) => {
-                return updateProduct(ctx.prisma, data)
+                const userId = getUserId(ctx)
+                return updateProduct(ctx.prisma, userId, data)
             },
         })
 
@@ -62,6 +63,18 @@ const ProductMutation = extendType({
                 id: nonNull(intArg()),
             },
             resolve: async (_parent, { id }, ctx: Context) => {
+                const userId = getUserId(ctx)
+                const product = await ctx.prisma.product.findFirst({
+                    where: {
+                        id,
+                        partnerId: userId,
+                    },
+                })
+
+                if (!product) {
+                    throw new Error('Product not found')
+                }
+
                 const deletedProduct = await ctx.prisma.product.delete({
                     where: { id },
                 })
@@ -136,7 +149,9 @@ const InputProductVariant = inputObjectType({
     name: "InputProductVariant",
     definition(t) {
         t.nonNull.int("variantId")
-        t.nonNull.int("price")
+        t.nonNull.float("price")
+        t.int("stock")
+        t.boolean("available")
     },
 })
 export default {

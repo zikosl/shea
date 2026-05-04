@@ -3,9 +3,11 @@ import { Queue } from 'bullmq'
 import { dispatchQueue, prisma, pubsub } from './servers'
 
 interface RequestLike {
-  headers?: {
-    authorization?: string
-  }
+  headers?:
+    | {
+        authorization?: string
+      }
+    | Headers
 }
 
 export interface Context {

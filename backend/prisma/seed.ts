@@ -1,9 +1,17 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
-import { extractBrands } from '../scripts/script';
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error('DATABASE_URL is required to run the seed script.');
+}
+
+const adapter = new PrismaPg({ connectionString });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   // Clear existing data
@@ -175,7 +183,6 @@ async function main() {
 
 (async () => {
   await main();
-  await extractBrands();
 })()
   .catch((e) => {
     console.error(e);

@@ -3,4 +3,6 @@ export * from "./category";
 export * from "./profile";
 export * from "./brand";
 export * from "./driver";
+export * from "./niche";
 export * from "./productType";
+export * from "./productTemplate";

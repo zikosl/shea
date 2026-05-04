@@ -30,6 +30,7 @@ $COMPOSE version >/dev/null 2>&1   || { echo "ERROR: docker compose not found"; 
 # Validate required env vars are not still at example values
 REQUIRED_VARS=(
   SHEA_DOMAIN ACME_EMAIL NEXT_PUBLIC_API_URL
+  NEXTAUTH_URL NEXTAUTH_SECRET
   POSTGRES_PASSWORD
   JWT_ACCESS_SECRET JWT_REFRESH_SECRET
 )

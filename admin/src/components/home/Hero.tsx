@@ -1,60 +1,123 @@
-
-import { ArrowRight, Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, Check, Sparkles } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
-const Hero = () => {
-  return <section className="relative pt-32 pb-16 md:pt-44 md:pb-24 overflow-hidden bg-background">
-    <div className="container">
-      <div className="max-w-3xl mx-auto text-center mb-12 md:mb-16">
-        <div className="animate-fade-in-down">
-          <Image
-            src="/text.png"
-            alt="Shea - Beauty App"
-            width={400}
-            height={120}
-            className="mx-auto mb-6"
-          /> <p className="description mx-auto mb-8 text-muted-foreground">
-            Your personal beauty assistant in your pocket. Discover products, get personalized recommendations, and manage your beauty routine with ease.
-          </p>
-        </div>
+import { Button } from "@/components/ui/button";
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in">
-          <Button size="lg" className="group">
-            Download Now
-            <Download className="ml-2 h-4 w-4" />
-          </Button>
-          <Button size="lg" variant="outline">
-            Learn More
-          </Button>
-        </div>
-      </div>
+const Hero = async () => {
+  const t = await getTranslations("home.hero");
+  const trustItems = ["personalization", "rituals", "delivery"] as const;
+  const stats = ["glowPlans", "consultants", "satisfaction"] as const;
 
-      <div className="relative mx-auto max-w-md animate-scale-in">
-        <div className="flex justify-center">
-          <div className="relative w-[280px] h-[560px]">
-            <div className="absolute inset-0 rounded-[30px] border-4 border-foreground/20 bg-card shadow-lg"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Image
-                width={280}
-                height={560}
-                src="/logo.png" alt="Shea App interface" className="w-full h-full object-cover rounded-[26px] p-2" loading="lazy" />
+  return (
+    <section className="relative overflow-hidden px-4 pb-18 pt-32 md:px-6 md:pb-24 md:pt-40">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[32rem] bg-[radial-gradient(circle_at_top,_rgba(244,114,182,0.16),_transparent_38%)]" />
+      <div className="container">
+        <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="max-w-2xl">
+            <div className="marketing-kicker mb-6">
+              <Sparkles className="h-3.5 w-3.5" />
+              {t("eyebrow")}
+            </div>
+
+            <h1 className="font-display text-5xl leading-[0.95] text-balance text-rose-950 dark:text-rose-50 sm:text-6xl lg:text-7xl">
+              {t("title")}
+            </h1>
+            <p className="mt-6 max-w-xl text-lg leading-8 text-rose-950/68 dark:text-rose-50/72 md:text-xl">
+              {t("description")}
+            </p>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Button asChild size="lg" className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-400 dark:text-slate-950 dark:hover:bg-rose-300">
+                <Link href="/login">
+                  {t("primaryCta")}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="border-rose-200 bg-white/80 text-rose-700 hover:bg-rose-50 dark:border-rose-400/20 dark:bg-white/6 dark:text-rose-100 dark:hover:bg-white/10">
+                <Link href="#products">{t("secondaryCta")}</Link>
+              </Button>
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              {trustItems.map((item) => (
+                <div
+                  key={item}
+                  className="inline-flex items-center gap-2 rounded-full border border-rose-200/80 bg-white/75 px-4 py-2 text-sm text-rose-900/78 shadow-[0_20px_40px_-30px_rgba(166,74,116,0.45)] dark:border-rose-400/18 dark:bg-white/6 dark:text-rose-50/86 dark:shadow-[0_20px_40px_-30px_rgba(8,4,18,0.85)]"
+                >
+                  <Check className="h-4 w-4 text-rose-500" />
+                  {t(`trust.${item}`)}
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-10 grid gap-4 sm:grid-cols-3">
+              {stats.map((item) => (
+                <div key={item} className="marketing-card p-5">
+                  <p className="text-3xl font-semibold text-rose-950 dark:text-rose-50">{t(`stats.${item}.value`)}</p>
+                  <p className="mt-2 text-sm leading-6 text-rose-950/68 dark:text-rose-50/68">{t(`stats.${item}.label`)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="relative">
+            <div className="marketing-card relative mx-auto max-w-[34rem] overflow-hidden p-6">
+              <div className="absolute inset-x-10 top-0 h-32 rounded-full bg-rose-200/60 blur-3xl" />
+              <div className="relative grid gap-5 sm:grid-cols-[0.7fr_0.3fr]">
+                <div className="marketing-outline rounded-[30px] p-4">
+                  <div className="rounded-[26px] bg-gradient-to-br from-rose-50 via-white to-orange-50 p-3">
+                    <Image
+                      src="/screenshoot.png"
+                      alt={t("imageAlt")}
+                      width={480}
+                      height={920}
+                      className="mx-auto rounded-[22px] object-cover"
+                      priority
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4 sm:pt-8">
+                  <div className="marketing-outline rounded-[24px] p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-500 dark:text-rose-200/76">
+                      {t("routineCard.eyebrow")}
+                    </p>
+                    <p className="mt-2 text-lg font-semibold text-rose-950 dark:text-rose-50">
+                      {t("routineCard.title")}
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-rose-950/65 dark:text-rose-50/68">
+                      {t("routineCard.description")}
+                    </p>
+                  </div>
+                  <div className="marketing-outline rounded-[24px] p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-500 dark:text-orange-200/80">
+                      {t("communityCard.eyebrow")}
+                    </p>
+                    <p className="mt-2 text-lg font-semibold text-rose-950 dark:text-rose-50">
+                      {t("communityCard.title")}
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-rose-950/65 dark:text-rose-50/68">
+                      {t("communityCard.description")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="marketing-card absolute -bottom-6 left-0 max-w-xs p-4 sm:left-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-500 dark:text-rose-200/76">
+                {t("floatingCard.eyebrow")}
+              </p>
+              <p className="mt-2 text-base font-semibold text-rose-950 dark:text-rose-50">{t("floatingCard.title")}</p>
+              <p className="mt-2 text-sm leading-6 text-rose-950/65 dark:text-rose-50/68">{t("floatingCard.description")}</p>
             </div>
           </div>
         </div>
-
-        <div className="absolute -bottom-6 -right-6 md:-right-10 bg-card border border-border p-3 rounded-lg shadow-md">
-          <div className="flex items-center gap-2">
-            <div className="flex">
-              {[1, 2, 3, 4, 5].map(star => <svg key={star} className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>)}
-            </div>
-            <span className="text-sm text-dark font-medium">4.9/5</span>
-          </div>
-        </div>
       </div>
-    </div>
-  </section>;
+    </section>
+  );
 };
+
 export default Hero;

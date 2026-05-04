@@ -10,6 +10,8 @@ dist/
 build/
 out/
 coverage/
+shea-admin/
+shea-partner/
 z.txt
 # Environment files
 .env

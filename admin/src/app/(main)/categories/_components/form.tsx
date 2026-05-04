@@ -18,12 +18,10 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
-import { redirect } from 'next/navigation';
 import { toast } from 'sonner';
 import { createItem, updateItem } from '../actions';
 import { Item, name_plural, title_singular } from '../_constant';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { FileUploader } from '@/components/ui/file-upload';
 import { useUploadFile } from '@/hooks/use-upload-file';
 import { FILE_UPLOAD } from '@/api/mutations';
@@ -49,7 +47,6 @@ export default function ItemForm({
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [image, setImage] = useState(initialData?.image ? process.env.NEXT_PUBLIC_PUBLIC_URL + initialData?.image : "")
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -75,7 +72,7 @@ export default function ItemForm({
       router.replace(`/${name_plural}`)
       toast.success(`${title_singular} saved successfully.`)
     } catch (error) {
-      toast.error(`${title_singular} not added.`)
+      toast.error(`${title_singular} could not be saved.`)
     }
     setLoading(false)
   }
@@ -84,11 +81,10 @@ export default function ItemForm({
 
   useEffect(() => {
     if (uploadedFiles.length > 0) {
-      form.setValue("image", uploadedFiles[uploadedFiles.length - 1].url)
-      setImage(process.env.NEXT_PUBLIC_PUBLIC_URL + uploadedFiles[uploadedFiles.length - 1].url)
+      const latestFile = uploadedFiles[uploadedFiles.length - 1]
+      form.setValue("image", latestFile.url)
     }
-  }
-    , [uploadedFiles])
+  }, [uploadedFiles, form])
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-1 space-y-8 mx-auto">
@@ -123,7 +119,7 @@ export default function ItemForm({
                     <Input placeholder="" {...field} />
                   </FormControl>
                   <FormDescription>
-                    This is your public display arabic name.
+                    This is the Arabic display name shown in localized views.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

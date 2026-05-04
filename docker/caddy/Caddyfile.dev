@@ -5,7 +5,19 @@
 }
 
 :80 {
-    handle /api/* {
+    handle /api/auth/* {
+        reverse_proxy admin:3000
+    }
+
+    handle /api/health {
+        reverse_proxy admin:3000
+    }
+
+    handle /store/api/health {
+        reverse_proxy partner-pwa:3000
+    }
+
+    handle_path /api/* {
         reverse_proxy backend:3001
     }
 
@@ -16,6 +28,10 @@
     handle /uploads/* {
         root * /srv
         file_server
+    }
+
+    handle /store* {
+        reverse_proxy partner-pwa:3000
     }
 
     handle {

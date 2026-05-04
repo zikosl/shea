@@ -23,6 +23,24 @@ export const permissions = shield(
       refreshToken: allow,
       '*': isAuthenticated,
     },
+    AuthPayload: {
+      '*': allow,
+    },
+    User: {
+      '*': allow,
+    },
+    Admin: {
+      '*': allow,
+    },
+    Client: {
+      '*': allow,
+    },
+    Partner: {
+      '*': allow,
+    },
+    Driver: {
+      '*': allow,
+    },
   },
   {
     fallbackRule: isAuthenticated,

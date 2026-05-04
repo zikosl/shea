@@ -15,6 +15,11 @@ enum Role {
   DRIVER
 }
 
+enum OrderSource {
+  ONLINE
+  POS
+}
+
 model PartnerDeliverySchedule {
   id Int @id @default(autoincrement())
 
@@ -256,9 +261,15 @@ model Order {
   id   Int      @id @default(autoincrement())
   date DateTime @default(now())
 
-  deliveryTax Int @default(0)
-  appTax      Int @default(0)
-  storeTax    Int @default(0)
+  deliveryTax Int   @default(0)
+  appTax      Int   @default(0)
+  storeTax    Int   @default(0)
+  discount    Float @default(0)
+
+  source             OrderSource @default(ONLINE)
+  walkInCustomerName String?
+  note               String?
+  paymentMethod      String?
 
   partnerId Int
   clientId  Int

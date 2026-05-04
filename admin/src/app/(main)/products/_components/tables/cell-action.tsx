@@ -13,7 +13,7 @@ import { redirect, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { deleteItem } from '../../actions';
-import { Item, link, name_plural, title_singular } from '../../_constant';
+import { Item, link } from '../../_constant';
 
 interface CellActionProps {
   data: Item;
@@ -32,7 +32,7 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
       if (response) {
         toast.success(`${response} deleted successfully`);
       }
-      router.replace(`/${name_plural}`)
+      router.replace(`/${link}`)
     } catch (error) {
       setLoading(false);
       toast.error("Something wrong")

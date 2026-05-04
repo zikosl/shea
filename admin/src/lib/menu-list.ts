@@ -1,4 +1,4 @@
-import { Users, LayoutPanelTop, UserCog, GalleryVerticalEnd, PackageSearch, BadgeHelp, Truck } from "lucide-react";
+import { Users, LayoutPanelTop, UserCog, GalleryVerticalEnd, PackageSearch, BadgeHelp, Truck, Boxes, Sparkles } from "lucide-react";
 
 
 type Submenu = {
@@ -59,13 +59,26 @@ export function getMenuList(pathname: string): Group[] {
           submenus: []
         },
         {
+          href: "/niches",
+          label: "Niches",
+          active: pathname.includes("/niches"),
+          icon: Sparkles,
+          submenus: []
+        },
+        {
           href: "/products",
-          label: "Products",
+          label: "Product Types",
           active: pathname.includes("/products"),
           icon: PackageSearch,
           submenus: []
-        }
-        ,
+        },
+        {
+          href: "/product-templates",
+          label: "Product Templates",
+          active: pathname.includes("/product-templates"),
+          icon: Boxes,
+          submenus: []
+        },
         {
           href: "/brands",
           label: "Brands",

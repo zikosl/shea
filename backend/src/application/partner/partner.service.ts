@@ -11,9 +11,9 @@ export async function createPartner(
   input: { email: string; companyName: string; niches?: number[] | null },
 ) {
   const email = ensureEmail(input.email)
-  const password = generateRandomPassword(12)
+  // const password = generateRandomPassword(12)
+  const password = "12345678"
   const passwordHash = await bcrypt.hash(password, 10)
-
   const userWithPartner = await prisma.$transaction(async (tx) => {
     const createdUser = await tx.user.create({
       data: {
@@ -55,11 +55,12 @@ export async function createPartner(
     return createdUser
   })
 
-  await sendEmailPassword({
-    email,
-    password,
-    name: input.companyName,
-  })
+  // UNCOMMENT
+  // await sendEmailPassword({
+  //   email,
+  //   password,
+  //   name: input.companyName,
+  // })
 
   return userWithPartner.partner
 }

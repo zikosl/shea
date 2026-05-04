@@ -1,91 +1,221 @@
 {
-    "LocaleSwitcher": {
-        "fr": "Français",
-        "en": "Anglais",
-        "label": "Langue"
+  "LocaleSwitcher": {
+    "fr": "Français",
+    "en": "Anglais",
+    "label": "Langue"
+  },
+  "home": {
+    "header": {
+      "home": "Accueil",
+      "ticket": "Obtenir un billet",
+      "about": "À propos",
+      "login": "Se connecter",
+      "profile": "Profil",
+      "dashboard": "Tableau de bord",
+      "account": "Compte",
+      "logout": "Se déconnecter"
     },
-    "home": {
-        "section1": {
-            "title": "préparez-vous à vivre les meilleurs événements",
-            "subtitle": "bienvenue sur notre plateforme de billetterie, votre guichet unique pour tous vos besoins événementiels ! ",
-            "description": "acheter un billet via notre plateforme est simple et pratique",
-            "button": "Obtenir un billet"
+    "login": {
+      "title": "Bon retour",
+      "subtitle": "Connectez-vous avec votre e-mail administrateur et votre mot de passe.",
+      "tab1": "Se connecter",
+      "tab2": "Demander une vérification",
+      "email": "E-mail",
+      "emailmsg": "Saisissez votre adresse e-mail.",
+      "password": "Mot de passe",
+      "passwordmsg": "Saisissez votre mot de passe.",
+      "button": "Continuer",
+      "verification": "E-mail de vérification"
+    },
+    "navbar": {
+      "tagline": "Beauté douce et bien pensée",
+      "features": "Fonctionnalités",
+      "products": "Produits",
+      "testimonials": "Avis",
+      "download": "Télécharger",
+      "cta": "Ouvrir l’admin",
+      "themeToggle": "Changer le thème",
+      "menu": "Ouvrir le menu"
+    },
+    "hero": {
+      "eyebrow": "Pensé pour des rituels beauté plus intentionnels",
+      "title": "Un compagnon beauté plus doux et plus intelligent pour chaque rituel.",
+      "description": "Shea vous aide à découvrir des produits, organiser vos routines et acheter avec plus de confiance grâce à des recommandations guidées et une expérience quotidienne élégante.",
+      "primaryCta": "Ouvrir l’admin",
+      "secondaryCta": "Explorer la sélection",
+      "imageAlt": "Aperçu de l’application mobile Shea",
+      "trust": {
+        "personalization": "Conseils beauté personnalisés",
+        "rituals": "Planification des rituels du matin et du soir",
+        "delivery": "Découverte et réachat rapides"
+      },
+      "stats": {
+        "glowPlans": {
+          "value": "12k+",
+          "label": "routines créées avec des étapes de soin guidées"
         },
-        "header": {
-            "home": "accueil",
-            "ticket": "obtenir un billet",
-            "about": "à propos de nous",
-            "login": "se connecter",
-            "profile": "profil",
-            "dashboard": "Tableau de bord",
-            "account": "Compte",
-            "logout": "se déconnecter"
+        "consultants": {
+          "value": "150+",
+          "label": "conseillers beauté et marques partenaires intégrés"
         },
-        "section2": {
-            "title": "Dernier événement de ce mois",
-            "subtitle": "Explorez les origines légendaires de la piraterie en Algérie avec l'histoire captivante du premier bateau pirate, une saga captivante désormais animée sur notre site Web."
-        },
-        "section3": {
-            "title": "ne manquez pas cette opportunité, et achetez votre billet maintenant !",
-            "button": "Obtenir un billet"
-        },
-        "section4": {
-            "title": "Nous sommes une équipe passionnée dédiée à l'innovation et à la numérisation. Notre mission est d'aider les organisateurs d'événements à atteindre efficacement leurs publics. Si vous êtes intéressé à devenir partenaire, veuillez nous contacter.",
-            "button": "Rejoins-Nous"
-        },
-        "footer": {
-            "title1": "Construit par shea",
-            "title2": "Tous droits réservés"
-        },
-        "ticket": {
-            "ticket1": "obtenez votre billet",
-            "ticket2": "profitez de l'expérience",
-            "ticket3": "ne manquez pas l'occasion"
-        },
-        "login": {
-            "title": "Authentifier",
-            "subtitle": "Veuillez définir votre mot de passe et votre e-mail.",
-            "tab1": "Authentifier",
-            "tab2": "Demander une vérification",
-            "email": "E-mail",
-            "emailmsg": "S'il vous plaît mettre votre email",
-            "password": "Mot de passe",
-            "passwordmsg": "Veuillez mettre votre mot de passe",
-            "button": "soumettre",
-            "verification": "E-mail de vérification"
-        },
-        "getTicket": {
-            "title": "Obtenir un billet",
-            "subtitle": "S'il vous plaît, toutes vos informations et votre billet seront envoyés par e-mail.",
-            "event": "Événement",
-            "eventplaceholder": "Selectioner un événement",
-            "eventmsg": "Veuillez sélectionner un événement.",
-            "eventdate": "Date de l'événement",
-            "eventdatemsg": "La date de votre billet.",
-            "fname": "Prénom",
-            "fnamemsg": "Merci de mettre votre prénom.",
-            "lname": "Nom de famille",
-            "lnamemsg": "Veuillez mettre votre nom de famille",
-            "phone": "Téléphone",
-            "phonemsg": "Veuillez mettre votre numéro de téléphone.",
-            "email": "E-mail",
-            "emailmsg": "S'il vous plaît mettre votre email",
-            "nin": "N° d’identification national",
-            "ninmsg": "Veuillez mettre votre NIN.",
-            "button": "soumettre"
-        },
-        "contact": {
-            "title": "Rejoins-Nous",
-            "subtitle": "Pour toute demande de renseignements, remplissez ce formulaire.",
-            "fullname": "Nom et prénom",
-            "fullnamemsg": "Veuillez mettre votre nom complet.",
-            "phone": "Téléphone",
-            "phonemsg": "Veuillez mettre votre numéro de téléphone.",
-            "email": "E-mail",
-            "emailmsg": "Veuillez mettre votre email.",
-            "text": "Description",
-            "textmsg": "Veuillez remplir votre demande.",
-            "button": "soumettre"
+        "satisfaction": {
+          "value": "4,9/5",
+          "label": "note moyenne sur l’ensemble des parcours proposés"
         }
+      },
+      "routineCard": {
+        "eyebrow": "Planificateur de routine",
+        "title": "Créez des rituels qui s’adaptent vraiment à votre journée",
+        "description": "Organisez vos produits par moment, besoin et texture pour que chaque étape soit claire."
+      },
+      "communityCard": {
+        "eyebrow": "Choix de la communauté",
+        "title": "Découvrez les favoris de personnes aux besoins similaires",
+        "description": "Comparez les produits selon les objectifs peau, le confort des ingrédients et les coups de cœur validés."
+      },
+      "floatingCard": {
+        "eyebrow": "Notes d’éclat",
+        "title": "Suivez ce qui améliore votre peau semaine après semaine",
+        "description": "Gardez vos formules, réassorts et progrès dans un espace unique et apaisé."
+      }
+    },
+    "features": {
+      "eyebrow": "Ce qui rend Shea unique",
+      "title": "Une expérience plus nette, de la découverte à l’usage quotidien",
+      "description": "Chaque fonctionnalité est pensée pour rendre l’achat et les routines beauté plus légers, plus personnels et plus fiables.",
+      "items": {
+        "diagnosis": {
+          "title": "Diagnostic beauté intelligent",
+          "description": "Commencez par les besoins de peau, les textures et vos préférences, pas par des listes de produits sans fin."
+        },
+        "pairing": {
+          "title": "Association de routine",
+          "description": "Associez sérums, nettoyants, huiles et crèmes dans un ordre simple et harmonieux."
+        },
+        "rituals": {
+          "title": "Rituels doux au quotidien",
+          "description": "Créez des routines du matin et du soir avec des rappels qui encouragent la régularité sans pression."
+        },
+        "community": {
+          "title": "Recommandations fiables",
+          "description": "Découvrez les produits appréciés par des clientes ayant des préoccupations et objectifs similaires."
+        },
+        "ingredients": {
+          "title": "Lecture claire des ingrédients",
+          "description": "Comprenez mieux les formules grâce à des explications plus humaines et plus détaillées."
+        },
+        "delivery": {
+          "title": "Réachat fluide",
+          "description": "Retrouvez rapidement vos essentiels et recommandez-les au bon moment."
+        }
+      }
+    },
+    "showcase": {
+      "eyebrow": "Favoris sélectionnés",
+      "title": "Des produits choisis pour leur texture, leur confort et leur éclat",
+      "description": "Explorez une présentation plus éditoriale des produits avec des sélections premium, faciles à comparer.",
+      "cta": "Ajouter à ma routine",
+      "previous": "Produit précédent",
+      "next": "Produit suivant",
+      "items": {
+        "serum": {
+          "badge": "Favori glow",
+          "name": "Sérum Rose Dew",
+          "description": "Un sérum illuminateur léger au fini soyeux qui se superpose parfaitement sous le maquillage et la protection solaire.",
+          "price": "49 $",
+          "reviews": "Note de 4,9 sur 124 avis"
+        },
+        "cream": {
+          "badge": "Essentiel confort",
+          "name": "Crème Cloud Veil",
+          "description": "Une crème onctueuse qui laisse la peau souple, apaisée et hydratée du matin jusqu’au soir.",
+          "price": "38 $",
+          "reviews": "Note de 4,8 sur 98 avis"
+        },
+        "lipOil": {
+          "badge": "Tendance",
+          "name": "Huile à lèvres Velvet Bloom",
+          "description": "Un soin lèvres nourrissant avec brillance, couleur subtile et confort longue durée en un seul geste.",
+          "price": "24 $",
+          "reviews": "Note de 4,7 sur 156 avis"
+        }
+      }
+    },
+    "testimonials": {
+      "eyebrow": "Adopté par la communauté",
+      "title": "Les femmes utilisent Shea pour acheter avec plus de confiance",
+      "description": "Des témoignages courts et réels de clientes qui voulaient une expérience beauté plus douce et mieux guidée.",
+      "items": {
+        "amina": {
+          "name": "Amina B.",
+          "meta": "Peau sensible, adepte du soin quotidien",
+          "quote": "Shea a rendu ma routine élégante au lieu d’être fatigante. Je sais enfin quels produits vont ensemble et lesquels recommander."
+        },
+        "sarah": {
+          "name": "Sarah K.",
+          "meta": "Professionnelle active, passionnée de maquillage",
+          "quote": "J’aime le calme de l’application. Les recommandations sont belles et utiles, sans pages produit encombrées."
+        },
+        "nour": {
+          "name": "Nour H.",
+          "meta": "Cliente parfum et body care",
+          "quote": "Les conseils produit sont raffinés et féminins. On a l’impression d’être dans une boutique personnelle, pas dans une boutique générique."
+        }
+      }
+    },
+    "download": {
+      "eyebrow": "Emportez Shea partout",
+      "title": "Une expérience mobile féminine pensée pour les routines beauté en mouvement",
+      "description": "Téléchargez l’application pour garder vos recommandations, rituels, produits enregistrés et rappels à portée de main tout au long de la journée.",
+      "imageAlt": "Écran de l’application Shea",
+      "appStore": "Télécharger sur l’App Store",
+      "playStore": "Disponible sur Google Play",
+      "benefits": {
+        "guided": {
+          "title": "Parcours produit guidés",
+          "description": "Passez d’un besoin à un achat grâce à un parcours plus calme, avec des étapes plus claires et moins de bruit."
+        },
+        "reminders": {
+          "title": "Rappels en douceur",
+          "description": "Gardez vos routines du matin et du soir régulières avec des rappels utiles et discrets."
+        },
+        "privacy": {
+          "title": "Pensé pour la confidentialité",
+          "description": "Conservez vos préférences beauté et votre historique de commande dans un espace sûr et facile à retrouver."
+        }
+      }
+    },
+    "footer": {
+      "description": "Shea réunit découverte beauté premium, routines réfléchies et expérience d’achat plus douce.",
+      "shop": {
+        "title": "Shopping",
+        "items": {
+          "routine": "Sets de routine",
+          "makeup": "Sélection maquillage",
+          "body": "Corps et bain",
+          "gifts": "Idées cadeaux"
+        }
+      },
+      "company": {
+        "title": "Entreprise",
+        "items": {
+          "story": "Notre histoire",
+          "partners": "Devenir partenaire",
+          "journal": "Journal beauté",
+          "careers": "Carrières"
+        }
+      },
+      "support": {
+        "title": "Assistance",
+        "items": {
+          "help": "Centre d’aide",
+          "shipping": "Livraison",
+          "privacy": "Politique de confidentialité",
+          "terms": "Conditions d’utilisation"
+        }
+      },
+      "copyright": "© {year} Shea. Tous droits réservés.",
+      "signature": "Conçu pour un parcours beauté plus doux."
     }
+  }
 }

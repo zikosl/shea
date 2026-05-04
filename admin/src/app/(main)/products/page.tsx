@@ -15,7 +15,7 @@ import { name_plural, name_singular, title_plural, title_singular, link } from "
 
 export const metadata = {
   title: `Dashboard:  ${title_plural}`,
-  description: `Manage ${name_plural} (Server side table functionalities.)`,
+  description: `Manage ${title_plural.toLowerCase()} in the admin workspace.`,
   layout: 'global',
 };
 
@@ -35,7 +35,7 @@ export default async function Page({ searchParams: search }: pageProps) {
       <div className="flex items-start justify-between">
         <Heading
           title={title_plural}
-          description={`Manage ${name_plural} (Server side table functionaities.)`}
+          description="Manage product type definitions before building templates and products."
         />
         <Link
           href={`/${link}/new`}

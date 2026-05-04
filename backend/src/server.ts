@@ -13,6 +13,24 @@ import './jobs/queue'
 
 const app = express()
 const uploadsDirectory = path.resolve(__dirname, '..', 'uploads')
+const graphqlRequestMetadata = new WeakMap<Request, { startedAt: number; operationName: string }>()
+
+app.use((request, response, next) => {
+  const startedAt = Date.now()
+  const clientIp =
+    request.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() ||
+    request.socket.remoteAddress ||
+    'unknown'
+
+  response.on('finish', () => {
+    const durationMs = Date.now() - startedAt
+    console.log(
+      `[HTTP] ${request.method} ${request.originalUrl} ${response.statusCode} ${durationMs}ms - ${clientIp}`,
+    )
+  })
+
+  next()
+})
 
 app.get('/health', (_request, response) => {
   response.status(200).json({
@@ -55,6 +73,32 @@ const yoga = createYoga({
   schema,
   context: ({ request }) => createContext({ headers: request.headers as any }),
   graphqlEndpoint: '/graphql',
+  plugins: [
+    {
+      onParams({ request, params }) {
+        const operationName = params.operationName || 'AnonymousOperation'
+        graphqlRequestMetadata.set(request, {
+          startedAt: Date.now(),
+          operationName,
+        })
+        console.log(`[GraphQL] ${request.method} ${operationName}`)
+      },
+      onExecutionResult({ request, result }) {
+        const metadata = graphqlRequestMetadata.get(request) ?? {
+          startedAt: Date.now(),
+          operationName: 'AnonymousOperation',
+        }
+        const durationMs = Date.now() - metadata.startedAt
+        const errors = Array.isArray((result as { errors?: unknown[] } | undefined)?.errors)
+          ? (result as { errors?: unknown[] }).errors!.length
+          : 0
+
+        console.log(
+          `[GraphQL] completed ${metadata.operationName} in ${durationMs}ms${errors > 0 ? ` with ${errors} error(s)` : ''}`,
+        )
+      },
+    },
+  ],
 })
 
 app.use('/graphql', yoga)
@@ -75,6 +119,8 @@ useServer(
       }
     },
     onSubscribe: async (ctx: any, msg: any) => {
+      const operationName = msg.payload.operationName || 'AnonymousSubscription'
+      console.log(`[GraphQL WS] subscribe ${operationName}`)
       const { schema, contextFactory, parse, validate } = yoga.getEnveloped({
         req: ctx.extra.request,
       })

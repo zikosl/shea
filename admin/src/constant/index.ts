@@ -1,16 +1,21 @@
-import Image from "next/image";
 import en from "@/../public/en.svg";
 import fr from "@/../public/fr.svg";
 
-// export const serverEndpoint = "https://sheya.gaminos.cc/graphql";
-// export const endpoint = "https://sheya.gaminos.cc/graphql";
+const normalizeBaseUrl = (value?: string) => value?.replace(/\/+$/, "") ?? "";
 
+const apiBaseUrl = normalizeBaseUrl(process.env.NEXT_PUBLIC_API_URL) || "/api";
+const publicBaseUrl =
+    normalizeBaseUrl(process.env.NEXT_PUBLIC_PUBLIC_URL) ||
+    (apiBaseUrl === "/api" ? "" : apiBaseUrl.replace(/\/api$/, ""));
 
-export const serverEndpoint = "http://host.docker.internal:4000/graphql";
-export const endpoint = "http://localhost:4000/graphql";
+export const serverEndpoint = `${apiBaseUrl}/graphql`;
+export const endpoint = `${apiBaseUrl}/graphql`;
 
-// export const endpoint = "http://back.glowy.com";
-// export const wsendpoint = "ws://mac.local:4000/subscriptions";
+export const resolvePublicAssetUrl = (path?: string | null) => {
+    if (!path) return "";
+    if (path.startsWith("http://") || path.startsWith("https://")) return path;
+    return `${publicBaseUrl}${path.startsWith("/") ? path : `/${path}`}`;
+};
 
 export const languages = [
     {

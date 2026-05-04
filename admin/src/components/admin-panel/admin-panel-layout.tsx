@@ -25,7 +25,7 @@ export default function AdminPanelLayout({
         )}
       >
         <div className="admin-panel relative min-h-[calc(100vh-1.5rem)] overflow-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-white/40 to-transparent dark:from-white/5" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-sky-100/60 to-transparent dark:from-white/5" />
           {children}
         </div>
       </main>

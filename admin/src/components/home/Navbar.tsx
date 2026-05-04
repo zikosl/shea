@@ -1,116 +1,145 @@
-"use client"
-import { useState, useEffect } from "react";
-import { Menu, X, ShoppingBag, Sun, Moon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useTheme } from "next-themes";
-import SelectLanguage from "../language";
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { Menu, Moon, Sparkles, Sun, X } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useTranslations } from "next-intl";
+
+import { Button } from "@/components/ui/button";
+import SelectLanguage from "../language";
+
+const links = [
+  { href: "#features", key: "features" },
+  { href: "#products", key: "products" },
+  { href: "#testimonials", key: "testimonials" },
+  { href: "#download", key: "download" },
+] as const;
 
 const Navbar = () => {
+  const t = useTranslations("home.navbar");
   const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const [isScrolled, setIsScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const { theme, setTheme } = useTheme();
 
-  // When mounted on client, now we can show the UI
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const onScroll = () => setIsScrolled(window.scrollY > 20);
+    onScroll();
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
-  };
+  return (
+    <header
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+        isScrolled ? "px-3 pt-3" : "px-3 pt-5"
+      }`}
+    >
+      <div className="container">
+        <div
+          className={`mx-auto flex items-center justify-between rounded-full border border-white/60 bg-white/75 px-4 py-3 shadow-[0_24px_60px_-36px_rgba(166,74,116,0.38)] backdrop-blur-xl transition-all dark:border-white/10 dark:bg-white/6 dark:shadow-[0_24px_60px_-36px_rgba(8,4,18,0.8)] md:px-6 ${
+            isScrolled ? "max-w-6xl" : "max-w-[72rem]"
+          }`}
+        >
+          <Link href="/" className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-rose-400 via-pink-400 to-orange-300 shadow-[0_18px_36px_-20px_rgba(239,68,124,0.8)]">
+              <Sparkles className="h-5 w-5 text-white" />
+            </div>
+            <div className="hidden sm:block">
+              <p className="font-display text-2xl leading-none text-rose-950 dark:text-rose-50">Shea</p>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-rose-500 dark:text-rose-200/80">
+                {t("tagline")}
+              </p>
+            </div>
+          </Link>
 
-  return <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "py-3 glass shadow-xs" : "py-5 bg-transparent"}`}>
-    <div className="container flex items-center justify-between">
-      <Link href="/" className="flex items-center gap-2">
-        <img src="/text.png" alt="Shea Logo" className="h-9 w-auto" />
-      </Link>
-
-      <nav className="hidden md:flex items-center gap-8">
-        <Link href="#products" className="link-hover text-sm font-medium">
-          Products
-        </Link>
-        <Link href="#features" className="link-hover text-sm font-medium">
-          Features
-        </Link>
-        <Link href="#testimonials" className="link-hover text-sm font-medium">
-          Testimonials
-        </Link>
-        <Link href="#download" className="link-hover text-sm font-medium">
-          Download
-        </Link>
-      </nav>
-
-      <div className="hidden md:flex items-center gap-4">
-        {mounted && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            aria-label="Toggle theme"
-          >
-            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
-        )}
-        <Button variant="ghost" size="icon">
-          <ShoppingBag className="h-5 w-5" />
-        </Button>
-        <SelectLanguage />
-        <Button>Get Started</Button>
-      </div>
-
-      <div className="flex items-center gap-2 md:hidden">
-        {mounted && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            aria-label="Toggle theme"
-          >
-            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
-        )}
-        <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)}>
-          {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </Button>
-      </div>
-
-      {/* Mobile Menu */}
-      <div className={`fixed inset-0 z-50 bg-background/95 backdrop-blur-xs transition-all duration-300 md:hidden ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}>
-        <div className="container h-full flex flex-col pt-24 pb-12">
-          <nav className="flex flex-col gap-6 text-center">
-            <Link href="#products" className="text-xl font-medium py-2" onClick={() => setIsOpen(false)}>
-              Products
-            </Link>
-            <Link href="#features" className="text-xl font-medium py-2" onClick={() => setIsOpen(false)}>
-              Features
-            </Link>
-            <Link href="#testimonials" className="text-xl font-medium py-2" onClick={() => setIsOpen(false)}>
-              Testimonials
-            </Link>
-            <Link href="#download" className="text-xl font-medium py-2" onClick={() => setIsOpen(false)}>
-              Download
-            </Link>
+          <nav className="hidden items-center gap-7 md:flex">
+            {links.map((link) => (
+              <Link
+                key={link.key}
+                href={link.href}
+                className="text-sm font-medium text-rose-950/78 transition-colors hover:text-rose-600 dark:text-rose-50/82 dark:hover:text-rose-200"
+              >
+                {t(link.key)}
+              </Link>
+            ))}
           </nav>
-          <div className="mt-auto">
-            <Button className="w-full">Get Started</Button>
+
+          <div className="hidden items-center gap-2 md:flex">
+            <SelectLanguage />
+            {mounted ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                aria-label={t("themeToggle")}
+                className="bg-white/70 text-rose-700 hover:bg-rose-50 dark:bg-white/8 dark:text-rose-100 dark:hover:bg-white/12"
+              >
+                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+            ) : null}
+            <Button asChild className="bg-rose-500 hover:bg-rose-600">
+              <Link href="/login">{t("cta")}</Link>
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-2 md:hidden">
+            <SelectLanguage />
+            {mounted ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                aria-label={t("themeToggle")}
+                className="bg-white/70 text-rose-700 hover:bg-rose-50 dark:bg-white/8 dark:text-rose-100 dark:hover:bg-white/12"
+              >
+                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+            ) : null}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsOpen((value) => !value)}
+              aria-label={t("menu")}
+              className="bg-white/70 text-rose-700 hover:bg-rose-50 dark:bg-white/8 dark:text-rose-100 dark:hover:bg-white/12"
+            >
+              {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          </div>
+        </div>
+
+        <div
+          className={`mt-3 overflow-hidden rounded-[28px] border border-white/70 bg-white/88 shadow-[0_24px_60px_-36px_rgba(166,74,116,0.38)] backdrop-blur-xl transition-all dark:border-white/10 dark:bg-[#1b1119]/92 dark:shadow-[0_24px_60px_-36px_rgba(8,4,18,0.85)] md:hidden ${
+            isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+          }`}
+        >
+          <div className="space-y-2 p-4">
+            {links.map((link) => (
+              <Link
+                key={link.key}
+                href={link.href}
+                className="block rounded-2xl px-4 py-3 text-sm font-medium text-rose-950 transition-colors hover:bg-rose-50 dark:text-rose-50 dark:hover:bg-white/8"
+                onClick={() => setIsOpen(false)}
+              >
+                {t(link.key)}
+              </Link>
+            ))}
+            <Button asChild className="mt-2 w-full bg-rose-500 hover:bg-rose-600">
+              <Link href="/login" onClick={() => setIsOpen(false)}>
+                {t("cta")}
+              </Link>
+            </Button>
           </div>
         </div>
       </div>
-    </div>
-  </header>;
+    </header>
+  );
 };
+
 export default Navbar;

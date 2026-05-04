@@ -1,75 +1,39 @@
+import { Flower2, HeartHandshake, PackageCheck, ScanSearch, ShieldCheck, Sparkles } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
-import { Smartphone, Search, Heart, ShoppingBag, MessageSquare, Settings } from "lucide-react";
+const icons = [Sparkles, ScanSearch, Flower2, HeartHandshake, ShieldCheck, PackageCheck];
+const featureKeys = ["diagnosis", "pairing", "rituals", "community", "ingredients", "delivery"] as const;
 
-const features = [
-  {
-    id: 1,
-    icon: <Search className="h-6 w-6" />,
-    title: "Smart Search",
-    description: "Find products tailored to your skin type, concerns, and preferences with our intelligent search algorithm."
-  },
-  {
-    id: 2,
-    icon: <Heart className="h-6 w-6" />,
-    title: "Personalized Recommendations",
-    description: "Receive custom product suggestions based on your beauty profile and previous purchases."
-  },
-  {
-    id: 3,
-    icon: <ShoppingBag className="h-6 w-6" />,
-    title: "Virtual Try-On",
-    description: "Test products virtually before you buy with our AR-powered try-on feature."
-  },
-  {
-    id: 4,
-    icon: <MessageSquare className="h-6 w-6" />,
-    title: "Beauty Expert Chat",
-    description: "Get advice from licensed beauty professionals for your skincare and makeup questions."
-  },
-  {
-    id: 5,
-    icon: <Smartphone className="h-6 w-6" />,
-    title: "Routine Tracking",
-    description: "Track your beauty routine and receive reminders to keep your skincare regimen consistent."
-  },
-  {
-    id: 6,
-    icon: <Settings className="h-6 w-6" />,
-    title: "Ingredient Analysis",
-    description: "Understand what's in your products with our detailed ingredient scanner and analysis."
-  }
-];
+const Features = async () => {
+  const t = await getTranslations("home.features");
 
-const Features = () => {
   return (
-    <section id="features" className="py-16 md:py-24 bg-secondary/50">
+    <section id="features" className="px-4 py-18 md:px-6 md:py-24">
       <div className="container">
-        <div className="max-w-3xl mx-auto text-center mb-16">
-          <span className="subtitle">App Features</span>
-          <h2 className="title">Everything You Need in One App</h2>
-          <p className="description mx-auto">
-            Our app combines cutting-edge technology with beauty expertise to create
-            the ultimate shopping experience for all your cosmetic needs.
+        <div className="mx-auto max-w-3xl text-center">
+          <div className="marketing-kicker">{t("eyebrow")}</div>
+          <h2 className="mt-5 font-display text-4xl text-rose-950 dark:text-rose-50 md:text-5xl">{t("title")}</h2>
+          <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-rose-950/68 dark:text-rose-50/72">
+            {t("description")}
           </p>
         </div>
-        
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((feature, index) => (
-            <div 
-              key={feature.id} 
-              className="bg-background p-6 rounded-xl border border-border transition-all duration-300 hover:shadow-md hover:-translate-y-1"
-              style={{ 
-                animationDelay: `${index * 0.1}s`,
-                animationFillMode: 'both'
-              }}
-            >
-              <div className="size-12 flex items-center justify-center bg-accent/10 text-accent rounded-lg mb-4">
-                {feature.icon}
+
+        <div className="mt-14 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {featureKeys.map((key, index) => {
+            const Icon = icons[index];
+
+            return (
+              <div key={key} className="marketing-card group p-7 transition-transform duration-300 hover:-translate-y-1.5">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-100 to-orange-100 text-rose-600">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <h3 className="mt-5 text-xl font-semibold text-rose-950 dark:text-rose-50">{t(`items.${key}.title`)}</h3>
+                <p className="mt-3 text-sm leading-7 text-rose-950/68 dark:text-rose-50/68">
+                  {t(`items.${key}.description`)}
+                </p>
               </div>
-              <h3 className="text-xl font-medium mb-2">{feature.title}</h3>
-              <p className="text-muted-foreground">{feature.description}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

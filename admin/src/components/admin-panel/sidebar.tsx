@@ -23,8 +23,8 @@ export function Sidebar() {
       )}
     >
       <SidebarToggle isOpen={sidebar?.isOpen} setIsOpen={sidebar?.setIsOpen} />
-      <div className="glass relative flex h-full flex-col overflow-y-auto rounded-[28px] border border-sidebar-border/70 px-3 py-4 shadow-[0_24px_60px_-32px_rgba(33,24,18,0.28)]">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-primary/10 to-transparent" />
+      <div className="relative flex h-full flex-col overflow-y-auto rounded-[30px] border border-sidebar-border/70 bg-white/78 px-3 py-4 shadow-[0_24px_60px_-32px_rgba(15,58,122,0.22)] backdrop-blur-xl dark:bg-[#111a2a]/94">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-sky-400/10 to-transparent dark:from-sky-400/14" />
         <Button
           className={cn(
             "mb-2 h-auto justify-start px-2 py-2 text-foreground transition-transform duration-300 ease-in-out hover:no-underline",
@@ -39,7 +39,7 @@ export function Sidebar() {
               alt="shea"
               width={36}
               height={36}
-              className="rounded-2xl ring-1 ring-primary/15"
+              className="rounded-2xl ring-1 ring-sky-500/20"
             />
             <div
               className={cn(
@@ -50,18 +50,18 @@ export function Sidebar() {
               )}
             >
               <h1 className="text-lg font-semibold uppercase tracking-[0.22em]">SHEA</h1>
-              <p className="text-xs text-muted-foreground">Admin command center</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Operational workspace</p>
             </div>
           </Link>
         </Button>
         {sidebar?.isOpen !== false && (
-          <div className="mb-4 rounded-2xl border border-border/80 bg-background/65 p-3">
-            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-primary">
+          <div className="mb-4 rounded-[24px] border border-sky-100 bg-sky-50/80 p-4 dark:border-sky-400/14 dark:bg-sky-400/7">
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-sky-500/10 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-sky-700 dark:bg-sky-400/14 dark:text-sky-200">
               <Sparkles className="h-3.5 w-3.5" />
-              Refined workspace
+              Focus mode
             </div>
-            <p className="text-sm text-muted-foreground">
-              Manage catalog, partners, and operations from one calmer, more focused layout.
+            <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
+              A cleaner command space for catalog updates, partner management, and daily ops.
             </p>
           </div>
         )}
