@@ -43,10 +43,10 @@ Run that command **2 times** — once for each JWT secret.
 
 For URL-related values:
 
-- `SHEA_DOMAIN` should be the site host only, for example `app.example.com`
-- `NEXT_PUBLIC_API_URL` should be the public Caddy route, for example `https://app.example.com/api`
-- `NEXT_PUBLIC_PUBLIC_URL` should be the site origin, for example `https://app.example.com`
-- `PARTNER_PWA_GRAPHQL_URL` should be the public GraphQL endpoint, for example `https://app.example.com/api/graphql`
+- `SHEA_DOMAIN` should be the site host only, for example `shea.openzey.com`
+- `NEXT_PUBLIC_API_URL` should be the public Caddy route, for example `https://shea.openzey.com/api`
+- `NEXT_PUBLIC_PUBLIC_URL` should be the site origin, for example `https://shea.openzey.com`
+- `PARTNER_PWA_GRAPHQL_URL` should be the public GraphQL endpoint, for example `https://shea.openzey.com/api/graphql`
 - `PARTNER_PWA_BASE_PATH` should stay `/store` unless you intentionally want a different mounted path
 
 ### 4. Deploy

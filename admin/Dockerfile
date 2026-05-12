@@ -1,11 +1,14 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
+ENV YARN_CACHE_FOLDER=/tmp/.yarn-cache
 RUN apk add --no-cache libc6-compat
+RUN mkdir -p /tmp/.yarn-cache
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
 
 FROM node:20-alpine AS builder
 WORKDIR /app
+ENV YARN_CACHE_FOLDER=/tmp/.yarn-cache
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ARG NEXT_PUBLIC_API_URL=http://localhost/api

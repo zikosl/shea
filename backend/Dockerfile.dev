@@ -7,6 +7,8 @@
 FROM node:22-alpine
 RUN apk add --no-cache libc6-compat wget dumb-init
 WORKDIR /app
+ENV YARN_CACHE_FOLDER=/tmp/.yarn-cache
+RUN mkdir -p /tmp/.yarn-cache
 # Install ALL deps (including devDependencies for ts-node, nodemon, etc.)
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile

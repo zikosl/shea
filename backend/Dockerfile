@@ -1,11 +1,14 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
+ENV YARN_CACHE_FOLDER=/tmp/.yarn-cache
 RUN apk add --no-cache libc6-compat
+RUN mkdir -p /tmp/.yarn-cache
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
 
 FROM node:22-alpine AS builder
 WORKDIR /app
+ENV YARN_CACHE_FOLDER=/tmp/.yarn-cache
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN yarn prisma generate
@@ -18,8 +21,10 @@ RUN apk add --no-cache wget dumb-init \
 
 WORKDIR /app
 ENV NODE_ENV=production
+ENV YARN_CACHE_FOLDER=/tmp/.yarn-cache
 
 COPY package.json yarn.lock ./
+RUN mkdir -p /tmp/.yarn-cache
 RUN yarn install --frozen-lockfile
 
 COPY --from=builder /app/dist ./dist

@@ -10,7 +10,9 @@ const resolveAllowedOrigins = () => {
     return configured
   }
 
-  return ['https://glowy-front.vercel.app', 'http://localhost:3000']
+  const productionOrigin = process.env.SHEA_DOMAIN ? `https://${process.env.SHEA_DOMAIN}` : undefined
+  return [productionOrigin, process.env.NEXTAUTH_URL, 'http://localhost:3000']
+    .filter((origin): origin is string => Boolean(origin))
 }
 
 export const env = {

@@ -29,7 +29,8 @@ $COMPOSE version >/dev/null 2>&1   || { echo "ERROR: docker compose not found"; 
 
 # Validate required env vars are not still at example values
 REQUIRED_VARS=(
-  SHEA_DOMAIN ACME_EMAIL NEXT_PUBLIC_API_URL
+  SHEA_DOMAIN ACME_EMAIL NEXT_PUBLIC_API_URL NEXT_PUBLIC_PUBLIC_URL
+  PARTNER_PWA_GRAPHQL_URL PARTNER_PWA_BASE_PATH CORS_ALLOWED_ORIGINS
   NEXTAUTH_URL NEXTAUTH_SECRET
   POSTGRES_PASSWORD
   JWT_ACCESS_SECRET JWT_REFRESH_SECRET
@@ -42,6 +43,24 @@ for var in "${REQUIRED_VARS[@]}"; do
     exit 1
   fi
 done
+
+EXPECTED_ORIGIN="https://${SHEA_DOMAIN}"
+if [ "${NEXTAUTH_URL}" != "${EXPECTED_ORIGIN}" ]; then
+  echo "ERROR: NEXTAUTH_URL must be ${EXPECTED_ORIGIN} for this production host."
+  exit 1
+fi
+if [ "${NEXT_PUBLIC_PUBLIC_URL}" != "${EXPECTED_ORIGIN}" ]; then
+  echo "ERROR: NEXT_PUBLIC_PUBLIC_URL must be ${EXPECTED_ORIGIN} for this production host."
+  exit 1
+fi
+if [ "${NEXT_PUBLIC_API_URL}" != "${EXPECTED_ORIGIN}/api" ]; then
+  echo "ERROR: NEXT_PUBLIC_API_URL must be ${EXPECTED_ORIGIN}/api for this production host."
+  exit 1
+fi
+if [ "${PARTNER_PWA_GRAPHQL_URL}" != "${EXPECTED_ORIGIN}/api/graphql" ]; then
+  echo "ERROR: PARTNER_PWA_GRAPHQL_URL must be ${EXPECTED_ORIGIN}/api/graphql for this production host."
+  exit 1
+fi
 echo "  ✓ Environment looks good"
 
 # ─── Backup database before deploy ───────────────────────────────────────────
