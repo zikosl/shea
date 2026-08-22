@@ -8,8 +8,20 @@ const Product = objectType({
     definition(t) {
         t.nonNull.int('id')
         t.float('price')
+        t.float('costPrice')
+        t.float('discount')
         t.boolean('available')
         t.int('stock')
+        t.int('reorderThreshold')
+        t.boolean('isVisibleInPos')
+        t.boolean('onlineVisible')
+        t.boolean('isActive')
+        t.string('customName')
+        t.string('customDescription')
+        t.list.string('customImages')
+        t.string('vendorSku')
+        t.string('vendorBarcode')
+        t.string('notes')
         t.int('partnerId')
         t.int('variantId')
 
@@ -132,8 +144,20 @@ const ProductView = objectType({
         t.string('sku')
         t.string('variantName')
         t.float('price')
+        t.float('costPrice')
+        t.float('discount')
         t.int('stock')
+        t.int('reorderThreshold')
         t.boolean('available')
+        t.boolean('isVisibleInPos')
+        t.boolean('onlineVisible')
+        t.boolean('isActive')
+        t.string('customName')
+        t.string('customDescription')
+        t.list.string('customImages')
+        t.string('vendorSku')
+        t.string('vendorBarcode')
+        t.string('notes')
         t.int('partnerId')
         t.int('product_template_id')
         t.int('variantId')
@@ -254,8 +278,20 @@ const ProductTemplatePartnerPreview = objectType({
         // Product fields
         t.nonNull.int('product_id');
         t.nonNull.float('price');
+        t.float('costPrice');
+        t.nonNull.float('discount');
         t.nonNull.boolean('available');
         t.nonNull.int('stock');
+        t.nonNull.int('reorderThreshold');
+        t.nonNull.boolean('isVisibleInPos');
+        t.nonNull.boolean('onlineVisible');
+        t.nonNull.boolean('isActive');
+        t.string('customName');
+        t.string('customDescription');
+        t.list.string('customImages');
+        t.string('vendorSku');
+        t.string('vendorBarcode');
+        t.string('notes');
         t.field('image', {
             type: 'ProductImage',
             resolve: async (parent, _args, ctx) => {

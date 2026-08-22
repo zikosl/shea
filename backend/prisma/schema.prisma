@@ -20,6 +20,58 @@ enum OrderSource {
   POS
 }
 
+enum StockMovementType {
+  SALE
+  RETURN
+  RECEIPT
+  ADJUSTMENT_IN
+  ADJUSTMENT_OUT
+  TRANSFER_IN
+  TRANSFER_OUT
+}
+
+enum SaleStatus {
+  DRAFT
+  COMPLETED
+  PARTIALLY_REFUNDED
+  REFUNDED
+  VOIDED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  MIXED
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum CashSessionStatus {
+  OPEN
+  CLOSED
+}
+
+enum SyncEventStatus {
+  PENDING
+  PROCESSING
+  SYNCED
+  ERROR
+  CONFLICT
+}
+
+enum SyncEventAction {
+  CREATE
+  UPDATE
+  DELETE
+  ARCHIVE
+}
+
 model PartnerDeliverySchedule {
   id Int @id @default(autoincrement())
 
@@ -55,14 +107,19 @@ model User {
   updatedAt    DateTime   @updatedAt
 
   // one‐to‐one relations for role‐specific data
-  client     Client?
-  partner    Partner?
-  driver     Driver?
-  admin      Admin?
-  tokens     Token[]
-  logs       Log[]
-  addresses  Address[]
-  pushTokens PushToken[]
+  client             Client?
+  partner            Partner?
+  driver             Driver?
+  admin              Admin?
+  tokens             Token[]
+  logs               Log[]
+  auditLogs          AuditLog[]
+  addresses          Address[]
+  pushTokens         PushToken[]
+  sales              Sale[]
+  cashSessionsOpened CashSession[]   @relation("CashSessionOpenedBy")
+  cashSessionsClosed CashSession[]   @relation("CashSessionClosedBy")
+  stockMovements     StockMovement[]
 }
 
 model Address {
@@ -114,19 +171,25 @@ model Partner_Niche {
 }
 
 model Partner {
-  id            Int             @id @default(autoincrement())
-  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId        Int             @unique
+  id             Int             @id @default(autoincrement())
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         Int             @unique
   // partner-only fields
-  companyName   String
-  online        Boolean         @default(false)
-  avatar        String?
-  latitude      Float           @default(0)
-  longitude     Float           @default(0)
-  address       String?
-  Product       Product[]
-  Order         Order[]
-  partnerNiches Partner_Niche[]
+  companyName    String
+  online         Boolean         @default(false)
+  avatar         String?
+  latitude       Float           @default(0)
+  longitude      Float           @default(0)
+  address        String?
+  Product        Product[]
+  Order          Order[]
+  devices        Device[]
+  sales          Sale[]
+  cashSessions   CashSession[]
+  syncEvents     SyncEvent[]
+  stockMovements StockMovement[]
+  auditLogs      AuditLog[]
+  partnerNiches  Partner_Niche[]
 }
 
 model Driver {
@@ -162,6 +225,7 @@ model Niche {
   name_ar    String
   image      String
   categories Category[]
+  brands     Brand[]
   partners   Partner_Niche[]
 }
 
@@ -179,14 +243,32 @@ model Brand {
   id               Int               @id @default(autoincrement())
   name             String
   image            String
+  niche            Niche?            @relation(fields: [niche_id], references: [id])
+  niche_id         Int?
   productTemplates ProductTemplate[]
+
+  @@index([niche_id])
 }
 
 model Product {
-  id        Int     @id @default(autoincrement())
-  price     Float   @default(0)
-  available Boolean @default(true)
-  stock     Int     @default(0)
+  id                Int      @id @default(autoincrement())
+  price             Float    @default(0)
+  costPrice         Float?
+  discount          Float    @default(0)
+  available         Boolean  @default(true)
+  stock             Int      @default(0)
+  reorderThreshold  Int      @default(0)
+  isVisibleInPos    Boolean  @default(true)
+  onlineVisible     Boolean  @default(false)
+  isActive          Boolean  @default(true)
+  customName        String?
+  customDescription String?
+  customImages      String[] @default([])
+  vendorSku         String?
+  vendorBarcode     String?
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   partnerId Int
   variantId Int
@@ -194,9 +276,196 @@ model Product {
   partner Partner @relation(fields: [partnerId], references: [userId])
   variant Variant @relation(fields: [variantId], references: [id])
 
-  OrderItem OrderItem[]
+  OrderItem      OrderItem[]
+  saleItems      SaleItem[]
+  stockMovements StockMovement[]
 
   @@unique([partnerId, variantId])
+  @@index([partnerId, isActive, isVisibleInPos])
+  @@index([vendorBarcode])
+  @@index([vendorSku])
+}
+
+model Device {
+  id         String    @id @default(uuid())
+  deviceKey  String    @unique
+  partnerId  Int
+  name       String?
+  platform   Platform
+  appVersion String?
+  lastSyncAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  partner      Partner       @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
+  sales        Sale[]
+  cashSessions CashSession[]
+  syncEvents   SyncEvent[]
+
+  @@index([partnerId])
+  @@index([platform])
+}
+
+model Sale {
+  id            String     @id @default(uuid())
+  saleNumber    String     @unique
+  partnerId     Int
+  deviceId      String?
+  cashierId     Int?
+  sourceOrderId Int?
+  status        SaleStatus @default(COMPLETED)
+  customerName  String?
+  note          String?
+  subtotal      Float      @default(0)
+  discountTotal Float      @default(0)
+  taxTotal      Float      @default(0)
+  total         Float      @default(0)
+  completedAt   DateTime?
+  voidReason    String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  partner        Partner         @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
+  device         Device?         @relation(fields: [deviceId], references: [id])
+  cashier        User?           @relation(fields: [cashierId], references: [id])
+  sourceOrder    Order?          @relation(fields: [sourceOrderId], references: [id])
+  items          SaleItem[]
+  payments       Payment[]
+  stockMovements StockMovement[]
+
+  @@index([partnerId, createdAt])
+  @@index([partnerId, status])
+  @@index([deviceId])
+  @@index([cashierId])
+}
+
+model SaleItem {
+  id          String   @id @default(uuid())
+  saleId      String
+  productId   Int
+  quantity    Float
+  unitPrice   Float
+  discount    Float    @default(0)
+  tax         Float    @default(0)
+  total       Float
+  productName String
+  variantName String?
+  createdAt   DateTime @default(now())
+
+  sale    Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([saleId])
+  @@index([productId])
+}
+
+model Payment {
+  id        String        @id @default(uuid())
+  saleId    String
+  method    PaymentMethod
+  status    PaymentStatus @default(PAID)
+  amount    Float
+  reference String?
+  createdAt DateTime      @default(now())
+
+  sale Sale @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  @@index([saleId])
+  @@index([method])
+}
+
+model StockMovement {
+  id            String            @id @default(uuid())
+  productId     Int
+  partnerId     Int
+  userId        Int?
+  saleId        String?
+  type          StockMovementType
+  quantityDelta Float
+  stockBefore   Int
+  stockAfter    Int
+  reason        String?
+  reference     String?
+  createdAt     DateTime          @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+  partner Partner @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id])
+  sale    Sale?   @relation(fields: [saleId], references: [id])
+
+  @@index([productId, createdAt])
+  @@index([partnerId, createdAt])
+  @@index([saleId])
+  @@index([type])
+}
+
+model CashSession {
+  id            String            @id @default(uuid())
+  partnerId     Int
+  deviceId      String?
+  openedById    Int
+  closedById    Int?
+  status        CashSessionStatus @default(OPEN)
+  openingAmount Float             @default(0)
+  cashIn        Float             @default(0)
+  cashOut       Float             @default(0)
+  expectedCash  Float             @default(0)
+  countedCash   Float?
+  difference    Float?
+  note          String?
+  openedAt      DateTime          @default(now())
+  closedAt      DateTime?
+
+  partner  Partner @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
+  device   Device? @relation(fields: [deviceId], references: [id])
+  openedBy User    @relation("CashSessionOpenedBy", fields: [openedById], references: [id])
+  closedBy User?   @relation("CashSessionClosedBy", fields: [closedById], references: [id])
+
+  @@index([partnerId, status])
+  @@index([deviceId])
+}
+
+model SyncEvent {
+  id             String          @id @default(uuid())
+  partnerId      Int
+  deviceId       String?
+  idempotencyKey String
+  entity         String
+  action         SyncEventAction
+  payload        Json
+  status         SyncEventStatus @default(PENDING)
+  error          String?
+  attempts       Int             @default(0)
+  createdAt      DateTime        @default(now())
+  processedAt    DateTime?
+
+  partner Partner @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
+  device  Device? @relation(fields: [deviceId], references: [id])
+
+  @@unique([partnerId, idempotencyKey])
+  @@index([partnerId, status, createdAt])
+  @@index([deviceId])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   Int?
+  partnerId Int?
+  action    String
+  entity    String
+  entityId  String?
+  before    Json?
+  after     Json?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  actor   User?    @relation(fields: [actorId], references: [id])
+  partner Partner? @relation(fields: [partnerId], references: [userId])
+
+  @@index([actorId, createdAt])
+  @@index([partnerId, createdAt])
+  @@index([entity, entityId])
 }
 
 model ProductTemplate {
@@ -248,7 +517,7 @@ model ProductImage {
   ProductTemplate     ProductTemplate? @relation(fields: [product_template_id], references: [id])
 }
 
-model ProductType {
+model vape {
   id              Int               @id @default(autoincrement())
   name            String
   name_ar         String
@@ -283,6 +552,7 @@ model Order {
   items          OrderItem[]
   orderDispatchs OrderDispatch[]
   delivery       Delivery?
+  sales          Sale[]
 }
 
 model Delivery {
@@ -408,19 +678,32 @@ enum Platform {
   ANDROID
   IOS
   WEB
+  DESKTOP
 }
 
 // VIEWS
 
 view ProductView {
-  id                  Int     @unique
+  id                  Int      @unique
   name                String
   name_ar             String
   sku                 String
   variantName         String
   price               Float
+  costPrice           Float?
+  discount            Float
   stock               Int
+  reorderThreshold    Int
   available           Boolean
+  isVisibleInPos      Boolean
+  onlineVisible       Boolean
+  isActive            Boolean
+  customName          String?
+  customDescription   String?
+  customImages        String[]
+  vendorSku           String?
+  vendorBarcode       String?
+  notes               String?
   product_template_id Int
   partnerId           Int
   variantId           Int
@@ -463,10 +746,22 @@ view ProductTemplatePartnerPreview {
   variant_name String?
   variant_sku  String?
 
-  product_id Int
-  price      Float
-  available  Boolean
-  stock      Int
+  product_id        Int
+  price             Float
+  costPrice         Float?
+  discount          Float
+  available         Boolean
+  stock             Int
+  reorderThreshold  Int
+  isVisibleInPos    Boolean
+  onlineVisible     Boolean
+  isActive          Boolean
+  customName        String?
+  customDescription String?
+  customImages      String[]
+  vendorSku         String?
+  vendorBarcode     String?
+  notes             String?
 
   @@unique([product_template_id, partnerId])
   @@map("ProductTemplatePartnerPreview")

@@ -14,7 +14,7 @@ export const PricingNameEnum = enumType({
 
 export const Platform = enumType({
     name: 'Platform',
-    members: ['ANDROID', 'IOS', 'WEB'],
+    members: ['ANDROID', 'IOS', 'WEB', 'DESKTOP'],
 });
 
 

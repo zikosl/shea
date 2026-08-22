@@ -9,14 +9,16 @@ const Mutation = extendType({
             args: {
                 name: nonNull(stringArg()),
                 image: nonNull(stringArg()),
+                niche_id: intArg(),
             },
-            resolve: async (_parent, data: { name: string; image: string }, ctx: Context) => {
-                const { name, image } = data
+            resolve: async (_parent, data: { name: string; image: string; niche_id?: number | null }, ctx: Context) => {
+                const { name, image, niche_id } = data
 
                 const newBrand = await ctx.prisma.brand.create({
                     data: {
                         name,
                         image,
+                        niche_id: niche_id ?? undefined,
                     },
                 })
                 return newBrand
@@ -29,14 +31,16 @@ const Mutation = extendType({
                 id: nonNull(intArg()),
                 name: stringArg(),
                 image: stringArg(),
+                niche_id: intArg(),
             },
-            resolve: async (_parent, data: { id: number; name?: string | null; image?: string | null }, ctx: Context) => {
-                const { id, name, image } = data
+            resolve: async (_parent, data: { id: number; name?: string | null; image?: string | null; niche_id?: number | null }, ctx: Context) => {
+                const { id, name, image, niche_id } = data
                 const updatedBrand = await ctx.prisma.brand.update({
                     where: { id },
                     data: {
                         name: name ?? undefined,
                         image: image ?? undefined,
+                        niche_id: niche_id ?? undefined,
                     },
                 })
                 return updatedBrand

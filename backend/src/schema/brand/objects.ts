@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { objectType } from "nexus"
 
 const Brand = objectType({
@@ -6,6 +7,16 @@ const Brand = objectType({
         t.nonNull.int('id')
         t.string('name')
         t.string('image')
+        t.int('niche_id')
+        t.field('niche', {
+            type: 'Niche',
+            resolve: async (parent, _args, ctx) => {
+                if (!parent.niche_id) return null
+                return ctx.prisma.niche.findUnique({
+                    where: { id: parent.niche_id },
+                })
+            }
+        })
         t.int('totalProducts', {
             resolve: async (parent, _args, ctx) => {
                 return ctx.prisma.productTemplate.count({

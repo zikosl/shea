@@ -22,6 +22,21 @@ const Niche = objectType({
                 }
             }
         })
+        t.field('brands', {
+            type: 'BrandResult',
+            resolve: async (parent, _args, ctx) => {
+                const brands = await ctx.prisma.brand.findMany({
+                    where: { niche_id: parent.id },
+                })
+                const totalBrands = await ctx.prisma.brand.count({
+                    where: { niche_id: parent.id },
+                })
+                return {
+                    brands,
+                    totalBrands,
+                }
+            }
+        })
     },
 })
 

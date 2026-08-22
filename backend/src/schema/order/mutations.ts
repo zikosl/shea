@@ -502,10 +502,12 @@ const Mutation = extendType({
                             },
                             partnerId,
                         },
-                        select: {
-                            id: true,
-                            stock: true,
-                            available: true,
+                        include: {
+                            variant: {
+                                include: {
+                                    product: true,
+                                }
+                            }
                         }
                     })
 
@@ -545,7 +547,53 @@ const Mutation = extendType({
                         },
                     })
 
+                    const saleSubtotal = data.items.reduce((sum: number, item: any) => {
+                        const product = products.find((entry: any) => entry.id === item.productId)
+                        return sum + ((item.price ?? product?.price ?? 0) * item.quantity)
+                    }, 0)
+
+                    const paymentMethod = ['CASH', 'CARD', 'MIXED', 'OTHER'].includes(String(data.paymentMethod ?? '').toUpperCase())
+                        ? String(data.paymentMethod).toUpperCase()
+                        : 'OTHER'
+
+                    const sale = await tx.sale.create({
+                        data: {
+                            saleNumber: `POS-${partnerId}-${order.id}`,
+                            partnerId,
+                            cashierId: partnerId,
+                            sourceOrderId: order.id,
+                            customerName: data.customerName ?? null,
+                            note: data.note ?? null,
+                            subtotal: saleSubtotal,
+                            discountTotal: data.discount ?? 0,
+                            taxTotal: 0,
+                            total: Math.max(0, saleSubtotal - (data.discount ?? 0)),
+                            completedAt: new Date(),
+                            items: {
+                                create: data.items.map((item: any) => {
+                                    const product = products.find((entry: any) => entry.id === item.productId)
+                                    return {
+                                        productId: item.productId,
+                                        quantity: item.quantity,
+                                        unitPrice: item.price,
+                                        total: item.price * item.quantity,
+                                        productName: product?.customName ?? product?.variant?.product?.name ?? `Product #${item.productId}`,
+                                        variantName: product?.variant?.name,
+                                    }
+                                })
+                            },
+                            payments: {
+                                create: {
+                                    method: paymentMethod,
+                                    amount: Math.max(0, saleSubtotal - (data.discount ?? 0)),
+                                    reference: order.id.toString(),
+                                }
+                            }
+                        }
+                    })
+
                     for (const item of data.items) {
+                        const product = products.find((entry: any) => entry.id === item.productId)
                         await tx.product.update({
                             where: { id: item.productId },
                             data: {
@@ -553,6 +601,20 @@ const Mutation = extendType({
                                     decrement: item.quantity,
                                 },
                             },
+                        })
+                        await tx.stockMovement.create({
+                            data: {
+                                productId: item.productId,
+                                partnerId,
+                                userId: partnerId,
+                                saleId: sale.id,
+                                type: 'SALE',
+                                quantityDelta: -item.quantity,
+                                stockBefore: product.stock,
+                                stockAfter: product.stock - item.quantity,
+                                reason: `POS order #${order.id}`,
+                                reference: sale.saleNumber,
+                            }
                         })
                     }
 

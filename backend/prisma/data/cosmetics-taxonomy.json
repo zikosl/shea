@@ -1,0 +1,220 @@
+{
+  "version": "cosmetics-v3",
+  "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
+  "categories": [
+    {
+      "category": "Bath & Body",
+      "productTypes": [
+        {
+          "name": "Body Care",
+          "productCount": 92
+        },
+        {
+          "name": "Body Cream & Lotion",
+          "productCount": 28
+        },
+        {
+          "name": "Body Wash & Shower Gel",
+          "productCount": 22
+        },
+        {
+          "name": "Body Oil",
+          "productCount": 21
+        },
+        {
+          "name": "Soap",
+          "productCount": 15
+        },
+        {
+          "name": "Body Scrub",
+          "productCount": 5
+        },
+        {
+          "name": "Body Powder",
+          "productCount": 1
+        }
+      ]
+    },
+    {
+      "category": "Fragrance",
+      "productTypes": [
+        {
+          "name": "Body Mist & Splash",
+          "productCount": 27
+        },
+        {
+          "name": "Perfume",
+          "productCount": 11
+        },
+        {
+          "name": "Eau de Toilette & Cologne",
+          "productCount": 9
+        }
+      ]
+    },
+    {
+      "category": "Hair Care",
+      "productTypes": [
+        {
+          "name": "Shampoo",
+          "productCount": 67
+        },
+        {
+          "name": "Hair Color",
+          "productCount": 13
+        },
+        {
+          "name": "Hair Serum",
+          "productCount": 12
+        },
+        {
+          "name": "Conditioner",
+          "productCount": 10
+        },
+        {
+          "name": "Hair Mask & Treatment",
+          "productCount": 8
+        },
+        {
+          "name": "Hair Styling",
+          "productCount": 8
+        },
+        {
+          "name": "Hair Tools",
+          "productCount": 6
+        },
+        {
+          "name": "Hair Oil",
+          "productCount": 2
+        }
+      ]
+    },
+    {
+      "category": "Makeup",
+      "productTypes": [
+        {
+          "name": "Foundation",
+          "productCount": 21
+        },
+        {
+          "name": "Mascara",
+          "productCount": 20
+        },
+        {
+          "name": "Lipstick & Lip Color",
+          "productCount": 13
+        },
+        {
+          "name": "Eyeliner",
+          "productCount": 9
+        },
+        {
+          "name": "Concealer",
+          "productCount": 7
+        },
+        {
+          "name": "Primer",
+          "productCount": 6
+        },
+        {
+          "name": "Nail Care",
+          "productCount": 4
+        },
+        {
+          "name": "Highlighter & Bronzer",
+          "productCount": 3
+        },
+        {
+          "name": "Palette",
+          "productCount": 3
+        },
+        {
+          "name": "Blush",
+          "productCount": 2
+        },
+        {
+          "name": "Brows",
+          "productCount": 2
+        },
+        {
+          "name": "Eyeshadow",
+          "productCount": 2
+        },
+        {
+          "name": "Makeup",
+          "productCount": 1
+        }
+      ]
+    },
+    {
+      "category": "Personal Care",
+      "productTypes": [
+        {
+          "name": "Deodorant",
+          "productCount": 50
+        },
+        {
+          "name": "Intimate Care",
+          "productCount": 19
+        },
+        {
+          "name": "Hair Removal & Waxing",
+          "productCount": 17
+        },
+        {
+          "name": "Oral Care",
+          "productCount": 11
+        },
+        {
+          "name": "Cotton & Makeup Removal",
+          "productCount": 8
+        },
+        {
+          "name": "Beauty Tools",
+          "productCount": 1
+        }
+      ]
+    },
+    {
+      "category": "Skincare",
+      "productTypes": [
+        {
+          "name": "Moisturizer",
+          "productCount": 80
+        },
+        {
+          "name": "Sunscreen",
+          "productCount": 32
+        },
+        {
+          "name": "Cleanser & Makeup Remover",
+          "productCount": 30
+        },
+        {
+          "name": "Serum & Ampoule",
+          "productCount": 30
+        },
+        {
+          "name": "Face Mask",
+          "productCount": 28
+        },
+        {
+          "name": "Treatment & Anti-Aging",
+          "productCount": 23
+        },
+        {
+          "name": "Toner & Face Mist",
+          "productCount": 13
+        },
+        {
+          "name": "Exfoliator",
+          "productCount": 10
+        },
+        {
+          "name": "Lip Care",
+          "productCount": 4
+        }
+      ]
+    }
+  ]
+}

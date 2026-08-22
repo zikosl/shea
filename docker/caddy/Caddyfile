@@ -29,13 +29,7 @@
         }
     }
 
-    handle /store/api/health {
-        reverse_proxy partner-pwa:3000 {
-            header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
-            header_up X-Forwarded-Proto {scheme}
-        }
-    }
+    
 
     handle_path /api/* {
         reverse_proxy backend:3001 {
@@ -66,13 +60,6 @@
         }
     }
 
-    handle /store* {
-        reverse_proxy partner-pwa:3000 {
-            header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
-            header_up X-Forwarded-Proto {scheme}
-        }
-    }
 
     handle {
         reverse_proxy admin:3000 {
@@ -118,13 +105,6 @@
         }
     }
 
-    handle /store/api/health {
-        reverse_proxy partner-pwa:3000 {
-            header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
-            header_up X-Forwarded-Proto {scheme}
-        }
-    }
 
     handle_path /api/* {
         reverse_proxy backend:3001 {
@@ -139,14 +119,7 @@
         file_server
     }
 
-    handle /store* {
-        reverse_proxy partner-pwa:3000 {
-            header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
-            header_up X-Forwarded-Proto {scheme}
-            header_up X-Vendor-Domain {host}
-        }
-    }
+    
 
     handle {
         reverse_proxy admin:3000 {

@@ -36,7 +36,9 @@ logs/
 *.zip
 *.tar
 *.gz
-
+partner-pwa/
+shea-client/
+shea-rider/
 # Package manager files
 package-lock.json
 yarn.lock

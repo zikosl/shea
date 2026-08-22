@@ -8,8 +8,20 @@ export async function createProduct(
   input: {
     variantId: number
     price?: number | null
+    costPrice?: number | null
+    discount?: number | null
     available?: boolean | null
     stock?: number | null
+    reorderThreshold?: number | null
+    isVisibleInPos?: boolean | null
+    onlineVisible?: boolean | null
+    isActive?: boolean | null
+    customName?: string | null
+    customDescription?: string | null
+    customImages?: string[] | null
+    vendorSku?: string | null
+    vendorBarcode?: string | null
+    notes?: string | null
   },
 ) {
   const product = await prisma.product.create({
@@ -17,10 +29,37 @@ export async function createProduct(
       partnerId: userId,
       variantId: input.variantId,
       price: input.price ?? undefined,
+      costPrice: input.costPrice ?? undefined,
+      discount: input.discount ?? undefined,
       available: input.available ?? undefined,
       stock: input.stock ?? undefined,
+      reorderThreshold: input.reorderThreshold ?? undefined,
+      isVisibleInPos: input.isVisibleInPos ?? undefined,
+      onlineVisible: input.onlineVisible ?? undefined,
+      isActive: input.isActive ?? undefined,
+      customName: input.customName ?? undefined,
+      customDescription: input.customDescription ?? undefined,
+      customImages: input.customImages ?? undefined,
+      vendorSku: input.vendorSku ?? undefined,
+      vendorBarcode: input.vendorBarcode ?? undefined,
+      notes: input.notes ?? undefined,
     },
   })
+
+  if ((input.stock ?? 0) !== 0) {
+    await prisma.stockMovement.create({
+      data: {
+        productId: product.id,
+        partnerId: userId,
+        userId,
+        type: 'RECEIPT',
+        quantityDelta: input.stock ?? 0,
+        stockBefore: 0,
+        stockAfter: input.stock ?? 0,
+        reason: 'Initial stock',
+      },
+    })
+  }
 
   await prisma.log.create({
     data: {
@@ -39,7 +78,17 @@ export async function createProduct(
 export async function createManyProducts(
   prisma: PrismaClient,
   userId: number,
-  products: Array<{ price: number; variantId: number; stock?: number | null; available?: boolean | null }>,
+  products: Array<{
+    price: number
+    variantId: number
+    stock?: number | null
+    available?: boolean | null
+    discount?: number | null
+    reorderThreshold?: number | null
+    isVisibleInPos?: boolean | null
+    onlineVisible?: boolean | null
+    isActive?: boolean | null
+  }>,
 ) {
   if (!products || products.length === 0) {
     throw createBadRequestError('At least one product is required')
@@ -52,6 +101,11 @@ export async function createManyProducts(
       partnerId: userId,
       stock: product.stock ?? 0,
       available: product.available ?? true,
+      discount: product.discount ?? 0,
+      reorderThreshold: product.reorderThreshold ?? 0,
+      isVisibleInPos: product.isVisibleInPos ?? true,
+      onlineVisible: product.onlineVisible ?? false,
+      isActive: product.isActive ?? true,
     })),
     skipDuplicates: true,
   })
@@ -73,11 +127,28 @@ export async function createManyProducts(
 export async function updateProduct(
   prisma: PrismaClient,
   userId: number,
-  input: { id: number; price?: number | null; available?: boolean | null; stock?: number | null },
+  input: {
+    id: number
+    price?: number | null
+    costPrice?: number | null
+    discount?: number | null
+    available?: boolean | null
+    stock?: number | null
+    reorderThreshold?: number | null
+    isVisibleInPos?: boolean | null
+    onlineVisible?: boolean | null
+    isActive?: boolean | null
+    customName?: string | null
+    customDescription?: string | null
+    customImages?: string[] | null
+    vendorSku?: string | null
+    vendorBarcode?: string | null
+    notes?: string | null
+  },
 ) {
   const product = await prisma.product.findUnique({
     where: { id: input.id },
-    select: { partnerId: true },
+    select: { partnerId: true, stock: true },
   })
 
   if (!product) {
@@ -88,13 +159,42 @@ export async function updateProduct(
     throw createForbiddenError('You can only update your own products')
   }
 
-  await prisma.product.update({
-    where: { id: input.id },
-    data: {
-      price: input.price ?? undefined,
-      available: input.available ?? undefined,
-      stock: input.stock ?? undefined,
-    },
+  await prisma.$transaction(async (tx) => {
+    await tx.product.update({
+      where: { id: input.id },
+      data: {
+        price: input.price ?? undefined,
+        costPrice: input.costPrice ?? undefined,
+        discount: input.discount ?? undefined,
+        available: input.available ?? undefined,
+        stock: input.stock ?? undefined,
+        reorderThreshold: input.reorderThreshold ?? undefined,
+        isVisibleInPos: input.isVisibleInPos ?? undefined,
+        onlineVisible: input.onlineVisible ?? undefined,
+        isActive: input.isActive ?? undefined,
+        customName: input.customName ?? undefined,
+        customDescription: input.customDescription ?? undefined,
+        customImages: input.customImages ?? undefined,
+        vendorSku: input.vendorSku ?? undefined,
+        vendorBarcode: input.vendorBarcode ?? undefined,
+        notes: input.notes ?? undefined,
+      },
+    })
+
+    if (input.stock !== undefined && input.stock !== null && input.stock !== product.stock) {
+      await tx.stockMovement.create({
+        data: {
+          productId: input.id,
+          partnerId: userId,
+          userId,
+          type: input.stock > product.stock ? 'ADJUSTMENT_IN' : 'ADJUSTMENT_OUT',
+          quantityDelta: input.stock - product.stock,
+          stockBefore: product.stock,
+          stockAfter: input.stock,
+          reason: 'Manual stock update',
+        },
+      })
+    }
   })
 
   return prisma.productView.findUnique({

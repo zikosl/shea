@@ -5,7 +5,8 @@
     "dev": "ts-node-dev --no-notify --respawn --transpile-only src/server",
     "start": "node dist/server.js",
     "clean": "rm -rf dist",
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "seed:cosmetics": "ts-node prisma/seed-cosmetics.ts"
   },
   "prettier": {
     "semi": false,
