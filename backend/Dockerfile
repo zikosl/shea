@@ -9,6 +9,7 @@ RUN yarn install --frozen-lockfile
 FROM node:22-alpine AS builder
 WORKDIR /app
 ENV YARN_CACHE_FOLDER=/tmp/.yarn-cache
+ENV DATABASE_URL=postgresql://shea:shea@localhost:5432/shea?schema=public
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN yarn prisma generate
@@ -22,6 +23,7 @@ RUN apk add --no-cache wget dumb-init \
 WORKDIR /app
 ENV NODE_ENV=production
 ENV YARN_CACHE_FOLDER=/tmp/.yarn-cache
+ENV DATABASE_URL=postgresql://shea:shea@localhost:5432/shea?schema=public
 
 COPY package.json yarn.lock ./
 RUN mkdir -p /tmp/.yarn-cache
