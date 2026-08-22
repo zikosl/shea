@@ -12,7 +12,6 @@ new Worker('dispatch-queue', async (job: Job) => {
     try {
         const { orderId, attempt } = job.data;
         const order = await prisma.order.findUnique({ where: { id: orderId }, include: { delivery: true } });
-        console.log(order, DeliveryStatus.READY, DeliveryType.NORMAL)
         if (!order || !order.delivery || order.delivery.status !== DeliveryStatus.READY || order.delivery.type !== DeliveryType.NORMAL) return;
         const delivery = order.delivery
         const drivers = await prisma.driver.findMany({
@@ -34,7 +33,6 @@ new Worker('dispatch-queue', async (job: Job) => {
                 }
             }
         });
-        console.log(drivers)
         const nearbyDrivers = drivers
         // .filter((d) => {
         //     const dist = haversine(
@@ -93,6 +91,6 @@ new Worker('dispatch-queue', async (job: Job) => {
             { delay: ORDER_DELAY, jobId: `dispatch:${orderId}:${attempt + 1}` }
         );
     } catch (error) {
-        console.log(error)
+        console.error(error)
     }
 }, { connection: redis });

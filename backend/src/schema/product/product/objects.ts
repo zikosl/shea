@@ -311,7 +311,6 @@ const ProductTemplatePartnerPreview = objectType({
         t.nonNull.list.field('products', {
             type: 'ProductView',
             resolve: async (parent, _args, ctx) => {
-                console.log("product");
                 return ctx.prisma.productView.findMany({
                     where: { product_template_id: parent.product_template_id, partnerId: parent.partnerId },
                 })

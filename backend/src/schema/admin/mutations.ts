@@ -17,7 +17,6 @@ const Mutation = objectType({
 
             async resolve(_, { token, platform, deviceId }, ctx) {
                 const userId = getUserId(ctx)
-                console.log(userId)
                 if (!userId) {
                     throw new Error('Unauthorized');
                 }

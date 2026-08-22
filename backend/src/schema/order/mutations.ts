@@ -436,7 +436,6 @@ const Mutation = extendType({
                         }
 
                         if (delivery.type === DeliveryType.NORMAL) {
-                            console.log("dispatch")
                             await ctx.dispatchQueue.add('dispatch-order', {
                                 orderId: delivery.orderId,
                                 attempt: 1,
