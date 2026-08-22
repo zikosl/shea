@@ -30,8 +30,6 @@ RUN yarn install --frozen-lockfile
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
-COPY --from=builder /app/src/generated ./src/generated
-COPY --from=builder /app/shea-12-firebase-adminsdk-fbsvc-dfc06bc22c.json ./shea-12-firebase-adminsdk-fbsvc-dfc06bc22c.json
 
 RUN yarn prisma generate \
   && mkdir -p logs uploads/logos uploads/favicons \
