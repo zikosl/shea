@@ -1,27 +1,6 @@
 name: shea
 
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: shea-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-shea}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB:-shea}
-      PGDATA: /var/lib/postgresql/data/pgdata
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-shea} -d ${POSTGRES_DB:-shea}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    networks:
-      - shea-network
-
   redis:
     image: redis:7-alpine
     container_name: shea-redis
@@ -106,60 +85,10 @@ services:
         aliases:
           - admin
 
-
-  caddy:
-    image: caddy:2-alpine
-    container_name: shea-caddy
-    restart: unless-stopped
-    depends_on:
-      backend:
-        condition: service_healthy
-      admin:
-        condition: service_healthy
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    environment:
-      SHEA_DOMAIN: ${SHEA_DOMAIN}
-      ACME_EMAIL: ${ACME_EMAIL}
-    volumes:
-      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-      - uploads_data:/srv/uploads:ro
-    networks:
-      shea-network:
-        aliases:
-          - caddy
-
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: shea-pgadmin
-    profiles:
-      - tools
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@shea.io}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    ports:
-      - "127.0.0.1:5050:80"
-    networks:
-      - shea-network
-
 volumes:
-  postgres_data:
   redis_data:
   backend_logs:
   uploads_data:
-  caddy_data:
-  caddy_config:
-  pgadmin_data:
 
 networks:
   shea-network:
