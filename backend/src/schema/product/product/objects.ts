@@ -111,7 +111,7 @@ const ProductTemplate = objectType({
                     where = {
                         ...where,
                         id: {
-                            notIn: products.map(v => v.variantId)
+                            notIn: products.map((v: { variantId: number }) => v.variantId)
                         }
                     }
                 }

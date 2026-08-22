@@ -62,8 +62,7 @@ export const VariantMutation = extendType({
                     });
                     result.push(...createdVariants);
                     return result;
-                } catch (error) {
-                    console.log(error)
+                } catch {
                     throw new GraphQLError("Something Wrong")
                 }
             },
@@ -100,7 +99,7 @@ export const VariantMutation = extendType({
                         where: { variantId: id },
                     });
                     await ctx.prisma.productImage.createMany({
-                        data: data.images.map(url => ({ url, variantId: id })),
+                        data: data.images.map((url: string) => ({ url, variantId: id })),
                     });
                 }
 

@@ -61,7 +61,7 @@ export const PartnerMutation = extendType({
                 if (niches) {
                     await ctx.prisma.partner_Niche.deleteMany({ where: { partnerId: id } })
                     await ctx.prisma.partner_Niche.createMany({
-                        data: niches.map(v => ({
+                        data: niches.map((v: number) => ({
                             niche_id: v,
                             partnerId: id
                         }

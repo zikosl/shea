@@ -17,7 +17,7 @@ import Product from './schema/product'
 import Order from './schema/order'
 import Driver from './schema/driver'
 import Address from './schema/address'
-import Log from './schema/logs'
+import Log from './schema/logs/index'
 import Pos from './schema/pos'
 
 import { DateTimeResolver } from 'graphql-scalars'
