@@ -12,9 +12,8 @@ import SelectLanguage from "../language";
 
 const links = [
   { href: "#features", key: "features" },
-  { href: "#products", key: "products" },
-  { href: "#testimonials", key: "testimonials" },
-  { href: "#download", key: "download" },
+  { href: "#download", key: "workspace" },
+  { href: "/privacy", key: "privacy" },
 ] as const;
 
 const Navbar = () => {
