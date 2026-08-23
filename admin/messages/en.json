@@ -42,7 +42,7 @@
       "title": "A softer, smarter beauty companion for every ritual.",
       "description": "Shea helps you discover products, organize routines, and shop with more confidence through guided recommendations and elegant daily care flows.",
       "primaryCta": "Open admin",
-      "secondaryCta": "Explore collection",
+      "secondaryCta": "See how it works",
       "imageAlt": "Shea mobile app preview",
       "trust": {
         "personalization": "Personalized care suggestions",
@@ -164,12 +164,12 @@
       }
     },
     "download": {
-      "eyebrow": "Take Shea with you",
-      "title": "A feminine mobile experience built for beauty routines on the go",
-      "description": "Download the app to keep your recommendations, rituals, saved products, and reminders close wherever your day takes you.",
+      "eyebrow": "Ready for daily operations",
+      "title": "A calm beauty platform for shoppers, vendors, and the team behind it",
+      "description": "Use the admin workspace to manage the catalog, partners, product templates, and the operational pieces that keep Shea moving.",
       "imageAlt": "Shea app screen",
-      "appStore": "Download on the App Store",
-      "playStore": "Get it on Google Play",
+      "appStore": "Enter admin",
+      "playStore": "Privacy policy",
       "benefits": {
         "guided": {
           "title": "Guided product journeys",

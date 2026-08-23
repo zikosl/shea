@@ -4,10 +4,16 @@ import { getTranslations } from "next-intl/server";
 const Footer = async () => {
   const t = await getTranslations("home.footer");
   const columns = [
-    { title: t("shop.title"), items: ["routine", "makeup", "body", "gifts"] as const },
-    { title: t("company.title"), items: ["story", "partners", "journal", "careers"] as const },
-    { title: t("support.title"), items: ["help", "shipping", "privacy", "terms"] as const },
+    { title: t("shop.title"), key: "shop", items: ["routine", "makeup", "body", "gifts"] as const },
+    { title: t("company.title"), key: "company", items: ["story", "partners", "journal", "careers"] as const },
+    { title: t("support.title"), key: "support", items: ["help", "shipping", "privacy", "terms"] as const },
   ];
+
+  const resolveHref = (item: string) => {
+    if (item === "privacy") return "/privacy";
+    if (item === "terms") return "/privacy#data-retention";
+    return "/";
+  };
 
   return (
     <footer className="border-t border-rose-100/70 bg-white/65 px-4 py-12 backdrop-blur-sm dark:border-rose-400/12 dark:bg-white/4 md:px-6">
@@ -19,8 +25,8 @@ const Footer = async () => {
           </div>
 
           <div className="grid gap-8 sm:grid-cols-3">
-            {columns.map((column, index) => (
-              <div key={index}>
+            {columns.map((column) => (
+              <div key={column.key}>
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-rose-500 dark:text-rose-200/78">
                   {column.title}
                 </p>
@@ -28,10 +34,10 @@ const Footer = async () => {
                   {column.items.map((item) => (
                     <Link
                       key={item}
-                      href="/"
+                      href={resolveHref(item)}
                       className="block text-sm text-rose-950/68 transition-colors hover:text-rose-600 dark:text-rose-50/68 dark:hover:text-rose-200"
                     >
-                      {t(`${["shop", "company", "support"][index]}.items.${item}`)}
+                      {t(`${column.key}.items.${item}`)}
                     </Link>
                   ))}
                 </div>
