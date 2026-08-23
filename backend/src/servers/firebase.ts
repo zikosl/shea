@@ -11,11 +11,26 @@ interface NotificationPayload {
 }
 
 function resolveServiceAccountPath() {
-  return path.resolve(__dirname, '../../', env.firebaseServiceAccountPath)
+  const configuredPath = env.firebaseServiceAccountPath
+  if (path.isAbsolute(configuredPath)) {
+    return configuredPath
+  }
+
+  return path.resolve(__dirname, '../../', configuredPath)
+}
+
+function resolveExistingServiceAccountPath() {
+  const candidates = [
+    resolveServiceAccountPath(),
+    '/app/secrets/firebase-service-account.json',
+    path.resolve(__dirname, '../../', 'secrets/firebase-service-account.json'),
+  ]
+
+  return candidates.find((candidate) => fs.existsSync(candidate)) ?? candidates[0]
 }
 
 function initializeMessaging() {
-  const serviceAccountPath = resolveServiceAccountPath()
+  const serviceAccountPath = resolveExistingServiceAccountPath()
   if (!fs.existsSync(serviceAccountPath)) {
     console.warn(`Firebase service account file is missing at "${serviceAccountPath}". Push notifications are disabled.`)
     return null
