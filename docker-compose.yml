@@ -71,9 +71,33 @@ services:
         aliases:
           - admin
 
+  caddy:
+    image: caddy:2-alpine
+    container_name: shea-caddy
+    restart: unless-stopped
+    depends_on:
+      admin:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - uploads_data:/srv/uploads:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - shea-network
+
 volumes:
   backend_logs:
   uploads_data:
+  caddy_data:
+  caddy_config:
 
 networks:
   shea-network:

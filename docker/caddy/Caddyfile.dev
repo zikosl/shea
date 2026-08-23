@@ -1,0 +1,23 @@
+:80 {
+	encode zstd gzip
+
+	@next_auth path /api/auth* /api/health
+	reverse_proxy @next_auth admin:3000
+
+	@graphql path /api/graphql*
+	handle @graphql {
+		uri strip_prefix /api
+		reverse_proxy backend:3001
+	}
+
+	@uploads path /uploads*
+	reverse_proxy @uploads backend:3001
+
+	@backend_health path /api/backend-health
+	handle @backend_health {
+		rewrite * /health
+		reverse_proxy backend:3001
+	}
+
+	reverse_proxy admin:3000
+}

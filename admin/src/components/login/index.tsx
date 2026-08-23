@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
     Form,
@@ -12,11 +13,13 @@ import {
     FormField,
     FormItem,
     FormLabel,
+    FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { signIn } from "next-auth/react"
 import { useTranslations } from 'next-intl'
 import { DialogFooter } from "@/components/ui/dialog"
+import { toast } from "sonner"
 
 const passwordValidation = new RegExp(
     /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
@@ -33,6 +36,7 @@ const FormSchema = z.object({
 
 function InputForm() {
     const t = useTranslations("home.login")
+    const router = useRouter()
     const [loading, setLoading] = useState(false)
 
     const form = useForm<z.infer<typeof FormSchema>>({
@@ -46,8 +50,25 @@ function InputForm() {
     async function onSubmit(data: z.infer<typeof FormSchema>) {
         setLoading(true)
         try {
-            await signIn("credentials", { ...data, callbackUrl: "/dashboard" })
+            const response = await signIn("credentials", {
+                ...data,
+                callbackUrl: "/dashboard",
+                redirect: false,
+            })
+
+            if (response?.error) {
+                toast.error("Login failed", {
+                    description: "Please check your email and password, then try again.",
+                })
+                return
+            }
+
+            router.push(response?.url ?? "/dashboard")
+            router.refresh()
         } catch (error) {
+            toast.error("Login failed", {
+                description: "The admin session could not be created. Please try again.",
+            })
         } finally {
             setLoading(false)
         }
@@ -66,6 +87,7 @@ function InputForm() {
                                 <Input placeholder={t("email")} {...field} />
                             </FormControl>
                             <FormDescription>{t("emailmsg")}</FormDescription>
+                            <FormMessage />
                         </FormItem>
                     )}
                 />
@@ -79,6 +101,7 @@ function InputForm() {
                                 <Input placeholder={t("password")} type="password" {...field} />
                             </FormControl>
                             <FormDescription>{t("passwordmsg")}</FormDescription>
+                            <FormMessage />
                         </FormItem>
                     )}
                 />
