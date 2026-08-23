@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Menu, Moon, Sparkles, Sun, X } from "lucide-react";
@@ -16,16 +16,14 @@ const links = [
   { href: "/privacy", key: "privacy" },
 ] as const;
 
+const subscribeToMount = () => () => {};
+
 const Navbar = () => {
   const t = useTranslations("home.navbar");
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(subscribeToMount, () => true, () => false);
   const { theme, setTheme } = useTheme();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 20);

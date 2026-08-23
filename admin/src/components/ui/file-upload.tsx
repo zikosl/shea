@@ -38,7 +38,7 @@ interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
      * @default undefined
      * @example onUpload={(files) => uploadFiles(files)}
      */
-    onUpload?: (files: File[]) => Promise<void>
+    onUpload?: (files: File[]) => Promise<unknown>
 
     /**
      * Progress of the uploaded files.

@@ -8,6 +8,10 @@ const publicHostname = new URL(publicUrl).hostname;
 
 const nextConfig: NextConfig = {
     output: 'standalone',
+    cacheComponents: true,
+    turbopack: {
+        root: process.cwd(),
+    },
     images: {
         remotePatterns: [
             {

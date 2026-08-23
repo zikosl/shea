@@ -3,6 +3,10 @@ import Form from './form';
 import { getItemById } from '../actions';
 import { title_singular } from '../_constant';
 
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
+
 type TItemViewPageProps = {
   itemId: string;
 };

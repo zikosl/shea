@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -60,15 +60,17 @@ export default function ItemForm({
     },
   });
 
-  const { uploadFiles, progresses, isUploading, uploadedFiles } = useUploadFile(FILE_UPLOAD);
+  const { uploadFiles, progresses, isUploading } = useUploadFile(FILE_UPLOAD);
 
-  useEffect(() => {
-    if (uploadedFiles.length > 0) {
-      const latestFile = uploadedFiles[uploadedFiles.length - 1];
+  async function handleUpload(files: File[]) {
+    const uploadedFiles = await uploadFiles(files);
+    const latestFile = uploadedFiles[uploadedFiles.length - 1];
+
+    if (latestFile) {
       form.setValue("image", latestFile.url);
       setImage(resolvePublicAssetUrl(latestFile.url));
     }
-  }, [uploadedFiles, form]);
+  }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
@@ -156,7 +158,7 @@ export default function ItemForm({
                       maxSize={25 * 1024 * 1024}
                       onValueChange={(file) => field.onChange(file)}
                       progresses={progresses}
-                      onUpload={uploadFiles}
+                      onUpload={handleUpload}
                       disabled={isUploading}
                     />
                   </FormControl>

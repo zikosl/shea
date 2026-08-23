@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { Loader2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -67,7 +67,7 @@ export default function ItemForm({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [imageUrls, setImageUrls] = useState<string[]>(() => initialData?.images?.map((image) => image.url) ?? []);
-  const { uploadFiles, progresses, isUploading, uploadedFiles } = useUploadFile(FILE_UPLOAD);
+  const { uploadFiles, progresses, isUploading } = useUploadFile(FILE_UPLOAD);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -79,16 +79,13 @@ export default function ItemForm({
     },
   });
 
-  useEffect(() => {
-    if (uploadedFiles.length === 0) {
-      return;
-    }
-
+  async function handleUpload(files: File[]) {
+    const uploadedFiles = await uploadFiles(files);
     setImageUrls((currentImages) => {
       const nextUrls = uploadedFiles.map((file) => file.url);
       return Array.from(new Set([...currentImages, ...nextUrls]));
     });
-  }, [uploadedFiles]);
+  }
 
   const previewImages = useMemo(
     () => imageUrls.map((url) => resolvePublicAssetUrl(url)),
@@ -235,7 +232,7 @@ export default function ItemForm({
                 maxFiles={6}
                 multiple
                 progresses={progresses}
-                onUpload={uploadFiles}
+                    onUpload={handleUpload}
                 disabled={isUploading}
               />
               <FormDescription>

@@ -16,7 +16,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { createItem, updateItem } from '../actions';
@@ -72,16 +72,18 @@ export default function ItemForm({
     setLoading(false)
   }
 
-  const { uploadFiles, progresses, isUploading, uploadedFiles } = useUploadFile(FILE_UPLOAD)
+  const { uploadFiles, progresses, isUploading } = useUploadFile(FILE_UPLOAD)
 
-  useEffect(() => {
-    if (uploadedFiles.length > 0) {
-      const latestFile = uploadedFiles[uploadedFiles.length - 1]
-      form.setValue("image", latestFile.url)
-      setImage(resolvePublicAssetUrl(latestFile.url))
+  async function handleUpload(files: File[]) {
+    const uploadedFiles = await uploadFiles(files);
+    const latestFile = uploadedFiles[uploadedFiles.length - 1];
+
+    if (latestFile) {
+      form.setValue("image", latestFile.url);
+      setImage(resolvePublicAssetUrl(latestFile.url));
     }
   }
-    , [uploadedFiles, form])
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-1 space-y-8 mx-auto">
@@ -120,7 +122,7 @@ export default function ItemForm({
                         field.onChange(file)
                       }
                       progresses={progresses}
-                      onUpload={uploadFiles}
+                      onUpload={handleUpload}
                       disabled={isUploading}
                     />
                   </FormControl>

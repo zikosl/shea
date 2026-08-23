@@ -2,18 +2,13 @@ import { CalendarDays, PanelLeftDashed } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { UserNav } from "@/components/admin-panel/user-nav";
 import { SheetMenu } from "@/components/admin-panel/sheet-menu";
+import { NavbarDate } from "@/components/admin-panel/navbar-date";
 
 interface NavbarProps {
   title: string;
 }
 
 export function Navbar({ title }: NavbarProps) {
-  const today = new Intl.DateTimeFormat("en", {
-    month: "long",
-    day: "numeric",
-    year: "numeric"
-  }).format(new Date());
-
   return (
     <header className="sticky top-0 z-10 w-full border-b border-slate-200/70 bg-white/68 backdrop-blur-xl supports-backdrop-filter:bg-white/55 dark:border-slate-400/10 dark:bg-[#131d2e]/78 dark:supports-backdrop-filter:bg-[#131d2e]/72">
       <div className="flex min-h-[4.5rem] items-center justify-between gap-4 px-4 py-4 sm:px-6">
@@ -31,7 +26,7 @@ export function Navbar({ title }: NavbarProps) {
         <div className="flex items-center gap-2">
           <div className="hidden items-center gap-2 rounded-full border border-slate-200/80 bg-white/80 px-3 py-2 text-sm text-slate-500 dark:border-slate-400/10 dark:bg-white/5 dark:text-slate-300 md:flex">
             <CalendarDays className="h-4 w-4 text-sky-600" />
-            <span>{today}</span>
+            <NavbarDate />
           </div>
           <ModeToggle />
           <UserNav />

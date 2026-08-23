@@ -17,6 +17,7 @@ export function useUploadFile(REQUEST: string) {
 
   async function uploadThings(files: File[]) {
     setIsUploading(true)
+    const uploaded: UploadedFile[] = []
     try {
       for (let index = 0; index < files.length; index++) {
         const formData = new FormData();
@@ -55,11 +56,15 @@ export function useUploadFile(REQUEST: string) {
           throw new Error(res.data.errors[0].message)
         }
         else {
-          setUploadedFiles((currentFiles) => [...currentFiles, res.data.data.uploadFile])
+          const uploadedFile = res.data.data.uploadFile as UploadedFile
+          uploaded.push(uploadedFile)
+          setUploadedFiles((currentFiles) => [...currentFiles, uploadedFile])
         }
       }
+      return uploaded
     } catch (err) {
       toast.error(getErrorMessage(err))
+      return uploaded
     } finally {
       setProgresses({})
       setIsUploading(false)
