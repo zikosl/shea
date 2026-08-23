@@ -6,13 +6,47 @@ import { env } from '../../core/config/env'
 
 const phoneRegex = /^\+?[1-9]\d{1,14}$/
 
+function normalizePhoneForComparison(phone: string) {
+  const digits = phone.trim().replace(/\D/g, '')
+
+  if (digits.startsWith('213') && digits.length === 12) {
+    return digits.slice(3)
+  }
+
+  if (digits.startsWith('0') && digits.length === 10) {
+    return digits.slice(1)
+  }
+
+  return digits
+}
+
+function isAppReviewOtp(phone: string, code?: string) {
+  if (!env.appReviewOtp.enabled) {
+    return false
+  }
+
+  const configuredPhone = normalizePhoneForComparison(env.appReviewOtp.phone)
+  const requestedPhone = normalizePhoneForComparison(phone)
+  const phoneMatches = configuredPhone === requestedPhone
+
+  if (!code) {
+    return phoneMatches
+  }
+
+  return phoneMatches && code === env.appReviewOtp.code
+}
+
 export async function sendOtp(prisma: PrismaClient, phone: string) {
-  if (!phoneRegex.test(phone)) {
+  const isReviewPhone = isAppReviewOtp(phone)
+
+  if (!isReviewPhone && !phoneRegex.test(phone)) {
     throw createBadRequestError('Invalid phone number format')
   }
 
   const expiresAt = new Date(Date.now() + 3 * 60 * 1000)
-  const result = env.otpBypassCode
+  const result = isReviewPhone
+    ? { success: true, otp: env.appReviewOtp.code }
+    : env.otpBypassCode
     ? { success: true, otp: env.otpBypassCode }
     : await sendOtpViaPhoneServer(phone)
 
@@ -41,6 +75,27 @@ export async function sendOtp(prisma: PrismaClient, phone: string) {
 }
 
 export async function verifyOtp(prisma: PrismaClient, phone: string, code: string) {
+  if (isAppReviewOtp(phone, code)) {
+    const expiresAt = new Date(Date.now() + 3 * 60 * 1000)
+
+    await prisma.otp.upsert({
+      where: { phone },
+      update: {
+        code: env.appReviewOtp.code,
+        expiresAt,
+        attempts: 0,
+        verified: false,
+      },
+      create: {
+        phone,
+        code: env.appReviewOtp.code,
+        expiresAt,
+        attempts: 0,
+        verified: false,
+      },
+    })
+  }
+
   const otpRecord = await prisma.otp.findUnique({
     where: { phone },
   })

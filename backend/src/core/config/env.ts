@@ -30,6 +30,11 @@ export const env = {
     process.env.NODE_ENV !== 'production'
       ? process.env.OTP_BYPASS_CODE ?? '123456'
       : undefined,
+  appReviewOtp: {
+    enabled: process.env.APP_REVIEW_OTP_ENABLED !== 'false',
+    phone: process.env.APP_REVIEW_OTP_PHONE ?? '554706953',
+    code: process.env.APP_REVIEW_OTP_CODE ?? '123456',
+  },
 }
 
 export const isProduction = env.nodeEnv === 'production'
