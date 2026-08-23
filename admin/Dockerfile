@@ -1,21 +1,22 @@
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 WORKDIR /app
 ENV YARN_CACHE_FOLDER=/tmp/.yarn-cache
 RUN apk add --no-cache libc6-compat
-RUN mkdir -p /tmp/.yarn-cache
+RUN corepack enable && corepack prepare yarn@1.22.22 --activate && mkdir -p /tmp/.yarn-cache
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+RUN yarn install --frozen-lockfile --non-interactive --network-timeout 600000
 
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 ENV YARN_CACHE_FOLDER=/tmp/.yarn-cache
+RUN corepack enable && corepack prepare yarn@1.22.22 --activate && mkdir -p /tmp/.yarn-cache
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ARG NEXT_PUBLIC_API_URL=http://localhost/api
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN yarn build
 
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 RUN apk add --no-cache wget                                        
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 --ingroup nodejs nextjs
 WORKDIR /app
