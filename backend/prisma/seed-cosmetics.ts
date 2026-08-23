@@ -36,7 +36,7 @@ if (!connectionString) {
 const adapter = new PrismaPg({ connectionString })
 const prisma = new PrismaClient({ adapter })
 
-const dataDir = path.join(__dirname, 'data')
+const dataDir = path.resolve(process.cwd(), 'prisma', 'data')
 const brandsPath = path.join(dataDir, 'cosmetics-brands.json')
 const productsPath = path.join(dataDir, 'cosmetics-products.json')
 
