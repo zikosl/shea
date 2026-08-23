@@ -25,7 +25,7 @@ export const Query = extendType({
         t.field('findManyCategories', {
             type: 'CategoryResult',
             args: {
-                niche_id: nonNull(intArg()),
+                niche_id: intArg(),
                 search: stringArg(),
                 page: nonNull(intArg()),
                 limit: nonNull(intArg()),
@@ -33,17 +33,17 @@ export const Query = extendType({
             },
             resolve: async (_parent, { search, page, limit, isFull = false, niche_id }, ctx: Context) => {
 
-                const where: Prisma.CategoryWhereInput = search
-                    ? {
-                        niche_id,
-                        OR: [
-                            { name: { contains: search, mode: 'insensitive' } },
-                            // { description: { contains: search, mode: 'insensitive' } },
-                        ],
-                    }
-                    : {
-                        niche_id
-                    };
+                const where: Prisma.CategoryWhereInput = {
+                    ...(niche_id ? { niche_id } : {}),
+                    ...(search
+                        ? {
+                            OR: [
+                                { name: { contains: search, mode: 'insensitive' } },
+                                { name_ar: { contains: search, mode: 'insensitive' } },
+                            ],
+                        }
+                        : {}),
+                };
 
                 const args: Prisma.CategoryFindManyArgs = isFull ? { where } : {
                     where,

@@ -10,16 +10,37 @@ export const columns: ColumnDef<Item>[] = [
   {
     id: 'image',
     header: 'Image',
-    cell: ({ row }) => (
-      <Image
-        alt="Image"
-        unoptimized
-        src={resolvePublicAssetUrl(row.original.image)}
-        width={150}
-        height={100}
-      />
-    ),
+    cell: ({ row }) => {
+      const imageUrl = resolvePublicAssetUrl(row.original.image);
+
+      if (!imageUrl) {
+        return (
+          <div className="flex h-16 w-24 items-center justify-center rounded-md border border-dashed text-xs text-muted-foreground">
+            No image
+          </div>
+        );
+      }
+
+      return (
+        <Image
+          alt={row.original.name ? `${row.original.name} category` : "Category image"}
+          unoptimized
+          src={imageUrl}
+          width={150}
+          height={100}
+          className="h-16 w-24 rounded-md object-cover"
+        />
+      );
+    },
     size: 200,
+  },
+  {
+    accessorKey: 'niche.name',
+    header: 'Niche',
+    size: 160,
+    cell: ({ row }) => row.original.niche?.name ?? (
+      <span className="text-muted-foreground">Unassigned</span>
+    ),
   },
   {
     accessorKey: 'name',

@@ -6,6 +6,12 @@ export const FIND_ONE_CATEGORY = gql`
       id
       name
       name_ar
+      image
+      niche_id
+      niche {
+        id
+        name
+      }
     }
   }
 `;
@@ -29,6 +35,11 @@ export const FIND_MANY_CATEGORIES = gql`
         name
         name_ar
         image
+        niche_id
+        niche {
+          id
+          name
+        }
       }
       totalCategories
     }

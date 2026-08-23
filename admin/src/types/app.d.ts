@@ -18,6 +18,8 @@ type Category = {
     name: string;
     name_ar: string;
     image: string;
+    niche_id?: string;
+    niche?: Niche | null;
 }
 
 type ProductType = {

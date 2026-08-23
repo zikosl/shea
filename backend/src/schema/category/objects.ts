@@ -11,8 +11,10 @@ const Category = objectType({
         t.field('niche', {
             type: 'Niche',
             resolve: (parent, _args, ctx) => {
+                if (!parent.niche_id) return null
+
                 return ctx.prisma.niche.findUnique({
-                    where: { id: parent.niche_id ?? undefined },
+                    where: { id: parent.niche_id },
                 })
             }
         })
