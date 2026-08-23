@@ -17,7 +17,7 @@ function resolveServiceAccountPath() {
 function initializeMessaging() {
   const serviceAccountPath = resolveServiceAccountPath()
   if (!fs.existsSync(serviceAccountPath)) {
-    console.warn('Firebase service account file is missing. Push notifications are disabled.')
+    console.warn(`Firebase service account file is missing at "${serviceAccountPath}". Push notifications are disabled.`)
     return null
   }
 

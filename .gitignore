@@ -16,6 +16,7 @@ z.txt
 # Environment files
 .env
 # .env.*
+secrets/
 
 # OS generated files
 .DS_Store
