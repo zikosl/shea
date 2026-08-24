@@ -2,39 +2,61 @@
   {
     "name": "ABUSAAD",
     "slug": "abusaad",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-156-300x300.png",
+    "image": "/uploads/brands/abusaad-d0a6e0f17c-6183fa75d0.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 12,
     "categories": [
-      "Skincare",
       "Bath & Body",
       "Fragrance",
+      "Skincare",
       "Personal Care"
     ],
     "productTypes": [
-      "Moisturizer",
-      "Toner & Face Mist",
       "Body Powder",
       "Body Mist & Splash",
+      "Moisturizer",
       "Hair Removal & Waxing",
+      "Toner & Face Mist",
       "Body Wash & Shower Gel",
       "Intimate Care",
       "Perfume"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام",
+      "العطور",
+      "العناية بالبشرة",
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "بودرة الجسم",
+      "رذاذ ومعطر الجسم",
+      "مرطب البشرة",
+      "إزالة الشعر والشمع",
+      "تونر ورذاذ الوجه",
+      "غسول الجسم وجل الاستحمام",
+      "العناية بالمناطق الحساسة",
+      "عطر"
     ]
   },
   {
     "name": "ACM",
     "slug": "acm",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-534-300x300.png",
+    "image": "/uploads/brands/acm-74733d4c9c-34f75636a5.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Sunscreen"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "واقي الشمس"
     ]
   },
   {
@@ -42,13 +64,19 @@
     "slug": "ameerat",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-06T131852.216-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Fragrance"
     ],
     "productTypes": [
       "Perfume"
+    ],
+    "categories_ar": [
+      "العطور"
+    ],
+    "productTypes_ar": [
+      "عطر"
     ]
   },
   {
@@ -56,16 +84,25 @@
     "slug": "andrea",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-01T153742.531-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
-      "Hair Care",
-      "Bath & Body"
+      "Bath & Body",
+      "Hair Care"
     ],
     "productTypes": [
       "Body Oil",
       "Hair Color",
       "Hair Serum"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام",
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "زيت الجسم",
+      "صبغة الشعر",
+      "سيروم الشعر"
     ]
   },
   {
@@ -73,15 +110,23 @@
     "slug": "anua",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/CC-70-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 4,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
-      "Serum & Ampoule",
       "Treatment & Anti-Aging",
+      "Serum & Ampoule",
       "Toner & Face Mist"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "علاجات ومكافحة الشيخوخة",
+      "سيروم وأمبولات",
+      "تونر ورذاذ الوجه"
     ]
   },
   {
@@ -89,7 +134,7 @@
     "slug": "appareil",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-13T103403.762-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Personal Care",
@@ -98,6 +143,14 @@
     "productTypes": [
       "Hair Removal & Waxing",
       "Exfoliator"
+    ],
+    "categories_ar": [
+      "العناية الشخصية",
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "إزالة الشعر والشمع",
+      "مقشر البشرة"
     ]
   },
   {
@@ -105,49 +158,83 @@
     "slug": "appareille",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-06T151256.923-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Sunscreen"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "واقي الشمس"
     ]
   },
   {
     "name": "ARVEA",
     "slug": "arvea",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/12/ARVEA-16-300x300.png",
+    "image": "/uploads/brands/arvea-81191bfe5a-8d084285e6.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 36,
     "categories": [
+      "Personal Care",
       "Skincare",
       "Bath & Body",
-      "Personal Care",
-      "Hair Care",
       "Fragrance",
+      "Hair Care",
       "Makeup"
     ],
     "productTypes": [
+      "Oral Care",
       "Moisturizer",
       "Body Cream & Lotion",
+      "Body Mist & Splash",
       "Perfume",
-      "Oral Care",
       "Soap",
       "Hair Color",
-      "Cleanser & Makeup Remover",
-      "Face Mask",
-      "Deodorant",
-      "Body Mist & Splash",
       "Treatment & Anti-Aging",
+      "Cleanser & Makeup Remover",
       "Body Wash & Shower Gel",
       "Intimate Care",
       "Foundation",
       "Hair Mask & Treatment",
+      "Face Mask",
       "Hair Oil",
+      "Deodorant",
       "Shampoo",
       "Sunscreen"
+    ],
+    "categories_ar": [
+      "العناية الشخصية",
+      "العناية بالبشرة",
+      "العناية بالجسم والاستحمام",
+      "العطور",
+      "العناية بالشعر",
+      "المكياج"
+    ],
+    "productTypes_ar": [
+      "العناية بالفم",
+      "مرطب البشرة",
+      "كريم ولوشن الجسم",
+      "رذاذ ومعطر الجسم",
+      "عطر",
+      "صابون",
+      "صبغة الشعر",
+      "علاجات ومكافحة الشيخوخة",
+      "غسول ومزيل مكياج",
+      "غسول الجسم وجل الاستحمام",
+      "العناية بالمناطق الحساسة",
+      "كريم أساس",
+      "ماسك وعلاج الشعر",
+      "ماسك الوجه",
+      "زيت الشعر",
+      "مزيل العرق",
+      "شامبو",
+      "واقي الشمس"
     ]
   },
   {
@@ -155,7 +242,7 @@
     "slug": "aven",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-06T144730.658-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Skincare"
@@ -163,20 +250,33 @@
     "productTypes": [
       "Moisturizer",
       "Sunscreen"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "مرطب البشرة",
+      "واقي الشمس"
     ]
   },
   {
     "name": "AVENE",
     "slug": "avene",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-22-300x300.png",
+    "image": "/uploads/brands/avene-3500eabc35-73485acee8.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Cleanser & Makeup Remover"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "غسول ومزيل مكياج"
     ]
   },
   {
@@ -184,27 +284,39 @@
     "slug": "axis-y",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-147-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Treatment & Anti-Aging"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "علاجات ومكافحة الشيخوخة"
     ]
   },
   {
     "name": "AYAM",
     "slug": "ayam",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-543-300x300.png",
+    "image": "/uploads/brands/ayam-4633e75ff9-c7c8b61ef0.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 4,
     "categories": [
       "Personal Care"
     ],
     "productTypes": [
       "Cotton & Makeup Removal"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "قطن وإزالة المكياج"
     ]
   },
   {
@@ -212,38 +324,61 @@
     "slug": "baby",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-06T163404.431-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 15,
     "categories": [
       "Personal Care",
-      "Bath & Body",
       "Fragrance",
+      "Bath & Body",
       "Hair Care"
     ],
     "productTypes": [
       "Intimate Care",
-      "Deodorant",
       "Eau de Toilette & Cologne",
       "Body Wash & Shower Gel",
       "Body Cream & Lotion",
       "Soap",
       "Body Mist & Splash",
+      "Deodorant",
       "Hair Styling",
-      "Body Care"
+      "Body Powder"
+    ],
+    "categories_ar": [
+      "العناية الشخصية",
+      "العطور",
+      "العناية بالجسم والاستحمام",
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "العناية بالمناطق الحساسة",
+      "أو دو تواليت وكولونيا",
+      "غسول الجسم وجل الاستحمام",
+      "كريم ولوشن الجسم",
+      "صابون",
+      "رذاذ ومعطر الجسم",
+      "مزيل العرق",
+      "تصفيف الشعر",
+      "بودرة الجسم"
     ]
   },
   {
     "name": "BABYLISS",
     "slug": "babyliss",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-06T155647.863-300x300.png",
+    "image": "/uploads/brands/babyliss-faeadca5a7-b393947324.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 5,
     "categories": [
       "Hair Care"
     ],
     "productTypes": [
       "Hair Tools"
+    ],
+    "categories_ar": [
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "أدوات الشعر"
     ]
   },
   {
@@ -251,13 +386,19 @@
     "slug": "babylisse",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T113205.576-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Hair Care"
     ],
     "productTypes": [
       "Hair Tools"
+    ],
+    "categories_ar": [
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "أدوات الشعر"
     ]
   },
   {
@@ -265,13 +406,19 @@
     "slug": "beauttmax",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T104504.425-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Bath & Body"
     ],
     "productTypes": [
-      "Body Care"
+      "Body Cream & Lotion"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "كريم ولوشن الجسم"
     ]
   },
   {
@@ -279,7 +426,7 @@
     "slug": "beauty",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-557-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Skincare"
@@ -287,22 +434,37 @@
     "productTypes": [
       "Sunscreen",
       "Treatment & Anti-Aging"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "واقي الشمس",
+      "علاجات ومكافحة الشيخوخة"
     ]
   },
   {
     "name": "BEDOUINE",
     "slug": "bedouine",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-238-1-300x300.png",
+    "image": "/uploads/brands/bedouine-95f791a159-3caee63129.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
-      "Fragrance",
-      "Bath & Body"
+      "Bath & Body",
+      "Fragrance"
     ],
     "productTypes": [
-      "Perfume",
-      "Body Scrub"
+      "Body Scrub",
+      "Perfume"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام",
+      "العطور"
+    ],
+    "productTypes_ar": [
+      "مقشر الجسم",
+      "عطر"
     ]
   },
   {
@@ -310,7 +472,7 @@
     "slug": "bio",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-239-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Bath & Body",
@@ -319,14 +481,22 @@
     "productTypes": [
       "Soap",
       "Moisturizer"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام",
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "صابون",
+      "مرطب البشرة"
     ]
   },
   {
     "name": "BIO-NESS",
     "slug": "bio-ness",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-2025-06-15T144258.140-300x300.png",
+    "image": "/uploads/brands/bio-ness-f9fed7917e-4119e74ff0.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
       "Fragrance",
@@ -336,6 +506,15 @@
       "Body Mist & Splash",
       "Deodorant",
       "Perfume"
+    ],
+    "categories_ar": [
+      "العطور",
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "رذاذ ومعطر الجسم",
+      "مزيل العرق",
+      "عطر"
     ]
   },
   {
@@ -343,21 +522,27 @@
     "slug": "bioaqoua",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/09/CC-86-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Exfoliator"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "مقشر البشرة"
     ]
   },
   {
     "name": "BIODERMA",
     "slug": "bioderma",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T115756.863-300x300.png",
+    "image": "/uploads/brands/bioderma-5b319cf140-ac1f6736b2.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Skincare"
@@ -365,14 +550,21 @@
     "productTypes": [
       "Treatment & Anti-Aging",
       "Cleanser & Makeup Remover"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "علاجات ومكافحة الشيخوخة",
+      "غسول ومزيل مكياج"
     ]
   },
   {
     "name": "BIOLILA",
     "slug": "biolila",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-146-300x300.png",
+    "image": "/uploads/brands/biolila-65a4b4f0f2-3335b30c57.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 4,
     "categories": [
       "Bath & Body",
@@ -382,6 +574,15 @@
       "Body Cream & Lotion",
       "Cleanser & Makeup Remover",
       "Sunscreen"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام",
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "كريم ولوشن الجسم",
+      "غسول ومزيل مكياج",
+      "واقي الشمس"
     ]
   },
   {
@@ -389,13 +590,19 @@
     "slug": "bioplex",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T115113.735-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Serum & Ampoule"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "سيروم وأمبولات"
     ]
   },
   {
@@ -403,44 +610,65 @@
     "slug": "biore",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-01T151650.882-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Exfoliator"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "مقشر البشرة"
     ]
   },
   {
     "name": "BIOVA",
     "slug": "biova",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-578-300x300.png",
+    "image": "/uploads/brands/biova-e9c6734e23-394de01253.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 7,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Moisturizer",
-      "Cleanser & Makeup Remover",
       "Sunscreen",
+      "Cleanser & Makeup Remover",
       "Face Mask"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "مرطب البشرة",
+      "واقي الشمس",
+      "غسول ومزيل مكياج",
+      "ماسك الوجه"
     ]
   },
   {
     "name": "BIOXCIN",
     "slug": "bioxcin",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-98-300x300.png",
+    "image": "/uploads/brands/bioxcin-04b65da77c-8deb8b2df3.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Hair Care"
     ],
     "productTypes": [
       "Shampoo"
+    ],
+    "categories_ar": [
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "شامبو"
     ]
   },
   {
@@ -448,62 +676,95 @@
     "slug": "bioxcine",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-591-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Hair Care"
     ],
     "productTypes": [
       "Shampoo"
+    ],
+    "categories_ar": [
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "شامبو"
     ]
   },
   {
     "name": "BOURJOIS",
     "slug": "bourjois",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-599-300x300.png",
+    "image": "/uploads/brands/bourjois-afaad46314-374f262466.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 23,
     "categories": [
-      "Makeup",
-      "Bath & Body"
+      "Makeup"
     ],
     "productTypes": [
-      "Mascara",
-      "Foundation",
-      "Concealer",
-      "Eyeliner",
-      "Body Care",
-      "Lipstick & Lip Color",
       "Eyeshadow",
+      "Concealer",
       "Blush",
-      "Makeup",
+      "Lipstick & Lip Color",
       "Brows",
-      "Lipstick",
+      "Foundation",
+      "Eyeliner",
+      "Mascara",
       "Palette",
+      "Face Powder",
       "Primer"
+    ],
+    "categories_ar": [
+      "المكياج"
+    ],
+    "productTypes_ar": [
+      "ظلال العيون",
+      "كونسيلر",
+      "أحمر الخدود",
+      "أحمر الشفاه ومنتجات الشفاه",
+      "منتجات الحواجب",
+      "كريم أساس",
+      "آيلاينر وكحل",
+      "ماسكارا",
+      "باليت مكياج",
+      "بودرة الوجه",
+      "برايمر"
     ]
   },
   {
     "name": "CALLIDERM",
     "slug": "calliderm",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-13T152325.002-300x300.png",
+    "image": "/uploads/brands/calliderm-15e419420c-504e3104c2.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 14,
     "categories": [
-      "Skincare",
       "Hair Care",
-      "Fragrance"
+      "Fragrance",
+      "Skincare"
     ],
     "productTypes": [
       "Shampoo",
       "Body Mist & Splash",
       "Moisturizer",
-      "Face Mask",
       "Sunscreen",
       "Exfoliator",
+      "Face Mask",
       "Serum & Ampoule"
+    ],
+    "categories_ar": [
+      "العناية بالشعر",
+      "العطور",
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "شامبو",
+      "رذاذ ومعطر الجسم",
+      "مرطب البشرة",
+      "واقي الشمس",
+      "مقشر البشرة",
+      "ماسك الوجه",
+      "سيروم وأمبولات"
     ]
   },
   {
@@ -511,7 +772,7 @@
     "slug": "calliderme",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-161-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Skincare"
@@ -519,20 +780,33 @@
     "productTypes": [
       "Sunscreen",
       "Treatment & Anti-Aging"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "واقي الشمس",
+      "علاجات ومكافحة الشيخوخة"
     ]
   },
   {
     "name": "CANTU",
     "slug": "cantu",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/Design-sans-titre-2025-07-20T100947.508-300x300.png",
+    "image": "/uploads/brands/cantu-93c1da5355-0d1e46a0a1.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Face Mask"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "ماسك الوجه"
     ]
   },
   {
@@ -540,13 +814,19 @@
     "slug": "carelia",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T144502.789-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Bath & Body"
     ],
     "productTypes": [
       "Body Cream & Lotion"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "كريم ولوشن الجسم"
     ]
   },
   {
@@ -554,41 +834,59 @@
     "slug": "celcenes",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/CC-78-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Cleanser & Makeup Remover"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "غسول ومزيل مكياج"
     ]
   },
   {
     "name": "CELENES",
     "slug": "celenes",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/CC-79-300x300.png",
+    "image": "/uploads/brands/celenes-cb016898f6-5d6d348864.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 11,
     "categories": [
       "Skincare",
       "Personal Care"
     ],
     "productTypes": [
-      "Cleanser & Makeup Remover",
       "Toner & Face Mist",
       "Deodorant",
+      "Cleanser & Makeup Remover",
       "Sunscreen",
       "Moisturizer",
       "Serum & Ampoule"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة",
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "تونر ورذاذ الوجه",
+      "مزيل العرق",
+      "غسول ومزيل مكياج",
+      "واقي الشمس",
+      "مرطب البشرة",
+      "سيروم وأمبولات"
     ]
   },
   {
     "name": "CENTELLA",
     "slug": "centella",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-623-300x300.png",
+    "image": "/uploads/brands/centella-8d24fb931a-263d0a2f68.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 9,
     "categories": [
       "Skincare",
@@ -596,11 +894,23 @@
     ],
     "productTypes": [
       "Serum & Ampoule",
-      "Moisturizer",
       "Toner & Face Mist",
       "Sunscreen",
       "Cleanser & Makeup Remover",
-      "Body Care"
+      "Moisturizer",
+      "Body Cream & Lotion"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة",
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "سيروم وأمبولات",
+      "تونر ورذاذ الوجه",
+      "واقي الشمس",
+      "غسول ومزيل مكياج",
+      "مرطب البشرة",
+      "كريم ولوشن الجسم"
     ]
   },
   {
@@ -608,54 +918,83 @@
     "slug": "centilla",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-639-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Serum & Ampoule"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "سيروم وأمبولات"
     ]
   },
   {
     "name": "CERAVE",
     "slug": "cerave",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-642-300x300.png",
+    "image": "/uploads/brands/cerave-e9521ebafc-8b6072406a.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
-      "Skincare",
-      "Bath & Body"
+      "Skincare"
     ],
     "productTypes": [
       "Moisturizer",
       "Serum & Ampoule",
-      "Body Care"
+      "Treatment & Anti-Aging"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "مرطب البشرة",
+      "سيروم وأمبولات",
+      "علاجات ومكافحة الشيخوخة"
     ]
   },
   {
     "name": "CHALINE",
     "slug": "chaline",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/CC-106-300x300.png",
+    "image": "/uploads/brands/chaline-0dc98f097a-a6fd83dd2d.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 15,
     "categories": [
       "Skincare",
-      "Hair Care",
       "Fragrance",
-      "Bath & Body"
+      "Bath & Body",
+      "Hair Care"
     ],
     "productTypes": [
-      "Moisturizer",
       "Sunscreen",
       "Body Mist & Splash",
+      "Moisturizer",
       "Body Cream & Lotion",
-      "Serum & Ampoule",
       "Hair Serum",
+      "Serum & Ampoule",
       "Shampoo",
       "Hair Styling"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة",
+      "العطور",
+      "العناية بالجسم والاستحمام",
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "واقي الشمس",
+      "رذاذ ومعطر الجسم",
+      "مرطب البشرة",
+      "كريم ولوشن الجسم",
+      "سيروم الشعر",
+      "سيروم وأمبولات",
+      "شامبو",
+      "تصفيف الشعر"
     ]
   },
   {
@@ -663,55 +1002,79 @@
     "slug": "chline",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/CC-108-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Moisturizer"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "مرطب البشرة"
     ]
   },
   {
     "name": "CLARISTONE",
     "slug": "claristone",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/11/CC-57-300x300.png",
+    "image": "/uploads/brands/claristone-22e82d0a3b-6ef45353a0.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Face Mask"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "ماسك الوجه"
     ]
   },
   {
     "name": "CLEAR",
     "slug": "clear",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-671-300x300.png",
+    "image": "/uploads/brands/clear-a142e3805c-5f16efdae8.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Hair Care"
     ],
     "productTypes": [
       "Shampoo"
+    ],
+    "categories_ar": [
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "شامبو"
     ]
   },
   {
     "name": "COLGATE",
     "slug": "colgate",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/CC-110-300x300.png",
+    "image": "/uploads/brands/colgate-09ee306ee7-ee3edaa71c.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Personal Care"
     ],
     "productTypes": [
       "Oral Care"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "العناية بالفم"
     ]
   },
   {
@@ -719,21 +1082,27 @@
     "slug": "colorrista",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T170139.527-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Hair Care"
     ],
     "productTypes": [
       "Shampoo"
+    ],
+    "categories_ar": [
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "شامبو"
     ]
   },
   {
     "name": "COSRX",
     "slug": "cosrx",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-675-300x300.png",
+    "image": "/uploads/brands/cosrx-0aaba7bba2-90631cdfff.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Skincare"
@@ -741,34 +1110,53 @@
     "productTypes": [
       "Moisturizer",
       "Sunscreen"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "مرطب البشرة",
+      "واقي الشمس"
     ]
   },
   {
     "name": "DAHLIA",
     "slug": "dahlia",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-1082-300x300.png",
+    "image": "/uploads/brands/dahlia-67c074374b-df18c47316.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Serum & Ampoule"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "سيروم وأمبولات"
     ]
   },
   {
     "name": "DAYLONG",
     "slug": "daylong",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-306-300x300.png",
+    "image": "/uploads/brands/daylong-4f2696c444-8718101c6c.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Sunscreen"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "واقي الشمس"
     ]
   },
   {
@@ -776,13 +1164,19 @@
     "slug": "deo",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T165208.782-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Personal Care"
     ],
     "productTypes": [
       "Deodorant"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "مزيل العرق"
     ]
   },
   {
@@ -790,21 +1184,27 @@
     "slug": "dep",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/Design-sans-titre-2025-07-22T160105.560-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Personal Care"
     ],
     "productTypes": [
       "Hair Removal & Waxing"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "إزالة الشعر والشمع"
     ]
   },
   {
     "name": "DERMAB",
     "slug": "dermab",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-685-300x300.png",
+    "image": "/uploads/brands/dermab-794be219f8-16e27188a7.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Skincare"
@@ -812,27 +1212,32 @@
     "productTypes": [
       "Moisturizer",
       "Sunscreen"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "مرطب البشرة",
+      "واقي الشمس"
     ]
   },
   {
     "name": "DERMACTIVE",
     "slug": "dermactive",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-18T112235.127-300x300.png",
+    "image": "/uploads/brands/dermactive-5ae203ffc3-5eca47ffac.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 18,
     "categories": [
+      "Hair Care",
       "Skincare",
       "Bath & Body",
-      "Hair Care",
       "Fragrance"
     ],
     "productTypes": [
       "Shampoo",
       "Moisturizer",
       "Body Cream & Lotion",
-      "Body Care",
-      "Serum & Ampoule",
       "Cleanser & Makeup Remover",
       "Body Scrub",
       "Exfoliator",
@@ -840,91 +1245,156 @@
       "Perfume",
       "Treatment & Anti-Aging",
       "Hair Serum",
+      "Serum & Ampoule",
       "Hair Styling"
+    ],
+    "categories_ar": [
+      "العناية بالشعر",
+      "العناية بالبشرة",
+      "العناية بالجسم والاستحمام",
+      "العطور"
+    ],
+    "productTypes_ar": [
+      "شامبو",
+      "مرطب البشرة",
+      "كريم ولوشن الجسم",
+      "غسول ومزيل مكياج",
+      "مقشر الجسم",
+      "مقشر البشرة",
+      "ماسك الوجه",
+      "عطر",
+      "علاجات ومكافحة الشيخوخة",
+      "سيروم الشعر",
+      "سيروم وأمبولات",
+      "تصفيف الشعر"
     ]
   },
   {
     "name": "DERMOMED",
     "slug": "dermomed",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T162354.884-300x300.png",
+    "image": "/uploads/brands/dermomed-3cb3373094-1a4ccffae5.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Bath & Body"
     ],
     "productTypes": [
       "Body Wash & Shower Gel"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "غسول الجسم وجل الاستحمام"
     ]
   },
   {
     "name": "DERMOVIVA",
     "slug": "dermoviva",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T173810.678-300x300.png",
+    "image": "/uploads/brands/dermoviva-12495f43f4-3ca36dc836.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 6,
     "categories": [
-      "Skincare",
-      "Bath & Body"
+      "Bath & Body",
+      "Skincare"
     ],
     "productTypes": [
+      "Body Cream & Lotion",
       "Moisturizer",
-      "Body Care",
       "Cleanser & Makeup Remover",
       "Soap"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام",
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "كريم ولوشن الجسم",
+      "مرطب البشرة",
+      "غسول ومزيل مكياج",
+      "صابون"
     ]
   },
   {
     "name": "DESSANGE",
     "slug": "dessange",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-750-300x300.png",
+    "image": "/uploads/brands/dessange-0e11501ba7-e795c780dc.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
       "Bath & Body",
       "Hair Care"
     ],
     "productTypes": [
-      "Body Care",
-      "Hair Styling"
+      "Body Cream & Lotion",
+      "Hair Styling",
+      "Shampoo"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام",
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "كريم ولوشن الجسم",
+      "تصفيف الشعر",
+      "شامبو"
     ]
   },
   {
     "name": "DIADERMINE",
     "slug": "diadermine",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-08T102227.076-300x300.png",
+    "image": "/uploads/brands/diadermine-3e81248a68-a3a83caaef.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
-      "Skincare",
-      "Bath & Body"
+      "Skincare"
     ],
     "productTypes": [
-      "Moisturizer",
-      "Body Care"
+      "Moisturizer"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "مرطب البشرة"
     ]
   },
   {
     "name": "DOVE",
     "slug": "dove",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/11/CC-25-300x300.png",
+    "image": "/uploads/brands/dove-598c6c1a9e-0ee50d12e9.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 8,
     "categories": [
-      "Bath & Body",
+      "Hair Care",
       "Personal Care",
-      "Hair Care"
+      "Bath & Body"
     ],
     "productTypes": [
+      "Conditioner",
       "Deodorant",
-      "Body Care",
       "Body Wash & Shower Gel",
+      "Hair Oil",
       "Shampoo",
       "Soap"
+    ],
+    "categories_ar": [
+      "العناية بالشعر",
+      "العناية الشخصية",
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "بلسم الشعر",
+      "مزيل العرق",
+      "غسول الجسم وجل الاستحمام",
+      "زيت الشعر",
+      "شامبو",
+      "صابون"
     ]
   },
   {
@@ -932,13 +1402,19 @@
     "slug": "dr-althea",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-760-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Serum & Ampoule"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "سيروم وأمبولات"
     ]
   },
   {
@@ -946,13 +1422,19 @@
     "slug": "ecran",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-9-1-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Sunscreen"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "واقي الشمس"
     ]
   },
   {
@@ -960,35 +1442,47 @@
     "slug": "el",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-778-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 4,
     "categories": [
       "Personal Care"
     ],
     "productTypes": [
       "Hair Removal & Waxing"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "إزالة الشعر والشمع"
     ]
   },
   {
     "name": "EL-SAIN",
     "slug": "el-sain",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-970-300x300.png",
+    "image": "/uploads/brands/el-sain-aa16f30346-9d868dbbda.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Personal Care"
     ],
     "productTypes": [
       "Hair Removal & Waxing"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "إزالة الشعر والشمع"
     ]
   },
   {
     "name": "ELLEA",
     "slug": "ellea",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/1-12-300x300.png",
+    "image": "/uploads/brands/ellea-ed7049cdfd-d30500ddaa.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 5,
     "categories": [
       "Fragrance",
@@ -1001,20 +1495,38 @@
       "Eau de Toilette & Cologne",
       "Intimate Care",
       "Shampoo"
+    ],
+    "categories_ar": [
+      "العطور",
+      "العناية الشخصية",
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "رذاذ ومعطر الجسم",
+      "مزيل العرق",
+      "أو دو تواليت وكولونيا",
+      "العناية بالمناطق الحساسة",
+      "شامبو"
     ]
   },
   {
     "name": "ELSAIN",
     "slug": "elsain",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-16-7-300x300.png",
+    "image": "/uploads/brands/elsain-aa16f30346-ab8c835730.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Personal Care"
     ],
     "productTypes": [
       "Deodorant"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "مزيل العرق"
     ]
   },
   {
@@ -1022,7 +1534,7 @@
     "slug": "elseve",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-08T133622.977-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 6,
     "categories": [
       "Hair Care",
@@ -1030,10 +1542,21 @@
       "Skincare"
     ],
     "productTypes": [
-      "Shampoo",
-      "Body Care",
+      "Conditioner",
       "Body Oil",
+      "Shampoo",
       "Face Mask"
+    ],
+    "categories_ar": [
+      "العناية بالشعر",
+      "العناية بالجسم والاستحمام",
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "بلسم الشعر",
+      "زيت الجسم",
+      "شامبو",
+      "ماسك الوجه"
     ]
   },
   {
@@ -1041,13 +1564,19 @@
     "slug": "elseveshp",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/CC-118-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Hair Care"
     ],
     "productTypes": [
       "Shampoo"
+    ],
+    "categories_ar": [
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "شامبو"
     ]
   },
   {
@@ -1055,51 +1584,7 @@
     "slug": "elvive",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-08T143524.947-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
-    "productCount": 2,
-    "categories": [
-      "Bath & Body",
-      "Hair Care"
-    ],
-    "productTypes": [
-      "Body Care",
-      "Shampoo"
-    ]
-  },
-  {
-    "name": "EMAIL",
-    "slug": "email",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/12/CC-56-300x300.png",
-    "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
-    "productCount": 1,
-    "categories": [
-      "Personal Care"
-    ],
-    "productTypes": [
-      "Oral Care"
-    ]
-  },
-  {
-    "name": "EMBRYOLISSE",
-    "slug": "embryolisse",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-140-300x300.png",
-    "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
-    "productCount": 1,
-    "categories": [
-      "Skincare"
-    ],
-    "productTypes": [
-      "Moisturizer"
-    ]
-  },
-  {
-    "name": "ENERGIE",
-    "slug": "energie",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-08T160658.015-300x300.png",
-    "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Bath & Body",
@@ -1108,6 +1593,78 @@
     "productTypes": [
       "Body Cream & Lotion",
       "Shampoo"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام",
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "كريم ولوشن الجسم",
+      "شامبو"
+    ]
+  },
+  {
+    "name": "EMAIL",
+    "slug": "email",
+    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/12/CC-56-300x300.png",
+    "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
+    "taxonomyVersion": "cosmetics-v4",
+    "productCount": 1,
+    "categories": [
+      "Personal Care"
+    ],
+    "productTypes": [
+      "Oral Care"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "العناية بالفم"
+    ]
+  },
+  {
+    "name": "EMBRYOLISSE",
+    "slug": "embryolisse",
+    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-140-300x300.png",
+    "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
+    "taxonomyVersion": "cosmetics-v4",
+    "productCount": 1,
+    "categories": [
+      "Skincare"
+    ],
+    "productTypes": [
+      "Moisturizer"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "مرطب البشرة"
+    ]
+  },
+  {
+    "name": "ENERGIE",
+    "slug": "energie",
+    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-08T160658.015-300x300.png",
+    "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
+    "taxonomyVersion": "cosmetics-v4",
+    "productCount": 2,
+    "categories": [
+      "Bath & Body",
+      "Hair Care"
+    ],
+    "productTypes": [
+      "Body Cream & Lotion",
+      "Shampoo"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام",
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "كريم ولوشن الجسم",
+      "شامبو"
     ]
   },
   {
@@ -1115,27 +1672,39 @@
     "slug": "eqqual",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-141-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Serum & Ampoule"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "سيروم وأمبولات"
     ]
   },
   {
     "name": "ESSENCE",
     "slug": "essence",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-528-300x300.png",
+    "image": "/uploads/brands/essence-f7473e2b2f-a6e1a9bf5b.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Makeup"
     ],
     "productTypes": [
       "Mascara"
+    ],
+    "categories_ar": [
+      "المكياج"
+    ],
+    "productTypes_ar": [
+      "ماسكارا"
     ]
   },
   {
@@ -1143,13 +1712,19 @@
     "slug": "etiaxil",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-143-1-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Personal Care"
     ],
     "productTypes": [
       "Deodorant"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "مزيل العرق"
     ]
   },
   {
@@ -1157,26 +1732,32 @@
     "slug": "eucerin",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/CC-119-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Sunscreen"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "واقي الشمس"
     ]
   },
   {
     "name": "EVOLUDERM",
     "slug": "evoluderm",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-2024-09-10T134002.075-300x300.png",
+    "image": "/uploads/brands/evoluderm-67bc3b1d25-f77aef47da.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 7,
     "categories": [
-      "Skincare",
       "Bath & Body",
       "Personal Care",
+      "Skincare",
       "Hair Care"
     ],
     "productTypes": [
@@ -1187,22 +1768,45 @@
       "Toner & Face Mist",
       "Face Mask",
       "Shampoo"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام",
+      "العناية الشخصية",
+      "العناية بالبشرة",
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "كريم ولوشن الجسم",
+      "مزيل العرق",
+      "غسول الجسم وجل الاستحمام",
+      "مقشر البشرة",
+      "تونر ورذاذ الوجه",
+      "ماسك الوجه",
+      "شامبو"
     ]
   },
   {
     "name": "EVORIA",
     "slug": "evoria",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-284-300x300.png",
+    "image": "/uploads/brands/evoria-82b681ec67-c452e5339e.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 6,
     "categories": [
-      "Fragrance",
-      "Hair Care"
+      "Hair Care",
+      "Fragrance"
     ],
     "productTypes": [
-      "Body Mist & Splash",
-      "Hair Color"
+      "Hair Color",
+      "Body Mist & Splash"
+    ],
+    "categories_ar": [
+      "العناية بالشعر",
+      "العطور"
+    ],
+    "productTypes_ar": [
+      "صبغة الشعر",
+      "رذاذ ومعطر الجسم"
     ]
   },
   {
@@ -1210,25 +1814,31 @@
     "slug": "excellence",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-07-30T140750.755-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Hair Care"
     ],
     "productTypes": [
       "Hair Color"
+    ],
+    "categories_ar": [
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "صبغة الشعر"
     ]
   },
   {
     "name": "FLORE",
     "slug": "flore",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-63-300x300.png",
+    "image": "/uploads/brands/flore-cdbb15a116-c7b66a759d.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 5,
     "categories": [
-      "Skincare",
-      "Hair Care"
+      "Hair Care",
+      "Skincare"
     ],
     "productTypes": [
       "Hair Mask & Treatment",
@@ -1236,14 +1846,25 @@
       "Serum & Ampoule",
       "Shampoo",
       "Toner & Face Mist"
+    ],
+    "categories_ar": [
+      "العناية بالشعر",
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "ماسك وعلاج الشعر",
+      "غسول ومزيل مكياج",
+      "سيروم وأمبولات",
+      "شامبو",
+      "تونر ورذاذ الوجه"
     ]
   },
   {
     "name": "FLORMAR",
     "slug": "flormar",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-809-300x300.png",
+    "image": "/uploads/brands/flormar-fb253dd053-dd92a19bfc.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
       "Makeup"
@@ -1252,6 +1873,14 @@
       "Primer",
       "Lipstick & Lip Color",
       "Foundation"
+    ],
+    "categories_ar": [
+      "المكياج"
+    ],
+    "productTypes_ar": [
+      "برايمر",
+      "أحمر الشفاه ومنتجات الشفاه",
+      "كريم أساس"
     ]
   },
   {
@@ -1259,33 +1888,57 @@
     "slug": "flux",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-872-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 36,
     "categories": [
-      "Bath & Body",
-      "Skincare",
-      "Personal Care",
       "Hair Care",
-      "Fragrance"
+      "Personal Care",
+      "Fragrance",
+      "Bath & Body",
+      "Skincare"
     ],
     "productTypes": [
-      "Deodorant",
-      "Body Wash & Shower Gel",
-      "Body Cream & Lotion",
-      "Face Mask",
       "Shampoo",
-      "Body Mist & Splash",
-      "Moisturizer",
-      "Cleanser & Makeup Remover",
-      "Body Care",
-      "Soap",
+      "Deodorant",
       "Conditioner",
+      "Body Mist & Splash",
+      "Body Cream & Lotion",
+      "Moisturizer",
       "Sunscreen",
+      "Cleanser & Makeup Remover",
+      "Body Wash & Shower Gel",
       "Intimate Care",
       "Body Scrub",
+      "Face Mask",
       "Body Oil",
       "Serum & Ampoule",
-      "Eau de Toilette & Cologne"
+      "Eau de Toilette & Cologne",
+      "Soap"
+    ],
+    "categories_ar": [
+      "العناية بالشعر",
+      "العناية الشخصية",
+      "العطور",
+      "العناية بالجسم والاستحمام",
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "شامبو",
+      "مزيل العرق",
+      "بلسم الشعر",
+      "رذاذ ومعطر الجسم",
+      "كريم ولوشن الجسم",
+      "مرطب البشرة",
+      "واقي الشمس",
+      "غسول ومزيل مكياج",
+      "غسول الجسم وجل الاستحمام",
+      "العناية بالمناطق الحساسة",
+      "مقشر الجسم",
+      "ماسك الوجه",
+      "زيت الجسم",
+      "سيروم وأمبولات",
+      "أو دو تواليت وكولونيا",
+      "صابون"
     ]
   },
   {
@@ -1293,7 +1946,7 @@
     "slug": "franck",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-2025-04-16T192340.911-300x300.jpg",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 5,
     "categories": [
       "Personal Care",
@@ -1303,41 +1956,69 @@
       "Deodorant",
       "Eau de Toilette & Cologne",
       "Perfume"
+    ],
+    "categories_ar": [
+      "العناية الشخصية",
+      "العطور"
+    ],
+    "productTypes_ar": [
+      "مزيل العرق",
+      "أو دو تواليت وكولونيا",
+      "عطر"
     ]
   },
   {
     "name": "GABRINI",
     "slug": "gabrini",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-19T155955.239-300x300.png",
+    "image": "/uploads/brands/gabrini-53ccc7eddf-5a80987cf8.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
-      "Bath & Body"
+      "Skincare"
     ],
     "productTypes": [
-      "Body Care"
+      "Lip Care"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "العناية بالشفاه"
     ]
   },
   {
     "name": "GARNIER",
     "slug": "garnier",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-267-300x300.png",
+    "image": "/uploads/brands/garnier-2d8f003427-0f30abdd82.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 12,
     "categories": [
       "Hair Care",
       "Skincare"
     ],
     "productTypes": [
-      "Conditioner",
-      "Shampoo",
       "Hair Color",
       "Moisturizer",
+      "Conditioner",
+      "Shampoo",
       "Treatment & Anti-Aging",
       "Hair Mask & Treatment",
       "Face Mask"
+    ],
+    "categories_ar": [
+      "العناية بالشعر",
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "صبغة الشعر",
+      "مرطب البشرة",
+      "بلسم الشعر",
+      "شامبو",
+      "علاجات ومكافحة الشيخوخة",
+      "ماسك وعلاج الشعر",
+      "ماسك الوجه"
     ]
   },
   {
@@ -1345,7 +2026,7 @@
     "slug": "garranso",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-46-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 4,
     "categories": [
       "Bath & Body",
@@ -1357,34 +2038,57 @@
       "Body Mist & Splash",
       "Moisturizer",
       "Body Cream & Lotion"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام",
+      "العطور",
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "غسول الجسم وجل الاستحمام",
+      "رذاذ ومعطر الجسم",
+      "مرطب البشرة",
+      "كريم ولوشن الجسم"
     ]
   },
   {
     "name": "GARRANSOMINO",
     "slug": "garransomino",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-84-1-300x300.png",
+    "image": "/uploads/brands/garransomino-3ef1a85cbc-701b953580.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Fragrance"
     ],
     "productTypes": [
       "Body Mist & Splash"
+    ],
+    "categories_ar": [
+      "العطور"
+    ],
+    "productTypes_ar": [
+      "رذاذ ومعطر الجسم"
     ]
   },
   {
     "name": "GILLETTE",
     "slug": "gillette",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/09/CC-28-300x300.png",
+    "image": "/uploads/brands/gillette-af77bc4da1-00ef47276b.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
-      "Bath & Body"
+      "Personal Care"
     ],
     "productTypes": [
-      "Body Care"
+      "Deodorant"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "مزيل العرق"
     ]
   },
   {
@@ -1392,14 +2096,21 @@
     "slug": "hair",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-222-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
       "Hair Care"
     ],
     "productTypes": [
-      "Shampoo",
-      "Hair Mask & Treatment"
+      "Hair Mask & Treatment",
+      "Shampoo"
+    ],
+    "categories_ar": [
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "ماسك وعلاج الشعر",
+      "شامبو"
     ]
   },
   {
@@ -1407,7 +2118,7 @@
     "slug": "il",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-07-30T112137.752-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
       "Makeup"
@@ -1416,6 +2127,14 @@
       "Concealer",
       "Eyeliner",
       "Primer"
+    ],
+    "categories_ar": [
+      "المكياج"
+    ],
+    "productTypes_ar": [
+      "كونسيلر",
+      "آيلاينر وكحل",
+      "برايمر"
     ]
   },
   {
@@ -1423,13 +2142,19 @@
     "slug": "i-m",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-16-8-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Toner & Face Mist"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "تونر ورذاذ الوجه"
     ]
   },
   {
@@ -1437,42 +2162,63 @@
     "slug": "karseell",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-09-03T134638.268-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Face Mask"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "ماسك الوجه"
     ]
   },
   {
     "name": "KERAGOLD",
     "slug": "keragold",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-07-29T130943.870-300x300.png",
+    "image": "/uploads/brands/keragold-0a48c23216-2982b53394.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Serum & Ampoule"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "سيروم وأمبولات"
     ]
   },
   {
     "name": "KIKO",
     "slug": "kiko",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Cosmetic-2025-02-05T150129.611-300x300.png",
+    "image": "/uploads/brands/kiko-1003e21fee-9b143c6ee7.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
+      "Skincare",
       "Bath & Body"
     ],
     "productTypes": [
-      "Body Care",
+      "Moisturizer",
       "Body Oil"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة",
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "مرطب البشرة",
+      "زيت الجسم"
     ]
   },
   {
@@ -1480,13 +2226,19 @@
     "slug": "krisens",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-4-1-300x300.jpg",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Moisturizer"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "مرطب البشرة"
     ]
   },
   {
@@ -1494,7 +2246,7 @@
     "slug": "l",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-19T151400.198-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 10,
     "categories": [
       "Makeup",
@@ -1502,21 +2254,37 @@
       "Skincare"
     ],
     "productTypes": [
-      "Body Care",
-      "Lipstick & Lip Color",
       "Highlighter & Bronzer",
+      "Body Cream & Lotion",
       "Moisturizer",
+      "Lipstick & Lip Color",
       "Treatment & Anti-Aging",
-      "Blush",
-      "Mascara"
+      "Foundation",
+      "Mascara",
+      "Blush"
+    ],
+    "categories_ar": [
+      "المكياج",
+      "العناية بالجسم والاستحمام",
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "هايلايتر وبرونزر",
+      "كريم ولوشن الجسم",
+      "مرطب البشرة",
+      "أحمر الشفاه ومنتجات الشفاه",
+      "علاجات ومكافحة الشيخوخة",
+      "كريم أساس",
+      "ماسكارا",
+      "أحمر الخدود"
     ]
   },
   {
     "name": "L?OREAL",
     "slug": "l-oreal",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-55-300x300.png",
+    "image": "/uploads/brands/l-oreal-2916f297e7-96647400ef.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Makeup",
@@ -1524,7 +2292,15 @@
     ],
     "productTypes": [
       "Mascara",
-      "Body Care"
+      "Body Cream & Lotion"
+    ],
+    "categories_ar": [
+      "المكياج",
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "ماسكارا",
+      "كريم ولوشن الجسم"
     ]
   },
   {
@@ -1532,46 +2308,61 @@
     "slug": "la",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/cc-1052-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 6,
     "categories": [
-      "Skincare",
-      "Bath & Body"
+      "Skincare"
     ],
     "productTypes": [
-      "Treatment & Anti-Aging",
       "Sunscreen",
-      "Body Care"
+      "Treatment & Anti-Aging"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "واقي الشمس",
+      "علاجات ومكافحة الشيخوخة"
     ]
   },
   {
     "name": "LABELLO",
     "slug": "labello",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-60-300x300.png",
+    "image": "/uploads/brands/labello-ed9efe1463-93ad87cb4b.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
-      "Skincare",
-      "Bath & Body"
+      "Skincare"
     ],
     "productTypes": [
-      "Lip Care",
-      "Body Care"
+      "Lip Care"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "العناية بالشفاه"
     ]
   },
   {
     "name": "LADYFRESH",
     "slug": "ladyfresh",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-2025-03-04T105733.863-300x300.png",
+    "image": "/uploads/brands/ladyfresh-3ed3508b4b-499adfc0cb.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Personal Care"
     ],
     "productTypes": [
       "Intimate Care"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "العناية بالمناطق الحساسة"
     ]
   },
   {
@@ -1579,21 +2370,27 @@
     "slug": "laia",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-2-8-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Makeup"
     ],
     "productTypes": [
       "Palette"
+    ],
+    "categories_ar": [
+      "المكياج"
+    ],
+    "productTypes_ar": [
+      "باليت مكياج"
     ]
   },
   {
     "name": "LANCOME",
     "slug": "lancome",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-20-300x300.png",
+    "image": "/uploads/brands/lancome-84c0e1e3e0-880c9202c0.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Skincare",
@@ -1602,14 +2399,22 @@
     "productTypes": [
       "Lip Care",
       "Lipstick & Lip Color"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة",
+      "المكياج"
+    ],
+    "productTypes_ar": [
+      "العناية بالشفاه",
+      "أحمر الشفاه ومنتجات الشفاه"
     ]
   },
   {
     "name": "LISAS",
     "slug": "lisas",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-65-300x300.png",
+    "image": "/uploads/brands/lisas-2a511c5bff-10c4368265.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 7,
     "categories": [
       "Hair Care",
@@ -1623,20 +2428,39 @@
       "Sunscreen",
       "Hair Mask & Treatment",
       "Body Cream & Lotion"
+    ],
+    "categories_ar": [
+      "العناية بالشعر",
+      "العناية بالبشرة",
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "شامبو",
+      "مرطب البشرة",
+      "غسول ومزيل مكياج",
+      "واقي الشمس",
+      "ماسك وعلاج الشعر",
+      "كريم ولوشن الجسم"
     ]
   },
   {
     "name": "LISTERINE",
     "slug": "listerine",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-2025-03-04T110209.447-300x300.png",
+    "image": "/uploads/brands/listerine-f94b78608d-bda29b40c3.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Personal Care"
     ],
     "productTypes": [
       "Oral Care"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "العناية بالفم"
     ]
   },
   {
@@ -1644,95 +2468,153 @@
     "slug": "loe",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Photoroom-20240623_161539-10-e1719184482859-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Lip Care"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "العناية بالشفاه"
     ]
   },
   {
     "name": "LOREAL",
     "slug": "loreal",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-20-2-300x300.png",
+    "image": "/uploads/brands/loreal-2916f297e7-6a6ec35d2e.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 4,
     "categories": [
-      "Makeup",
-      "Skincare"
+      "Skincare",
+      "Makeup"
     ],
     "productTypes": [
-      "Mascara",
       "Treatment & Anti-Aging",
-      "Foundation"
+      "Foundation",
+      "Mascara"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة",
+      "المكياج"
+    ],
+    "productTypes_ar": [
+      "علاجات ومكافحة الشيخوخة",
+      "كريم أساس",
+      "ماسكارا"
     ]
   },
   {
     "name": "LOVINA",
     "slug": "lovina",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-13T143502.038-300x300.png",
+    "image": "/uploads/brands/lovina-0e432f9ca8-ba442e8870.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 11,
     "categories": [
-      "Skincare",
       "Hair Care",
+      "Skincare",
       "Personal Care",
       "Makeup"
     ],
     "productTypes": [
-      "Moisturizer",
       "Shampoo",
+      "Moisturizer",
       "Oral Care",
       "Nail Care",
       "Cleanser & Makeup Remover",
       "Face Mask",
       "Hair Styling"
+    ],
+    "categories_ar": [
+      "العناية بالشعر",
+      "العناية بالبشرة",
+      "العناية الشخصية",
+      "المكياج"
+    ],
+    "productTypes_ar": [
+      "شامبو",
+      "مرطب البشرة",
+      "العناية بالفم",
+      "العناية بالأظافر",
+      "غسول ومزيل مكياج",
+      "ماسك الوجه",
+      "تصفيف الشعر"
     ]
   },
   {
     "name": "LVL",
     "slug": "lvl",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-49-300x300.png",
+    "image": "/uploads/brands/lvl-61d54bb10d-30bb711b04.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Makeup",
       "Bath & Body"
     ],
     "productTypes": [
-      "Lipstick",
-      "Body Care"
+      "Lipstick & Lip Color",
+      "Body Cream & Lotion"
+    ],
+    "categories_ar": [
+      "المكياج",
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "أحمر الشفاه ومنتجات الشفاه",
+      "كريم ولوشن الجسم"
     ]
   },
   {
     "name": "L’OREAL",
     "slug": "l-oreal",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-119-300x300.png",
+    "image": "/uploads/brands/l-oreal-2916f297e7-dab830926a.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 20,
     "categories": [
       "Makeup",
       "Skincare",
       "Hair Care",
-      "Bath & Body",
       "Personal Care"
     ],
     "productTypes": [
+      "Foundation",
       "Treatment & Anti-Aging",
       "Hair Mask & Treatment",
-      "Body Care",
-      "Foundation",
+      "Lip Care",
       "Mascara",
       "Deodorant",
       "Concealer",
       "Eyeliner",
-      "Hair Color"
+      "Lipstick & Lip Color",
+      "Hair Color",
+      "Exfoliator"
+    ],
+    "categories_ar": [
+      "المكياج",
+      "العناية بالبشرة",
+      "العناية بالشعر",
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "كريم أساس",
+      "علاجات ومكافحة الشيخوخة",
+      "ماسك وعلاج الشعر",
+      "العناية بالشفاه",
+      "ماسكارا",
+      "مزيل العرق",
+      "كونسيلر",
+      "آيلاينر وكحل",
+      "أحمر الشفاه ومنتجات الشفاه",
+      "صبغة الشعر",
+      "مقشر البشرة"
     ]
   },
   {
@@ -1740,21 +2622,33 @@
     "slug": "magic",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-25-2-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 9,
     "categories": [
       "Skincare",
-      "Bath & Body",
-      "Makeup"
+      "Makeup",
+      "Bath & Body"
     ],
     "productTypes": [
       "Cleanser & Makeup Remover",
-      "Body Care",
       "Foundation",
       "Exfoliator",
       "Body Oil",
       "Moisturizer",
       "Face Mask"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة",
+      "المكياج",
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "غسول ومزيل مكياج",
+      "كريم أساس",
+      "مقشر البشرة",
+      "زيت الجسم",
+      "مرطب البشرة",
+      "ماسك الوجه"
     ]
   },
   {
@@ -1762,21 +2656,27 @@
     "slug": "maison",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/12/CC-32-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Fragrance"
     ],
     "productTypes": [
       "Body Mist & Splash"
+    ],
+    "categories_ar": [
+      "العطور"
+    ],
+    "productTypes_ar": [
+      "رذاذ ومعطر الجسم"
     ]
   },
   {
     "name": "MAKE",
     "slug": "make",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-999-300x300.png",
+    "image": "/uploads/brands/make-60e498d9dc-9de37932bc.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 10,
     "categories": [
       "Skincare",
@@ -1786,27 +2686,49 @@
     "productTypes": [
       "Sunscreen",
       "Body Cream & Lotion",
-      "Face Mask",
       "Cleanser & Makeup Remover",
       "Exfoliator",
-      "Body Care",
+      "Body Oil",
+      "Face Mask",
       "Body Mist & Splash"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة",
+      "العناية بالجسم والاستحمام",
+      "العطور"
+    ],
+    "productTypes_ar": [
+      "واقي الشمس",
+      "كريم ولوشن الجسم",
+      "غسول ومزيل مكياج",
+      "مقشر البشرة",
+      "زيت الجسم",
+      "ماسك الوجه",
+      "رذاذ ومعطر الجسم"
     ]
   },
   {
     "name": "MALIZIA",
     "slug": "malizia",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-35-300x300.png",
+    "image": "/uploads/brands/malizia-d85eb681b2-d48fdc66ca.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
-      "Bath & Body",
-      "Fragrance"
+      "Fragrance",
+      "Bath & Body"
     ],
     "productTypes": [
-      "Body Wash & Shower Gel",
-      "Eau de Toilette & Cologne"
+      "Eau de Toilette & Cologne",
+      "Body Wash & Shower Gel"
+    ],
+    "categories_ar": [
+      "العطور",
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "أو دو تواليت وكولونيا",
+      "غسول الجسم وجل الاستحمام"
     ]
   },
   {
@@ -1814,13 +2736,19 @@
     "slug": "mari",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-13T155044.042-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Hair Care"
     ],
     "productTypes": [
       "Hair Color"
+    ],
+    "categories_ar": [
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "صبغة الشعر"
     ]
   },
   {
@@ -1828,49 +2756,71 @@
     "slug": "maria",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-19T150945.255-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Makeup"
     ],
     "productTypes": [
       "Foundation"
+    ],
+    "categories_ar": [
+      "المكياج"
+    ],
+    "productTypes_ar": [
+      "كريم أساس"
     ]
   },
   {
     "name": "MARIGOLD",
     "slug": "marigold",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/SPLENDID-SERUM-CHVX-BOUCLES-4-1-300x300.png",
+    "image": "/uploads/brands/marigold-0a8511005a-cee82896a3.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Hair Care"
     ],
     "productTypes": [
       "Hair Styling"
+    ],
+    "categories_ar": [
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "تصفيف الشعر"
     ]
   },
   {
     "name": "MAYBELLINE",
     "slug": "maybelline",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-17-300x300.png",
+    "image": "/uploads/brands/maybelline-125d18443c-a7af749803.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 22,
     "categories": [
-      "Makeup",
-      "Bath & Body"
+      "Makeup"
     ],
     "productTypes": [
+      "Primer",
       "Mascara",
+      "Brows",
       "Lipstick & Lip Color",
       "Eyeliner",
       "Foundation",
-      "Primer",
-      "Brows",
-      "Highlighter & Bronzer",
-      "Body Care"
+      "Highlighter & Bronzer"
+    ],
+    "categories_ar": [
+      "المكياج"
+    ],
+    "productTypes_ar": [
+      "برايمر",
+      "ماسكارا",
+      "منتجات الحواجب",
+      "أحمر الشفاه ومنتجات الشفاه",
+      "آيلاينر وكحل",
+      "كريم أساس",
+      "هايلايتر وبرونزر"
     ]
   },
   {
@@ -1878,21 +2828,27 @@
     "slug": "mayla",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-55-2-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
-      "Bath & Body"
+      "Personal Care"
     ],
     "productTypes": [
-      "Body Care"
+      "Hair Removal & Waxing"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "إزالة الشعر والشمع"
     ]
   },
   {
     "name": "MEDICUBE",
     "slug": "medicube",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-4-7-300x300.png",
+    "image": "/uploads/brands/medicube-6eab2bd224-c431059b88.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
       "Skincare"
@@ -1900,6 +2856,13 @@
     "productTypes": [
       "Moisturizer",
       "Cleanser & Makeup Remover"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "مرطب البشرة",
+      "غسول ومزيل مكياج"
     ]
   },
   {
@@ -1907,7 +2870,7 @@
     "slug": "mere",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/12/CC-22-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 4,
     "categories": [
       "Skincare",
@@ -1916,14 +2879,22 @@
     "productTypes": [
       "Serum & Ampoule",
       "Body Oil"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة",
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "سيروم وأمبولات",
+      "زيت الجسم"
     ]
   },
   {
     "name": "MESKLUX",
     "slug": "mesklux",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-2025-04-15T114800.524-300x300.jpg",
+    "image": "/uploads/brands/mesklux-e8aa24a86a-59be9cee1e.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 4,
     "categories": [
       "Bath & Body",
@@ -1932,15 +2903,24 @@
     "productTypes": [
       "Body Oil",
       "Toner & Face Mist",
-      "Body Care"
+      "Hand & Foot Care"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام",
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "زيت الجسم",
+      "تونر ورذاذ الوجه",
+      "العناية باليدين والقدمين"
     ]
   },
   {
     "name": "MIELLE",
     "slug": "mielle",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-255-1-300x300.png",
+    "image": "/uploads/brands/mielle-bbf8e2b053-ec4699d3fb.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Skincare"
@@ -1948,6 +2928,13 @@
     "productTypes": [
       "Face Mask",
       "Serum & Ampoule"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "ماسك الوجه",
+      "سيروم وأمبولات"
     ]
   },
   {
@@ -1955,13 +2942,19 @@
     "slug": "minas",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-05T104020.820-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Sunscreen"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "واقي الشمس"
     ]
   },
   {
@@ -1969,13 +2962,19 @@
     "slug": "minays",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/CC-138-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Bath & Body"
     ],
     "productTypes": [
       "Soap"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "صابون"
     ]
   },
   {
@@ -1983,19 +2982,31 @@
     "slug": "minyas",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/12/CC-13-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 7,
     "categories": [
-      "Bath & Body",
+      "Fragrance",
       "Skincare",
-      "Fragrance"
+      "Bath & Body"
     ],
     "productTypes": [
-      "Moisturizer",
-      "Body Care",
       "Body Mist & Splash",
+      "Moisturizer",
       "Body Oil",
+      "Perfume",
       "Soap"
+    ],
+    "categories_ar": [
+      "العطور",
+      "العناية بالبشرة",
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "رذاذ ومعطر الجسم",
+      "مرطب البشرة",
+      "زيت الجسم",
+      "عطر",
+      "صابون"
     ]
   },
   {
@@ -2003,18 +3014,29 @@
     "slug": "miss",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-1086-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 4,
     "categories": [
-      "Bath & Body",
       "Hair Care",
-      "Skincare"
+      "Skincare",
+      "Bath & Body"
     ],
     "productTypes": [
       "Hair Color",
-      "Body Care",
+      "Heat Protection",
       "Moisturizer",
       "Body Cream & Lotion"
+    ],
+    "categories_ar": [
+      "العناية بالشعر",
+      "العناية بالبشرة",
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "صبغة الشعر",
+      "حماية الشعر من الحرارة",
+      "مرطب البشرة",
+      "كريم ولوشن الجسم"
     ]
   },
   {
@@ -2022,28 +3044,41 @@
     "slug": "miswak",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-19T153917.271-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Personal Care"
     ],
     "productTypes": [
       "Oral Care"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "العناية بالفم"
     ]
   },
   {
     "name": "MIXA",
     "slug": "mixa",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-63-2-300x300.png",
+    "image": "/uploads/brands/mixa-ed77f38415-26d9d472c5.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
       "Bath & Body"
     ],
     "productTypes": [
       "Body Cream & Lotion",
-      "Body Care"
+      "Hand & Foot Care"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "كريم ولوشن الجسم",
+      "العناية باليدين والقدمين"
     ]
   },
   {
@@ -2051,41 +3086,59 @@
     "slug": "mondeo",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-65-2-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Personal Care"
     ],
     "productTypes": [
       "Deodorant"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "مزيل العرق"
     ]
   },
   {
     "name": "MONSAVON",
     "slug": "monsavon",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-136-300x300.png",
+    "image": "/uploads/brands/monsavon-723185ddfb-8982a72a2a.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Personal Care"
     ],
     "productTypes": [
       "Deodorant"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "مزيل العرق"
     ]
   },
   {
     "name": "MP3",
     "slug": "mp3",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/11/CC-17-300x300.png",
+    "image": "/uploads/brands/mp3-10468e31a8-c3fb4812a0.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
-      "Bath & Body"
+      "Hair Care"
     ],
     "productTypes": [
-      "Body Care"
+      "Hair Styling"
+    ],
+    "categories_ar": [
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "تصفيف الشعر"
     ]
   },
   {
@@ -2093,21 +3146,27 @@
     "slug": "mybelline",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-101-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Makeup"
     ],
     "productTypes": [
       "Foundation"
+    ],
+    "categories_ar": [
+      "المكياج"
+    ],
+    "productTypes_ar": [
+      "كريم أساس"
     ]
   },
   {
     "name": "MYLA",
     "slug": "myla",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-2025-04-07T165000.850-300x300.png",
+    "image": "/uploads/brands/myla-6373f6d62d-62d2786122.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 9,
     "categories": [
       "Personal Care",
@@ -2115,15 +3174,23 @@
     ],
     "productTypes": [
       "Hair Removal & Waxing",
-      "Body Care"
+      "Body Cream & Lotion"
+    ],
+    "categories_ar": [
+      "العناية الشخصية",
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "إزالة الشعر والشمع",
+      "كريم ولوشن الجسم"
     ]
   },
   {
     "name": "NARTA",
     "slug": "narta",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-15T103522.050-300x300.png",
+    "image": "/uploads/brands/narta-95500eb0dd-fefa26a722.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
       "Personal Care",
@@ -2132,6 +3199,14 @@
     "productTypes": [
       "Deodorant",
       "Eau de Toilette & Cologne"
+    ],
+    "categories_ar": [
+      "العناية الشخصية",
+      "العطور"
+    ],
+    "productTypes_ar": [
+      "مزيل العرق",
+      "أو دو تواليت وكولونيا"
     ]
   },
   {
@@ -2139,7 +3214,7 @@
     "slug": "natura",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-19T145740.011-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Skincare",
@@ -2148,6 +3223,14 @@
     "productTypes": [
       "Sunscreen",
       "Body Oil"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة",
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "واقي الشمس",
+      "زيت الجسم"
     ]
   },
   {
@@ -2155,56 +3238,81 @@
     "slug": "nature",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-5-2-300x300.jpg",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Bath & Body"
     ],
     "productTypes": [
       "Body Oil"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "زيت الجسم"
     ]
   },
   {
     "name": "NEUTROGENA",
     "slug": "neutrogena",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-75-2-300x300.png",
+    "image": "/uploads/brands/neutrogena-ff87b37800-8347651e2f.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 5,
     "categories": [
+      "Fragrance",
       "Bath & Body",
-      "Skincare",
-      "Fragrance"
+      "Skincare"
     ],
     "productTypes": [
-      "Cleanser & Makeup Remover",
       "Body Mist & Splash",
       "Body Cream & Lotion",
-      "Body Care"
+      "Cleanser & Makeup Remover"
+    ],
+    "categories_ar": [
+      "العطور",
+      "العناية بالجسم والاستحمام",
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "رذاذ ومعطر الجسم",
+      "كريم ولوشن الجسم",
+      "غسول ومزيل مكياج"
     ]
   },
   {
     "name": "NIALL",
     "slug": "niall",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-207-1-300x300.png",
+    "image": "/uploads/brands/niall-cbef995811-7544a9892b.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
-      "Bath & Body",
+      "Makeup",
       "Skincare"
     ],
     "productTypes": [
-      "Body Care",
+      "Foundation",
+      "Cleanser & Makeup Remover",
       "Face Mask"
+    ],
+    "categories_ar": [
+      "المكياج",
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "كريم أساس",
+      "غسول ومزيل مكياج",
+      "ماسك الوجه"
     ]
   },
   {
     "name": "NIVEA",
     "slug": "nivea",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/4005808745708-2-300x300.jpg",
+    "image": "/uploads/brands/nivea-e44acb5642-b126454b1f.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 12,
     "categories": [
       "Skincare",
@@ -2217,32 +3325,52 @@
       "Deodorant",
       "Body Wash & Shower Gel",
       "Cotton & Makeup Removal",
-      "Body Care",
       "Shampoo",
       "Sunscreen",
       "Treatment & Anti-Aging"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة",
+      "العناية الشخصية",
+      "العناية بالجسم والاستحمام",
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "مرطب البشرة",
+      "مزيل العرق",
+      "غسول الجسم وجل الاستحمام",
+      "قطن وإزالة المكياج",
+      "شامبو",
+      "واقي الشمس",
+      "علاجات ومكافحة الشيخوخة"
     ]
   },
   {
     "name": "NOTE",
     "slug": "note",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/1-1-1-1-300x300.jpg",
+    "image": "/uploads/brands/note-825b5cb317-b925788847.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Makeup"
     ],
     "productTypes": [
       "Foundation"
+    ],
+    "categories_ar": [
+      "المكياج"
+    ],
+    "productTypes_ar": [
+      "كريم أساس"
     ]
   },
   {
     "name": "NOVEX",
     "slug": "novex",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/CC-148-300x300.png",
+    "image": "/uploads/brands/novex-9210a39166-6b85561f85.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 4,
     "categories": [
       "Bath & Body",
@@ -2253,14 +3381,24 @@
       "Body Scrub",
       "Body Wash & Shower Gel",
       "Shampoo"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام",
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "كريم ولوشن الجسم",
+      "مقشر الجسم",
+      "غسول الجسم وجل الاستحمام",
+      "شامبو"
     ]
   },
   {
     "name": "NUMBUZ",
     "slug": "numbuz",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-6-9-300x300.png",
+    "image": "/uploads/brands/numbuz-31c85c9de5-8ae151a38f.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Skincare"
@@ -2268,6 +3406,13 @@
     "productTypes": [
       "Toner & Face Mist",
       "Serum & Ampoule"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "تونر ورذاذ الوجه",
+      "سيروم وأمبولات"
     ]
   },
   {
@@ -2275,21 +3420,27 @@
     "slug": "numbuzin",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/09/CC-35-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
-      "Bath & Body"
+      "Skincare"
     ],
     "productTypes": [
-      "Body Care"
+      "Serum & Ampoule"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "سيروم وأمبولات"
     ]
   },
   {
     "name": "OE",
     "slug": "oe",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/CC-164-300x300.png",
+    "image": "/uploads/brands/oe-11e575207a-9221f01bbf.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 7,
     "categories": [
       "Personal Care",
@@ -2297,8 +3448,17 @@
     ],
     "productTypes": [
       "Intimate Care",
-      "Body Wash & Shower Gel",
-      "Deodorant"
+      "Deodorant",
+      "Body Wash & Shower Gel"
+    ],
+    "categories_ar": [
+      "العناية الشخصية",
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "العناية بالمناطق الحساسة",
+      "مزيل العرق",
+      "غسول الجسم وجل الاستحمام"
     ]
   },
   {
@@ -2306,7 +3466,7 @@
     "slug": "olymiel",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/12/CC-29-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
       "Hair Care"
@@ -2315,14 +3475,22 @@
       "Conditioner",
       "Hair Serum",
       "Shampoo"
+    ],
+    "categories_ar": [
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "بلسم الشعر",
+      "سيروم الشعر",
+      "شامبو"
     ]
   },
   {
     "name": "ORYAGE",
     "slug": "oryage",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/11/CC-20-300x300.png",
+    "image": "/uploads/brands/oryage-9f20c3b285-8af85ead8b.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 5,
     "categories": [
       "Hair Care",
@@ -2330,24 +3498,39 @@
     ],
     "productTypes": [
       "Shampoo",
-      "Hair Serum",
-      "Face Mask"
+      "Face Mask",
+      "Hair Serum"
+    ],
+    "categories_ar": [
+      "العناية بالشعر",
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "شامبو",
+      "ماسك الوجه",
+      "سيروم الشعر"
     ]
   },
   {
     "name": "ORYAM",
     "slug": "oryam",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/11/CC-46-300x300.png",
+    "image": "/uploads/brands/oryam-0c18eb30f1-b1b7b904f9.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
-      "Bath & Body",
       "Hair Care"
     ],
     "productTypes": [
-      "Body Care",
+      "Conditioner",
       "Shampoo"
+    ],
+    "categories_ar": [
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "بلسم الشعر",
+      "شامبو"
     ]
   },
   {
@@ -2355,15 +3538,23 @@
     "slug": "ostwint",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-5-1-300x300.jpg",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 4,
     "categories": [
-      "Hair Care",
-      "Bath & Body"
+      "Hair Care"
     ],
     "productTypes": [
       "Shampoo",
-      "Body Care"
+      "Hair Developer & Oxidant",
+      "Hair Color"
+    ],
+    "categories_ar": [
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "شامبو",
+      "أوكسيدانت ومظهر الصبغة",
+      "صبغة الشعر"
     ]
   },
   {
@@ -2371,27 +3562,39 @@
     "slug": "panoxyl",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/Design-sans-titre-2025-07-22T111335.197-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
-      "Bath & Body"
+      "Skincare"
     ],
     "productTypes": [
-      "Body Care"
+      "Treatment & Anti-Aging"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "علاجات ومكافحة الشيخوخة"
     ]
   },
   {
     "name": "PANOXYLE",
     "slug": "panoxyle",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/Design-sans-titre-2025-07-22T111049.049-300x300.png",
+    "image": "/uploads/brands/panoxyle-fde878760f-0d64022d46.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Moisturizer"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "مرطب البشرة"
     ]
   },
   {
@@ -2399,7 +3602,7 @@
     "slug": "peau",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-205-1-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Skincare",
@@ -2407,7 +3610,15 @@
     ],
     "productTypes": [
       "Moisturizer",
-      "Body Care"
+      "Body Cream & Lotion"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة",
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "مرطب البشرة",
+      "كريم ولوشن الجسم"
     ]
   },
   {
@@ -2415,32 +3626,49 @@
     "slug": "petrole",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-03T172335.944-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Hair Care"
     ],
     "productTypes": [
       "Shampoo"
+    ],
+    "categories_ar": [
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "شامبو"
     ]
   },
   {
     "name": "PHARMAMIL",
     "slug": "pharmamil",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-2025-06-15T135836.392-300x300.png",
+    "image": "/uploads/brands/pharmamil-49ce01ec2d-56c4b0af54.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 4,
     "categories": [
-      "Bath & Body",
       "Personal Care",
+      "Bath & Body",
       "Skincare"
     ],
     "productTypes": [
       "Cotton & Makeup Removal",
       "Body Scrub",
-      "Body Care",
+      "Eye Care",
       "Exfoliator"
+    ],
+    "categories_ar": [
+      "العناية الشخصية",
+      "العناية بالجسم والاستحمام",
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "قطن وإزالة المكياج",
+      "مقشر الجسم",
+      "العناية بمنطقة العين",
+      "مقشر البشرة"
     ]
   },
   {
@@ -2448,60 +3676,97 @@
     "slug": "piove",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/CC-57-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 7,
     "categories": [
-      "Bath & Body",
       "Makeup"
     ],
     "productTypes": [
-      "Body Care",
-      "Lipstick",
+      "Lipstick & Lip Color",
+      "Primer",
+      "Face Powder",
       "Concealer",
       "Nail Care"
+    ],
+    "categories_ar": [
+      "المكياج"
+    ],
+    "productTypes_ar": [
+      "أحمر الشفاه ومنتجات الشفاه",
+      "برايمر",
+      "بودرة الوجه",
+      "كونسيلر",
+      "العناية بالأظافر"
     ]
   },
   {
     "name": "POLYCOS",
     "slug": "polycos",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/SPLENDID-SERUM-CHVX-BOUCLES-14-300x300.png",
+    "image": "/uploads/brands/polycos-3bfaac7e8e-1b10a41ad2.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 34,
     "categories": [
-      "Skincare",
-      "Bath & Body",
       "Hair Care",
+      "Skincare",
       "Personal Care",
       "Fragrance",
+      "Bath & Body",
       "Makeup"
     ],
     "productTypes": [
       "Shampoo",
-      "Moisturizer",
-      "Body Oil",
-      "Body Care",
-      "Hair Removal & Waxing",
       "Face Mask",
+      "Hair Removal & Waxing",
       "Body Mist & Splash",
-      "Treatment & Anti-Aging",
       "Body Cream & Lotion",
+      "Moisturizer",
+      "Treatment & Anti-Aging",
       "Oral Care",
       "Deodorant",
       "Nail Care",
       "Eau de Toilette & Cologne",
       "Cleanser & Makeup Remover",
+      "Hair Styling",
       "Intimate Care",
       "Exfoliator",
+      "Body Oil",
       "Serum & Ampoule"
+    ],
+    "categories_ar": [
+      "العناية بالشعر",
+      "العناية بالبشرة",
+      "العناية الشخصية",
+      "العطور",
+      "العناية بالجسم والاستحمام",
+      "المكياج"
+    ],
+    "productTypes_ar": [
+      "شامبو",
+      "ماسك الوجه",
+      "إزالة الشعر والشمع",
+      "رذاذ ومعطر الجسم",
+      "كريم ولوشن الجسم",
+      "مرطب البشرة",
+      "علاجات ومكافحة الشيخوخة",
+      "العناية بالفم",
+      "مزيل العرق",
+      "العناية بالأظافر",
+      "أو دو تواليت وكولونيا",
+      "غسول ومزيل مكياج",
+      "تصفيف الشعر",
+      "العناية بالمناطق الحساسة",
+      "مقشر البشرة",
+      "زيت الجسم",
+      "سيروم وأمبولات"
     ]
   },
   {
     "name": "PRODERMA",
     "slug": "proderma",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-336-300x300.png",
+    "image": "/uploads/brands/proderma-3516a68db6-0ce06ff7b6.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 12,
     "categories": [
       "Bath & Body",
@@ -2511,28 +3776,53 @@
       "Hair Care"
     ],
     "productTypes": [
-      "Moisturizer",
       "Soap",
-      "Body Care",
+      "Moisturizer",
       "Body Oil",
+      "Body Cream & Lotion",
       "Intimate Care",
       "Body Mist & Splash",
       "Shampoo",
-      "Serum & Ampoule"
+      "Serum & Ampoule",
+      "Hair Mask & Treatment"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام",
+      "العناية بالبشرة",
+      "العناية الشخصية",
+      "العطور",
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "صابون",
+      "مرطب البشرة",
+      "زيت الجسم",
+      "كريم ولوشن الجسم",
+      "العناية بالمناطق الحساسة",
+      "رذاذ ومعطر الجسم",
+      "شامبو",
+      "سيروم وأمبولات",
+      "ماسك وعلاج الشعر"
     ]
   },
   {
     "name": "PROTELISSE",
     "slug": "protelisse",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/1-1-1-300x300.jpg",
+    "image": "/uploads/brands/protelisse-0081692258-7a90bb23b3.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Bath & Body"
     ],
     "productTypes": [
       "Body Cream & Lotion"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "كريم ولوشن الجسم"
     ]
   },
   {
@@ -2540,29 +3830,39 @@
     "slug": "protellisse",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-03T170406.070-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
-      "Bath & Body",
       "Hair Care"
     ],
     "productTypes": [
-      "Body Care",
       "Shampoo"
+    ],
+    "categories_ar": [
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "شامبو"
     ]
   },
   {
     "name": "REACTION",
     "slug": "reaction",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-19T143703.860-300x300.png",
+    "image": "/uploads/brands/reaction-bf0a73e768-f120b43bd2.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
       "Personal Care"
     ],
     "productTypes": [
       "Deodorant"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "مزيل العرق"
     ]
   },
   {
@@ -2570,35 +3870,47 @@
     "slug": "reedle",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-1011-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Bath & Body"
     ],
     "productTypes": [
-      "Body Care"
+      "Body Cream & Lotion"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "كريم ولوشن الجسم"
     ]
   },
   {
     "name": "REVOLUTION",
     "slug": "revolution",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-2025-04-15T120454.069-300x300.jpg",
+    "image": "/uploads/brands/revolution-9f5f90dcb3-35fcedc06b.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Makeup"
     ],
     "productTypes": [
       "Palette"
+    ],
+    "categories_ar": [
+      "المكياج"
+    ],
+    "productTypes_ar": [
+      "باليت مكياج"
     ]
   },
   {
     "name": "REXONA",
     "slug": "rexona",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-91-300x300.png",
+    "image": "/uploads/brands/rexona-517fe15d04-58723cedcd.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
       "Personal Care",
@@ -2609,6 +3921,16 @@
       "Deodorant",
       "Moisturizer",
       "Soap"
+    ],
+    "categories_ar": [
+      "العناية الشخصية",
+      "العناية بالبشرة",
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "مزيل العرق",
+      "مرطب البشرة",
+      "صابون"
     ]
   },
   {
@@ -2616,50 +3938,77 @@
     "slug": "rosagyn",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/12/CC-9-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Personal Care"
     ],
     "productTypes": [
       "Intimate Care"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "العناية بالمناطق الحساسة"
     ]
   },
   {
     "name": "SABIONA",
     "slug": "sabiona",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/12/CC-147-300x300.png",
+    "image": "/uploads/brands/sabiona-84e4f518d5-abb11de553.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 8,
     "categories": [
-      "Skincare",
+      "Personal Care",
       "Hair Care",
-      "Bath & Body",
-      "Personal Care"
+      "Skincare",
+      "Bath & Body"
     ],
     "productTypes": [
-      "Moisturizer",
       "Deodorant",
       "Conditioner",
       "Lip Care",
+      "Moisturizer",
       "Body Oil",
       "Shampoo",
-      "Body Care"
+      "Body Cream & Lotion"
+    ],
+    "categories_ar": [
+      "العناية الشخصية",
+      "العناية بالشعر",
+      "العناية بالبشرة",
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "مزيل العرق",
+      "بلسم الشعر",
+      "العناية بالشفاه",
+      "مرطب البشرة",
+      "زيت الجسم",
+      "شامبو",
+      "كريم ولوشن الجسم"
     ]
   },
   {
     "name": "SANEX",
     "slug": "sanex",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/12/CC-10-300x300.png",
+    "image": "/uploads/brands/sanex-ace29b86c4-b520634ba1.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Personal Care"
     ],
     "productTypes": [
       "Deodorant"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "مزيل العرق"
     ]
   },
   {
@@ -2667,46 +4016,65 @@
     "slug": "savon",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-47-1-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Bath & Body"
     ],
     "productTypes": [
       "Soap"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "صابون"
     ]
   },
   {
     "name": "SHEGLAM",
     "slug": "sheglam",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-82-300x300.png",
+    "image": "/uploads/brands/sheglam-3db110f284-890fbc9856.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 4,
     "categories": [
-      "Makeup",
-      "Personal Care",
-      "Bath & Body"
+      "Makeup"
     ],
     "productTypes": [
       "Primer",
       "Eyeshadow",
-      "Beauty Tools",
-      "Body Care"
+      "Makeup Brushes & Tools",
+      "Lipstick & Lip Color"
+    ],
+    "categories_ar": [
+      "المكياج"
+    ],
+    "productTypes_ar": [
+      "برايمر",
+      "ظلال العيون",
+      "فرش وأدوات المكياج",
+      "أحمر الشفاه ومنتجات الشفاه"
     ]
   },
   {
     "name": "SIGNAL",
     "slug": "signal",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/09/CC-40-300x300.png",
+    "image": "/uploads/brands/signal-2f40e3f375-652f62b361.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Personal Care"
     ],
     "productTypes": [
       "Oral Care"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "العناية بالفم"
     ]
   },
   {
@@ -2714,21 +4082,27 @@
     "slug": "snona",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-83-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Moisturizer"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "مرطب البشرة"
     ]
   },
   {
     "name": "SNONAS",
     "slug": "snonas",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-1015-300x300.png",
+    "image": "/uploads/brands/snonas-b4568064c7-7b4f50fc14.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Skincare",
@@ -2737,6 +4111,14 @@
     "productTypes": [
       "Moisturizer",
       "Hair Styling"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة",
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "مرطب البشرة",
+      "تصفيف الشعر"
     ]
   },
   {
@@ -2744,13 +4126,19 @@
     "slug": "soin",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-23-8-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Bath & Body"
     ],
     "productTypes": [
-      "Body Care"
+      "Body Cream & Lotion"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "كريم ولوشن الجسم"
     ]
   },
   {
@@ -2758,22 +4146,27 @@
     "slug": "soleil",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-23-1-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
       "Bath & Body"
     ],
     "productTypes": [
-      "Body Care",
       "Body Oil"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "زيت الجسم"
     ]
   },
   {
     "name": "SPLENDID",
     "slug": "splendid",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-03T131831.565-300x300.png",
+    "image": "/uploads/brands/splendid-ae382d832e-2e7779e272.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
       "Personal Care",
@@ -2784,6 +4177,16 @@
       "Deodorant",
       "Body Mist & Splash",
       "Hair Serum"
+    ],
+    "categories_ar": [
+      "العناية الشخصية",
+      "العطور",
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "مزيل العرق",
+      "رذاذ ومعطر الجسم",
+      "سيروم الشعر"
     ]
   },
   {
@@ -2791,21 +4194,27 @@
     "slug": "sudocrem",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/09/CC-43-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Skincare"
     ],
     "productTypes": [
       "Moisturizer"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "مرطب البشرة"
     ]
   },
   {
     "name": "SUNSILK",
     "slug": "sunsilk",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-51-5-300x300.png",
+    "image": "/uploads/brands/sunsilk-770d60c894-277534cb6d.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
       "Hair Care",
@@ -2814,18 +4223,26 @@
     "productTypes": [
       "Shampoo",
       "Sunscreen"
+    ],
+    "categories_ar": [
+      "العناية بالشعر",
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "شامبو",
+      "واقي الشمس"
     ]
   },
   {
     "name": "SWALIS",
     "slug": "swalis",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-84-300x300.jpg",
+    "image": "/uploads/brands/swalis-94f4fc357c-c9347083ff.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 7,
     "categories": [
-      "Skincare",
       "Hair Care",
+      "Skincare",
       "Bath & Body"
     ],
     "productTypes": [
@@ -2833,8 +4250,19 @@
       "Cleanser & Makeup Remover",
       "Body Wash & Shower Gel",
       "Toner & Face Mist",
-      "Serum & Ampoule",
-      "Body Care"
+      "Serum & Ampoule"
+    ],
+    "categories_ar": [
+      "العناية بالشعر",
+      "العناية بالبشرة",
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "شامبو",
+      "غسول ومزيل مكياج",
+      "غسول الجسم وجل الاستحمام",
+      "تونر ورذاذ الوجه",
+      "سيروم وأمبولات"
     ]
   },
   {
@@ -2842,7 +4270,7 @@
     "slug": "swaliss",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-40-300x300.jpg",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Hair Care",
@@ -2851,34 +4279,54 @@
     "productTypes": [
       "Shampoo",
       "Cleanser & Makeup Remover"
+    ],
+    "categories_ar": [
+      "العناية بالشعر",
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "شامبو",
+      "غسول ومزيل مكياج"
     ]
   },
   {
     "name": "SYOSS",
     "slug": "syoss",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-87-300x300.png",
+    "image": "/uploads/brands/syoss-e5a93613fd-ea1ac4495d.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Hair Care"
     ],
     "productTypes": [
       "Shampoo"
+    ],
+    "categories_ar": [
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "شامبو"
     ]
   },
   {
     "name": "TARTE",
     "slug": "tarte",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-82-300x300.png",
+    "image": "/uploads/brands/tarte-c69b3a8a99-687c4b3428.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Makeup"
     ],
     "productTypes": [
       "Concealer"
+    ],
+    "categories_ar": [
+      "المكياج"
+    ],
+    "productTypes_ar": [
+      "كونسيلر"
     ]
   },
   {
@@ -2886,13 +4334,19 @@
     "slug": "technic",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-127-1-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Makeup"
     ],
     "productTypes": [
       "Highlighter & Bronzer"
+    ],
+    "categories_ar": [
+      "المكياج"
+    ],
+    "productTypes_ar": [
+      "هايلايتر وبرونزر"
     ]
   },
   {
@@ -2900,13 +4354,23 @@
     "slug": "the",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-1019-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 4,
     "categories": [
-      "Bath & Body"
+      "Skincare"
     ],
     "productTypes": [
-      "Body Care"
+      "Serum & Ampoule",
+      "Toner & Face Mist",
+      "Treatment & Anti-Aging"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "سيروم وأمبولات",
+      "تونر ورذاذ الوجه",
+      "علاجات ومكافحة الشيخوخة"
     ]
   },
   {
@@ -2914,27 +4378,39 @@
     "slug": "toboco",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-85-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Personal Care"
     ],
     "productTypes": [
       "Cotton & Makeup Removal"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "قطن وإزالة المكياج"
     ]
   },
   {
     "name": "TOPFACE",
     "slug": "topface",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-137-300x300.png",
+    "image": "/uploads/brands/topface-d8ec0b38ba-fb4eb45026.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Makeup"
     ],
     "productTypes": [
       "Concealer"
+    ],
+    "categories_ar": [
+      "المكياج"
+    ],
+    "productTypes_ar": [
+      "كونسيلر"
     ]
   },
   {
@@ -2942,20 +4418,35 @@
     "slug": "touche",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-1025-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 10,
     "categories": [
-      "Bath & Body",
       "Skincare",
-      "Hair Care"
+      "Hair Care",
+      "Bath & Body"
     ],
     "productTypes": [
-      "Body Care",
       "Treatment & Anti-Aging",
       "Conditioner",
+      "Serum & Ampoule",
       "Body Wash & Shower Gel",
+      "Moisturizer",
       "Sunscreen",
       "Hair Serum"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة",
+      "العناية بالشعر",
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "علاجات ومكافحة الشيخوخة",
+      "بلسم الشعر",
+      "سيروم وأمبولات",
+      "غسول الجسم وجل الاستحمام",
+      "مرطب البشرة",
+      "واقي الشمس",
+      "سيروم الشعر"
     ]
   },
   {
@@ -2963,13 +4454,19 @@
     "slug": "udv",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-03T094900.177-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Bath & Body"
     ],
     "productTypes": [
-      "Body Care"
+      "Body Cream & Lotion"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "كريم ولوشن الجسم"
     ]
   },
   {
@@ -2977,7 +4474,7 @@
     "slug": "ultra",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/12/CC-91-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
       "Hair Care",
@@ -2987,37 +4484,59 @@
       "Hair Oil",
       "Face Mask",
       "Shampoo"
+    ],
+    "categories_ar": [
+      "العناية بالشعر",
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "زيت الشعر",
+      "ماسك الوجه",
+      "شامبو"
     ]
   },
   {
     "name": "URIAGE",
     "slug": "uriage",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-134-300x300.png",
+    "image": "/uploads/brands/uriage-0e68aa1b1f-1447f7400d.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
-      "Skincare",
-      "Bath & Body"
+      "Skincare"
     ],
     "productTypes": [
       "Moisturizer",
-      "Body Care",
+      "Toner & Face Mist",
       "Face Mask"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "مرطب البشرة",
+      "تونر ورذاذ الوجه",
+      "ماسك الوجه"
     ]
   },
   {
     "name": "USHUAIA",
     "slug": "ushuaia",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-188-1-300x300.png",
+    "image": "/uploads/brands/ushuaia-15b5c87289-8dda8e33f2.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 1,
     "categories": [
       "Personal Care"
     ],
     "productTypes": [
       "Deodorant"
+    ],
+    "categories_ar": [
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "مزيل العرق"
     ]
   },
   {
@@ -3025,17 +4544,18 @@
     "slug": "vague",
     "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-07-27T125342.955-300x300.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 16,
     "categories": [
       "Bath & Body",
-      "Hair Care",
+      "Fragrance",
       "Skincare",
       "Personal Care",
-      "Fragrance"
+      "Hair Care"
     ],
     "productTypes": [
-      "Body Care",
+      "Body Cream & Lotion",
+      "Body Mist & Splash",
       "Moisturizer",
       "Deodorant",
       "Eau de Toilette & Cologne",
@@ -3044,14 +4564,33 @@
       "Soap",
       "Hair Serum",
       "Shampoo"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام",
+      "العطور",
+      "العناية بالبشرة",
+      "العناية الشخصية",
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "كريم ولوشن الجسم",
+      "رذاذ ومعطر الجسم",
+      "مرطب البشرة",
+      "مزيل العرق",
+      "أو دو تواليت وكولونيا",
+      "غسول الجسم وجل الاستحمام",
+      "تصفيف الشعر",
+      "صابون",
+      "سيروم الشعر",
+      "شامبو"
     ]
   },
   {
     "name": "VALERIA",
     "slug": "valeria",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-89-1-300x300.png",
+    "image": "/uploads/brands/valeria-224800781b-436e616b84.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 5,
     "categories": [
       "Fragrance",
@@ -3064,29 +4603,48 @@
       "Body Wash & Shower Gel",
       "Deodorant",
       "Moisturizer"
+    ],
+    "categories_ar": [
+      "العطور",
+      "العناية بالجسم والاستحمام",
+      "العناية الشخصية",
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "رذاذ ومعطر الجسم",
+      "غسول الجسم وجل الاستحمام",
+      "مزيل العرق",
+      "مرطب البشرة"
     ]
   },
   {
     "name": "VASELINE",
     "slug": "vaseline",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-1065-300x300.png",
+    "image": "/uploads/brands/vaseline-f98ae5d754-e2e9ac86b2.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Bath & Body"
     ],
     "productTypes": [
-      "Body Care",
+      "Hand & Foot Care",
       "Body Oil"
+    ],
+    "categories_ar": [
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "العناية باليدين والقدمين",
+      "زيت الجسم"
     ]
   },
   {
     "name": "VATIKA",
     "slug": "vatika",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/CC-1-300x300.jpg",
+    "image": "/uploads/brands/vatika-316069640a-37b8e7bfa4.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 4,
     "categories": [
       "Hair Care",
@@ -3098,60 +4656,101 @@
       "Moisturizer",
       "Body Oil",
       "Shampoo"
+    ],
+    "categories_ar": [
+      "العناية بالشعر",
+      "العناية بالبشرة",
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "بلسم الشعر",
+      "مرطب البشرة",
+      "زيت الجسم",
+      "شامبو"
     ]
   },
   {
     "name": "VENUS",
     "slug": "venus",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-1028-300x300.png",
+    "image": "/uploads/brands/venus-0a4fd01955-960a85da50.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 16,
     "categories": [
-      "Bath & Body",
       "Hair Care",
-      "Skincare",
       "Fragrance",
-      "Personal Care"
+      "Skincare",
+      "Personal Care",
+      "Bath & Body"
     ],
     "productTypes": [
-      "Body Care",
-      "Shampoo",
       "Conditioner",
+      "Shampoo",
       "Body Mist & Splash",
       "Moisturizer",
       "Deodorant",
       "Perfume",
+      "Cleanser & Makeup Remover",
       "Sunscreen",
       "Body Wash & Shower Gel",
+      "Hair Removal & Waxing",
       "Cotton & Makeup Removal",
       "Face Mask",
       "Hair Serum"
+    ],
+    "categories_ar": [
+      "العناية بالشعر",
+      "العطور",
+      "العناية بالبشرة",
+      "العناية الشخصية",
+      "العناية بالجسم والاستحمام"
+    ],
+    "productTypes_ar": [
+      "بلسم الشعر",
+      "شامبو",
+      "رذاذ ومعطر الجسم",
+      "مرطب البشرة",
+      "مزيل العرق",
+      "عطر",
+      "غسول ومزيل مكياج",
+      "واقي الشمس",
+      "غسول الجسم وجل الاستحمام",
+      "إزالة الشعر والشمع",
+      "قطن وإزالة المكياج",
+      "ماسك الوجه",
+      "سيروم الشعر"
     ]
   },
   {
     "name": "VICHY",
     "slug": "vichy",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-1030-300x300.png",
+    "image": "/uploads/brands/vichy-30efa5716c-d6ca9f6a0e.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 3,
     "categories": [
-      "Skincare",
-      "Bath & Body"
+      "Skincare"
     ],
     "productTypes": [
       "Sunscreen",
-      "Body Care",
+      "Serum & Ampoule",
       "Treatment & Anti-Aging"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "واقي الشمس",
+      "سيروم وأمبولات",
+      "علاجات ومكافحة الشيخوخة"
     ]
   },
   {
     "name": "VIOLA",
     "slug": "viola",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-07-25T153726.443-1-300x300.png",
+    "image": "/uploads/brands/viola-d4f17ad913-48ca29019d.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 7,
     "categories": [
       "Hair Care",
@@ -3160,36 +4759,58 @@
     ],
     "productTypes": [
       "Shampoo",
-      "Hair Serum",
       "Conditioner",
       "Body Oil",
-      "Serum & Ampoule"
+      "Serum & Ampoule",
+      "Hair Serum"
+    ],
+    "categories_ar": [
+      "العناية بالشعر",
+      "العناية بالجسم والاستحمام",
+      "العناية بالبشرة"
+    ],
+    "productTypes_ar": [
+      "شامبو",
+      "بلسم الشعر",
+      "زيت الجسم",
+      "سيروم وأمبولات",
+      "سيروم الشعر"
     ]
   },
   {
     "name": "VOLUME",
     "slug": "volume",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-2025-03-15T143045.841-300x300.png",
+    "image": "/uploads/brands/volume-909a31d77c-947abca8f7.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 9,
     "categories": [
       "Makeup",
       "Hair Care"
     ],
     "productTypes": [
-      "Foundation",
-      "Eyeliner",
       "Nail Care",
-      "Hair Color"
+      "Hair Color",
+      "Eyeliner",
+      "Foundation"
+    ],
+    "categories_ar": [
+      "المكياج",
+      "العناية بالشعر"
+    ],
+    "productTypes_ar": [
+      "العناية بالأظافر",
+      "صبغة الشعر",
+      "آيلاينر وكحل",
+      "كريم أساس"
     ]
   },
   {
     "name": "ZORAH",
     "slug": "zorah",
-    "image": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-78-300x300.png",
+    "image": "/uploads/brands/zorah-f50beb89c7-0279590665.png",
     "source": "algerian_cosmetics_femme_GLOBAL_CLEAR",
-    "taxonomyVersion": "cosmetics-v3",
+    "taxonomyVersion": "cosmetics-v4",
     "productCount": 2,
     "categories": [
       "Skincare",
@@ -3198,6 +4819,14 @@
     "productTypes": [
       "Moisturizer",
       "Intimate Care"
+    ],
+    "categories_ar": [
+      "العناية بالبشرة",
+      "العناية الشخصية"
+    ],
+    "productTypes_ar": [
+      "مرطب البشرة",
+      "العناية بالمناطق الحساسة"
     ]
   }
 ]

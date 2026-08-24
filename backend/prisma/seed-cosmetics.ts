@@ -13,7 +13,9 @@ type CosmeticsProductSeed = {
   name: string
   brand: string
   category: string
+  category_ar?: string
   productType: string
+  productType_ar?: string
   description?: string
   images?: Array<{
     url: string
@@ -177,7 +179,9 @@ async function main() {
 
   for (const productSeed of products) {
     const categoryName = clean(productSeed.category)
+    const categoryNameAr = clean(productSeed.category_ar) || categoryName
     const productTypeName = clean(productSeed.productType)
+    const productTypeNameAr = clean(productSeed.productType_ar) || productTypeName
     const brandName = clean(productSeed.brand)
     const productName = clean(productSeed.name)
 
@@ -207,16 +211,23 @@ async function main() {
         },
       })
 
-      const category =
-        existingCategory ??
-        (await prisma.category.create({
-          data: {
-            name: categoryName,
-            name_ar: categoryName,
-            image: '',
-            niche_id: niche.id,
-          },
-        }))
+      const category = existingCategory
+        ? await prisma.category.update({
+            where: { id: existingCategory.id },
+            data: {
+              name_ar: categoryNameAr,
+              image: existingCategory.image,
+              niche_id: niche.id,
+            },
+          })
+        : await prisma.category.create({
+            data: {
+              name: categoryName,
+              name_ar: categoryNameAr,
+              image: '',
+              niche_id: niche.id,
+            },
+          })
 
       categoryId = category.id
       categoryByName.set(categoryName, category.id)
@@ -232,15 +243,20 @@ async function main() {
         },
       })
 
-      const productType =
-        existingProductType ??
-        (await prisma.productType.create({
-          data: {
-            name: productTypeName,
-            name_ar: productTypeName,
-            category_id: categoryId,
-          },
-        }))
+      const productType = existingProductType
+        ? await prisma.productType.update({
+            where: { id: existingProductType.id },
+            data: {
+              name_ar: productTypeNameAr,
+            },
+          })
+        : await prisma.productType.create({
+            data: {
+              name: productTypeName,
+              name_ar: productTypeNameAr,
+              category_id: categoryId,
+            },
+          })
 
       productTypeId = productType.id
       productTypeByKey.set(productTypeKey, productType.id)

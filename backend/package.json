@@ -6,7 +6,8 @@
     "start": "node dist/server.js",
     "clean": "rm -rf dist",
     "build": "tsc -p tsconfig.json",
-    "seed:cosmetics": "ts-node prisma/seed-cosmetics.ts"
+    "seed:cosmetics": "ts-node prisma/seed-cosmetics.ts",
+    "localize:cosmetics-images": "ts-node scripts/localize-cosmetics-images.ts"
   },
   "prettier": {
     "semi": false,
