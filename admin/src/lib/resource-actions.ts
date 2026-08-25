@@ -27,6 +27,10 @@ type SearchResult<TItem> = {
   totalItems: number;
 };
 
+function lowerFirst(value: string) {
+  return value ? `${value.charAt(0).toLowerCase()}${value.slice(1)}` : value;
+}
+
 export function createResourceActions<TItem extends { id: number | string }, TMappedItem = TItem>({
   createMutation,
   deleteMutation,
@@ -81,7 +85,7 @@ export function createResourceActions<TItem extends { id: number | string }, TMa
     );
 
     const data = response[findManyKey];
-    const items = (data[pluralKey.toLowerCase()] ?? []).map(mapResult);
+    const items = (data[lowerFirst(pluralKey)] ?? []).map(mapResult);
     const totalItems = data[totalKey];
 
     return {
