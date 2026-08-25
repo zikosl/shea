@@ -237,7 +237,8 @@ async function localizeImages(entries: Array<{ sourceUrl: string; kind: ImageKin
         response = await downloadWithRetry(resolvedUrl)
       }
 
-      const contentType = response.headers['content-type']
+      const contentTypeHeader = response.headers['content-type']
+      const contentType = typeof contentTypeHeader === 'string' ? contentTypeHeader : undefined
       const extension = extensionFromContentType(contentType) || extensionFromUrl(resolvedUrl) || '.jpg'
       const fileName = createFileName(entry.label, resolvedUrl, extension)
       const filePath = path.join(targetDirectory, fileName)
