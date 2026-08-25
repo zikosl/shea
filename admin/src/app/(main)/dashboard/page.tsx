@@ -41,25 +41,29 @@ const stats = [
     title: "Monthly revenue",
     value: "$45,231",
     change: "+12.8% vs last month",
-    icon: CircleDollarSign
+    icon: CircleDollarSign,
+    tone: "text-emerald-700 bg-emerald-500/10 border-emerald-500/20 dark:text-emerald-300"
   },
   {
     title: "Orders processed",
     value: "1,284",
     change: "+86 fulfilled today",
-    icon: ShoppingBag
+    icon: ShoppingBag,
+    tone: "text-blue-700 bg-blue-500/10 border-blue-500/20 dark:text-blue-300"
   },
   {
     title: "Active partners",
     value: "48",
     change: "+6 newly onboarded",
-    icon: Users
+    icon: Users,
+    tone: "text-violet-700 bg-violet-500/10 border-violet-500/20 dark:text-violet-300"
   },
   {
     title: "Products in catalog",
     value: "362",
     change: "14 awaiting review",
-    icon: Boxes
+    icon: Boxes,
+    tone: "text-amber-700 bg-amber-500/10 border-amber-500/20 dark:text-amber-300"
   }
 ];
 
@@ -94,22 +98,22 @@ export default function DashboardPage() {
   return (
     <ContentLayout
       title="Dashboard"
-      description="A cleaner operational snapshot for tracking revenue, orders, and team activity across the Shea admin workspace."
+      description="Track catalog health, partners, orders, and operational movement from one calm control room."
       actions={<Search />}
     >
       <div className="space-y-6">
         <section className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,0.9fr)]">
-          <Card className="overflow-hidden border-primary/10 bg-gradient-to-br from-primary/12 via-background to-background dark:border-sky-400/12 dark:from-sky-400/10 dark:via-[#111827] dark:to-[#0f1726]">
+          <Card className="overflow-hidden border-primary/15 bg-gradient-to-br from-primary/10 via-card to-card dark:border-sky-400/14 dark:from-sky-400/10 dark:via-white/5 dark:to-white/4">
             <CardHeader className="pb-4">
-              <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-full bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary dark:bg-white/6 dark:text-sky-200">
+              <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-primary/15 bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-primary dark:bg-white/6 dark:text-sky-200">
                 <ChartNoAxesCombined className="h-3.5 w-3.5" />
                 Performance pulse
               </div>
-              <CardTitle className="text-2xl sm:text-3xl">
-                Keep merchandising and operations aligned from one polished workspace.
+              <CardTitle className="max-w-3xl text-2xl sm:text-3xl">
+                Keep merchandising, partners, and fulfillment moving without noise.
               </CardTitle>
               <CardDescription className="max-w-2xl text-sm sm:text-base dark:text-slate-300">
-                Review today&apos;s momentum, jump into the busiest sections, and keep the catalog moving without hunting through scattered screens.
+                Review today&apos;s momentum and jump straight into the admin sections that need attention.
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 border-t border-border/70 pt-6 dark:border-slate-400/10 sm:grid-cols-3">
@@ -122,7 +126,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-border/80">
             <CardHeader>
               <CardTitle>Quick actions</CardTitle>
               <CardDescription>
@@ -143,7 +147,7 @@ export default function DashboardPage() {
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold">{action.title}</p>
+                      <p className="font-semibold leading-tight">{action.title}</p>
                       <p className="text-sm text-muted-foreground dark:text-slate-400">{action.description}</p>
                     </div>
                     <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary dark:text-slate-500 dark:group-hover:text-sky-200" />
@@ -159,13 +163,13 @@ export default function DashboardPage() {
             const Icon = stat.icon;
 
             return (
-              <Card key={stat.title}>
+              <Card key={stat.title} className="group overflow-hidden">
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
                   <div>
                     <CardDescription className="text-sm">{stat.title}</CardDescription>
                     <CardTitle className="mt-3 text-3xl tracking-tight">{stat.value}</CardTitle>
                   </div>
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary text-primary dark:bg-sky-400/10 dark:text-sky-200">
+                  <div className={`flex h-11 w-11 items-center justify-center rounded-2xl border transition-transform group-hover:scale-105 ${stat.tone}`}>
                     <Icon className="h-5 w-5" />
                   </div>
                 </CardHeader>

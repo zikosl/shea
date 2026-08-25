@@ -28,7 +28,7 @@ export function Menu({ isOpen }: MenuProps) {
 
   return (
     <ScrollArea className="[&>div>div[style]]:block!">
-      <nav className="mt-8 h-full w-full">
+      <nav className="mt-6 h-full w-full">
         <ul className="flex min-h-[calc(100vh-240px)] flex-col items-start space-y-1 px-1">
           {menuList.map(({ groupLabel, menus }, index) => (
             <li className={cn("w-full", groupLabel ? "pt-5" : "")} key={index}>
@@ -62,9 +62,9 @@ export function Menu({ isOpen }: MenuProps) {
                             <Button
                               variant={active ? "secondary" : "ghost"}
                               className={cn(
-                                "mb-1 h-11 w-full justify-start rounded-2xl px-3",
+                                "mb-1 h-11 w-full justify-start rounded-2xl px-3 text-sidebar-foreground/82 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                                 active &&
-                                  "bg-primary/10 text-primary shadow-none hover:bg-primary/15 dark:bg-sky-400/12 dark:text-sky-200 dark:hover:bg-sky-400/16"
+                                  "border border-primary/15 bg-primary/10 text-primary shadow-sm hover:bg-primary/15 dark:border-sky-400/18 dark:bg-sky-400/12 dark:text-sky-200 dark:hover:bg-sky-400/16"
                               )}
                               asChild
                             >

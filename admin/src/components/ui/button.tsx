@@ -5,20 +5,20 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold ring-offset-background transition-all duration-200 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring/55 focus-visible:ring-offset-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-[0_18px_36px_-22px_hsl(var(--primary)/0.85)] hover:-translate-y-0.5 hover:bg-primary/92",
+          "bg-primary text-primary-foreground shadow-[0_18px_36px_-22px_hsl(var(--primary)/0.85)] hover:-translate-y-0.5 hover:bg-primary/92 hover:shadow-[0_24px_44px_-24px_hsl(var(--primary)/0.9)]",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outlinedate:
           "border border-input rounded-md bg-transparent text-gray-800 shadow-xs hover:bg-gray-800 hover:text-white border-gray-800",
         outline:
-          "border border-input/90 bg-background/82 shadow-sm hover:border-primary/35 hover:bg-secondary/85 hover:text-foreground",
+          "border border-input/90 bg-background/86 shadow-sm hover:-translate-y-0.5 hover:border-primary/35 hover:bg-secondary/85 hover:text-foreground dark:bg-white/5",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/88",
+          "border border-border/70 bg-secondary text-secondary-foreground hover:-translate-y-0.5 hover:bg-secondary/88",
         ghost: "hover:bg-secondary/75 hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },

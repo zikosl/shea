@@ -23,8 +23,8 @@ export function Sidebar() {
       )}
     >
       <SidebarToggle isOpen={sidebar?.isOpen} setIsOpen={sidebar?.setIsOpen} />
-      <div className="relative flex h-full flex-col overflow-y-auto rounded-[30px] border border-sidebar-border/70 bg-white/78 px-3 py-4 shadow-[0_24px_60px_-32px_rgba(15,58,122,0.22)] backdrop-blur-xl dark:bg-[#111a2a]/94">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-sky-400/10 to-transparent dark:from-sky-400/14" />
+      <div className="relative flex h-full flex-col overflow-y-auto rounded-[30px] border border-sidebar-border/75 bg-white/84 px-3 py-4 shadow-[0_24px_70px_-42px_rgba(15,58,122,0.35)] backdrop-blur-2xl dark:bg-[#101827]/95">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-primary/10 to-transparent dark:from-primary/14" />
         <Button
           className={cn(
             "mb-2 h-auto justify-start px-2 py-2 text-foreground transition-transform duration-300 ease-in-out hover:no-underline",
@@ -39,7 +39,7 @@ export function Sidebar() {
               alt="shea"
               width={36}
               height={36}
-              className="rounded-2xl ring-1 ring-sky-500/20"
+              className="rounded-2xl ring-1 ring-primary/20"
             />
             <div
               className={cn(
@@ -55,8 +55,8 @@ export function Sidebar() {
           </Link>
         </Button>
         {sidebar?.isOpen !== false && (
-          <div className="mb-4 rounded-[24px] border border-sky-100 bg-sky-50/80 p-4 dark:border-sky-400/14 dark:bg-sky-400/7">
-            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-sky-500/10 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-sky-700 dark:bg-sky-400/14 dark:text-sky-200">
+          <div className="mb-4 rounded-[24px] border border-sidebar-border bg-sidebar-accent/70 p-4 dark:border-slate-400/12 dark:bg-white/5">
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-primary dark:bg-primary/14 dark:text-sky-200">
               <Sparkles className="h-3.5 w-3.5" />
               Focus mode
             </div>

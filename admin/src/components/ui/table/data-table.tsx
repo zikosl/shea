@@ -1,6 +1,5 @@
 'use client';
 import { Button } from '@/components/ui/button';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -92,7 +91,6 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      {/* <ScrollArea className="grid h-[calc(80vh-220px)] rounded-md border md:h-[calc(90dvh-240px)]"> */}
       <Table className="relative">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -130,21 +128,18 @@ export function DataTable<TData, TValue>({
             ))
           ) : (
             <TableRow>
-              <TableCell
-                colSpan={columns.length}
-                className="h-24 text-center"
-              >
-                No results.
+              <TableCell colSpan={columns.length} className="h-44 text-center">
+                <div className="mx-auto max-w-sm rounded-3xl border border-dashed border-border bg-muted/35 p-6">
+                  <p className="text-base font-semibold text-foreground">No results found</p>
+                  <p className="mt-1 text-sm text-muted-foreground">Try changing the search or filters.</p>
+                </div>
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
-      {/* <ScrollBar orientation="horizontal" /> */}
-      {/* </ScrollArea> */}
-
-      <div className="flex flex-col items-center justify-end gap-2 space-x-2 py-4 sm:flex-row">
-        <div className="flex w-full items-center justify-between">
+      <div className="admin-muted-surface flex flex-col items-center justify-end gap-3 px-4 py-3 sm:flex-row">
+        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex-1 text-sm text-muted-foreground">
             {totalItems > 0 ? (
               <>
@@ -161,7 +156,7 @@ export function DataTable<TData, TValue>({
             )}
           </div>
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-6 lg:gap-8">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
               <p className="whitespace-nowrap text-sm font-medium">
                 Rows per page
               </p>
@@ -171,7 +166,7 @@ export function DataTable<TData, TValue>({
                   table.setPageSize(Number(value));
                 }}
               >
-                <SelectTrigger className="h-8 w-[70px]">
+                <SelectTrigger className="h-9 w-[78px] rounded-xl">
                   <SelectValue placeholder={paginationState.pageSize} />
                 </SelectTrigger>
                 <SelectContent side="top">
@@ -185,7 +180,7 @@ export function DataTable<TData, TValue>({
             </div>
           </div>
         </div>
-        <div className="flex w-full items-center justify-between gap-2 sm:justify-end">
+        <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-end">
           <div className="flex w-[150px] items-center justify-center text-sm font-medium">
             {totalItems > 0 ? (
               <>

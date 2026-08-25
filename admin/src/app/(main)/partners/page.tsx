@@ -1,9 +1,8 @@
 import Link from "next/link";
 
 import ListingPage from "./_components/listing";
+import { ResourcePage } from "@/components/admin-panel/resource-page";
 import { buttonVariants } from '@/components/ui/button';
-import { Heading } from '@/components/ui/heading';
-import { Separator } from '@/components/ui/separator';
 import { DataTableSkeleton } from '@/components/ui/table/data-table-skeleton';
 import { searchParamsCache, serialize } from '@/lib/searchparams';
 import { cn } from '@/lib/utils';
@@ -11,7 +10,7 @@ import { PlusCircle } from 'lucide-react';
 import { Suspense } from 'react';
 import { SearchParams } from 'nuqs';
 import TableAction from './_components/tables/table-action';
-import { name_plural, name_singular, title_plural, title_singular, link } from "./_constant";
+import { name_plural, title_plural, title_singular, link } from "./_constant";
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
 // See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
@@ -35,27 +34,25 @@ export default async function Page({ searchParams: search }: pageProps) {
   // This key is used for invoke suspense if any of the search params changed (used for filters).
   const key = serialize({ ...searchParams });
   return (
-    <div className="space-y-4 flex-1">
-      <div className="flex items-start justify-between">
-        <Heading
-          title={title_plural}
-          description="Manage partner accounts and company details."
-        />
+    <ResourcePage
+      title={title_plural}
+      description="Manage partner accounts and company details."
+      action={
         <Link
           href={`/${link}/new`}
           className={cn(buttonVariants(), 'text-xs md:text-sm')}
         >
           <PlusCircle className="mr-1 h-4 w-4" /> Add {title_singular}
         </Link>
-      </div>
-      <Separator />
-      <TableAction />
+      }
+      filters={<TableAction />}
+    >
       <Suspense
         key={key}
         fallback={<DataTableSkeleton columnCount={5} rowCount={10} />}
       >
         <ListingPage />
       </Suspense>
-    </div >
+    </ResourcePage>
   );
 }

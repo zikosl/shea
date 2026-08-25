@@ -11,8 +11,6 @@ import {
   FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { AspectRatio } from "@/components/ui/aspect-ratio"
-
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -86,12 +84,26 @@ export default function ItemForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-1 space-y-8 mx-auto">
-        <div className="flex flex-row">
-          <div className="w-[300px] h-[300px] p-4">
-            {image && <Image unoptimized width={450} height={450} src={image} alt="Image" className="rounded-md object-cover" />}
+      <form onSubmit={form.handleSubmit(onSubmit)} className="admin-surface mx-auto max-w-5xl p-5 sm:p-6">
+        <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
+          <div className="admin-muted-surface flex min-h-[280px] items-center justify-center p-6">
+            {image ? (
+              <Image
+                unoptimized
+                width={450}
+                height={450}
+                src={image}
+                alt="Brand preview"
+                className="max-h-56 w-auto rounded-2xl object-contain"
+              />
+            ) : (
+              <div className="text-center">
+                <p className="text-sm font-semibold">No image selected</p>
+                <p className="mt-1 text-sm text-muted-foreground">Upload a clean brand mark or product logo.</p>
+              </div>
+            )}
           </div>
-          <div className="flex-1 gap-4 flex flex-col">
+          <div className="flex flex-col gap-5">
             <FormField
               control={form.control}
               name="name"
@@ -101,9 +113,7 @@ export default function ItemForm({
                   <FormControl>
                     <Input placeholder="" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    This is your public display name.
-                  </FormDescription>
+                  <FormDescription>This name appears across catalog filters and product pages.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -127,15 +137,15 @@ export default function ItemForm({
                     />
                   </FormControl>
                   <FormDescription>
-                    This is your public display Image.
+                    Upload a square or horizontal logo. Local files are served from /uploads.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button disabled={!image || loading} type="submit">
+            <Button className="w-full sm:w-fit" disabled={!image || loading} type="submit">
               {loading && <Loader2 className="animate-spin" />}
-              {loading ? "Loading..." : "Submit"}
+              {loading ? "Saving..." : `Save ${title_singular}`}
             </Button>
           </div>
         </div>

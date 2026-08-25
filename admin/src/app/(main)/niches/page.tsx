@@ -5,9 +5,8 @@ import { SearchParams } from "nuqs";
 
 import ListingPage from "./_components/listing";
 import TableAction from "./_components/tables/table-action";
+import { ResourcePage } from "@/components/admin-panel/resource-page";
 import { buttonVariants } from "@/components/ui/button";
-import { Heading } from "@/components/ui/heading";
-import { Separator } from "@/components/ui/separator";
 import { DataTableSkeleton } from "@/components/ui/table/data-table-skeleton";
 import { searchParamsCache, serialize } from "@/lib/searchparams";
 import { cn } from "@/lib/utils";
@@ -33,24 +32,22 @@ export default async function Page({ searchParams: search }: PageProps) {
   const key = serialize({ ...searchParams });
 
   return (
-    <div className="space-y-4 flex-1">
-      <div className="flex items-start justify-between">
-        <Heading
-          title={title_plural}
-          description="Manage curated niches used to classify products and templates more precisely."
-        />
+    <ResourcePage
+      title={title_plural}
+      description="Manage curated niches used to classify products and templates more precisely."
+      action={
         <Link
           href={`/${link}/new`}
           className={cn(buttonVariants(), "text-xs md:text-sm")}
         >
           <PlusCircle className="mr-1 h-4 w-4" /> Add {title_singular}
         </Link>
-      </div>
-      <Separator />
-      <TableAction />
+      }
+      filters={<TableAction />}
+    >
       <Suspense key={key} fallback={<DataTableSkeleton columnCount={5} rowCount={10} />}>
         <ListingPage />
       </Suspense>
-    </div>
+    </ResourcePage>
   );
 }

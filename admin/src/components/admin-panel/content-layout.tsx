@@ -16,11 +16,11 @@ export function ContentLayout({
   return (
     <div className="relative">
       <Navbar title={title} />
-      <div className="container pb-8 pt-6 sm:pt-8">
-        <div className="mb-8 flex flex-col gap-4 rounded-[28px] border border-slate-200/75 bg-white/72 p-5 shadow-[0_24px_60px_-42px_rgba(15,58,122,0.28)] backdrop-blur-sm dark:border-slate-400/10 dark:bg-[#182133]/82 dark:shadow-[0_24px_60px_-42px_rgba(2,8,23,0.82)] sm:p-6 lg:flex-row lg:items-end lg:justify-between">
+      <div className="container pb-8 pt-5 sm:pt-6">
+        <div className="mb-6 flex flex-col gap-4 rounded-[28px] border border-border/75 bg-card/88 p-5 shadow-[0_20px_60px_-42px_rgba(15,58,122,0.3)] backdrop-blur-sm dark:border-slate-400/12 dark:bg-white/5 dark:shadow-[0_24px_60px_-42px_rgba(2,8,23,0.82)] sm:p-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">
-              Admin overview
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-primary">
+              Shea operations
             </p>
             <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h2>
             {description ? (

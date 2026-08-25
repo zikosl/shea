@@ -44,9 +44,12 @@ const BRANDS_DIR = path.join(UPLOADS_DIR, 'brands')
 const REPORTS_DIR = path.resolve(process.cwd(), 'prisma', 'reports')
 const BRANDS_PATH = path.join(DATA_DIR, 'cosmetics-brands.json')
 const PRODUCTS_PATH = path.join(DATA_DIR, 'cosmetics-products.json')
+const BRAND_SOURCE_URL = process.env.COSMETICS_BRAND_SOURCE_URL ?? 'https://cosmeticstoredz.com/marque/'
+const PRODUCT_SOURCE_URL = process.env.COSMETICS_PRODUCT_SOURCE_URL ?? 'https://cosmeticstoredz.com/boutique/'
 const CONCURRENCY = Number(process.env.COSMETICS_IMAGE_CONCURRENCY ?? 8)
 const REQUEST_TIMEOUT_MS = Number(process.env.COSMETICS_IMAGE_TIMEOUT_MS ?? 20_000)
 const MAX_ATTEMPTS = Number(process.env.COSMETICS_IMAGE_ATTEMPTS ?? 2)
+const MAX_PRODUCT_INDEX_PAGES = Number(process.env.COSMETICS_PRODUCT_INDEX_PAGES ?? 40)
 
 const extensionByContentType: Record<string, string> = {
   'image/avif': '.avif',
@@ -181,6 +184,110 @@ async function scrapeProductImageUrl(sourcePageUrl: string) {
   return srcsetUrl || ''
 }
 
+async function fetchHtml(url: string) {
+  const response = await axios.get<string>(url, {
+    timeout: REQUEST_TIMEOUT_MS,
+    headers: {
+      Accept: 'text/html,application/xhtml+xml',
+      'User-Agent': 'Mozilla/5.0 SheaImageLocalizer/1.0',
+    },
+    maxRedirects: 5,
+    validateStatus: (status) => status >= 200 && status < 300,
+  })
+
+  return response.data
+}
+
+function absoluteUrl(value: string, baseUrl: string) {
+  try {
+    return new URL(value, baseUrl).href
+  } catch {
+    return ''
+  }
+}
+
+function firstRemoteImageFromElement(
+  $: cheerio.CheerioAPI,
+  element: Parameters<cheerio.CheerioAPI>[0],
+  baseUrl: string,
+) {
+  const image = $(element).find('img').first()
+  const candidates = [
+    image.attr('data-large_image'),
+    image.attr('data-src'),
+    image.attr('data-lazy-src'),
+    image.attr('src'),
+  ]
+
+  for (const candidate of candidates) {
+    if (isRemoteUrl(candidate)) return candidate
+    if (candidate) {
+      const url = absoluteUrl(candidate, baseUrl)
+      if (isRemoteUrl(url)) return url
+    }
+  }
+
+  const srcset = image.attr('srcset')
+  const srcsetUrl = srcset
+    ?.split(',')
+    .map((item) => item.trim().split(/\s+/)[0])
+    .map((item) => absoluteUrl(item, baseUrl))
+    .find(isRemoteUrl)
+
+  return srcsetUrl || ''
+}
+
+async function scrapeBrandIndexImages() {
+  const brandImagesBySlug = new Map<string, string>()
+
+  try {
+    const html = await fetchHtml(BRAND_SOURCE_URL)
+    const $ = cheerio.load(html)
+
+    $('.wd-brand-item, .brand-item').each((_, element) => {
+      const link = $(element).find('a[href]').first()
+      const href = link.attr('href')
+      const title = link.attr('title') || link.text()
+      const imageUrl = firstRemoteImageFromElement($, element, BRAND_SOURCE_URL)
+      const slug = href ? slugify(new URL(absoluteUrl(href, BRAND_SOURCE_URL)).pathname.split('/').filter(Boolean).pop() ?? '') : slugify(title)
+
+      if (slug && imageUrl) brandImagesBySlug.set(slug, imageUrl)
+    })
+  } catch (error) {
+    console.warn(`Could not scrape brand source index: ${errorMessage(error)}`)
+  }
+
+  return brandImagesBySlug
+}
+
+async function scrapeProductIndexImages() {
+  const productImagesByUrl = new Map<string, string>()
+  let nextUrl = PRODUCT_SOURCE_URL
+
+  for (let page = 1; page <= MAX_PRODUCT_INDEX_PAGES && nextUrl; page += 1) {
+    try {
+      const html = await fetchHtml(nextUrl)
+      const $ = cheerio.load(html)
+
+      $('.product, .product-grid-item, .wd-product').each((_, element) => {
+        const link = $(element).find('a[href*="/produit/"]').first().attr('href')
+        const productUrl = link ? absoluteUrl(link, nextUrl) : ''
+        const imageUrl = firstRemoteImageFromElement($, element, nextUrl)
+
+        if (productUrl && imageUrl) productImagesByUrl.set(productUrl.replace(/\/$/, ''), imageUrl)
+      })
+
+      const nextPage = $('link[rel="next"]').attr('href') || $('.woocommerce-pagination a.next, a.next.page-numbers').first().attr('href')
+      nextUrl = nextPage ? absoluteUrl(nextPage, nextUrl) : ''
+    } catch (error) {
+      console.warn(`Could not scrape product source index page ${page}: ${errorMessage(error)}`)
+      break
+    }
+  }
+
+  return productImagesByUrl
+}
+
 function errorMessage(error: unknown) {
   if (axios.isAxiosError(error)) {
     return error.response?.status
@@ -211,7 +318,15 @@ async function mapWithConcurrency<T, R>(
   return results
 }
 
-async function localizeImages(entries: Array<{ sourceUrl: string; kind: ImageKind; label: string; sourcePageUrl?: string }>) {
+type ImageEntry = {
+  sourceUrl: string
+  kind: ImageKind
+  label: string
+  preferredSourceUrl?: string
+  sourcePageUrl?: string
+}
+
+async function localizeImages(entries: ImageEntry[]) {
   const cache = new Map<string, DownloadResult>()
 
   await mapWithConcurrency(entries, Math.max(1, CONCURRENCY), async (entry, index) => {
@@ -223,7 +338,7 @@ async function localizeImages(entries: Array<{ sourceUrl: string; kind: ImageKin
 
     try {
       let response
-      let resolvedUrl = entry.sourceUrl
+      let resolvedUrl = entry.preferredSourceUrl || entry.sourceUrl
 
       try {
         response = await downloadWithRetry(resolvedUrl)
@@ -268,11 +383,19 @@ async function localizeImages(entries: Array<{ sourceUrl: string; kind: ImageKin
   return cache
 }
 
-function collectEntries(brands: BrandSeed[], products: ProductSeed[]) {
+function collectEntries(
+  brands: BrandSeed[],
+  products: ProductSeed[],
+  sourceIndexes: {
+    brandImagesBySlug: Map<string, string>
+    productImagesByUrl: Map<string, string>
+  },
+) {
   const seen = new Set<string>()
-  const entries: Array<{ sourceUrl: string; kind: ImageKind; label: string; sourcePageUrl?: string }> = []
+  const entries: ImageEntry[] = []
 
   for (const brand of brands) {
+    const preferredSourceUrl = sourceIndexes.brandImagesBySlug.get(brand.slug || slugify(brand.name))
     const sourceUrl = brand.image
     if (!isRemoteUrl(sourceUrl)) continue
 
@@ -284,6 +407,7 @@ function collectEntries(brands: BrandSeed[], products: ProductSeed[]) {
       sourceUrl,
       kind: 'brands',
       label: brand.slug || brand.name,
+      preferredSourceUrl,
     })
   }
 
@@ -291,21 +415,32 @@ function collectEntries(brands: BrandSeed[], products: ProductSeed[]) {
     const label = product.slug || product.name
 
     for (const image of product.images ?? []) {
-      if (!isRemoteUrl(image.url)) continue
+      const sourcePageUrl = typeof image.sourceProductUrl === 'string' ? image.sourceProductUrl : undefined
+      const preferredSourceUrl = sourcePageUrl
+        ? sourceIndexes.productImagesByUrl.get(sourcePageUrl.replace(/\/$/, '')) || image.url
+        : image.url
+      const sourceUrl = image.url
 
-      const cacheKey = `products:${image.url}`
+      if (!isRemoteUrl(sourceUrl)) continue
+
+      const cacheKey = `products:${sourceUrl}`
       if (seen.has(cacheKey)) continue
 
       seen.add(cacheKey)
       entries.push({
-        sourceUrl: image.url,
+        sourceUrl,
         kind: 'products',
         label,
-        sourcePageUrl: typeof image.sourceProductUrl === 'string' ? image.sourceProductUrl : undefined,
+        preferredSourceUrl,
+        sourcePageUrl,
       })
     }
 
     for (const variant of product.variants ?? []) {
+      const sourcePageUrl = typeof variant.sourceProductUrl === 'string' ? variant.sourceProductUrl : undefined
+      const preferredSourceUrl = sourcePageUrl
+        ? sourceIndexes.productImagesByUrl.get(sourcePageUrl.replace(/\/$/, '')) || variant.image
+        : variant.image
       const sourceUrl = variant.image
       if (!isRemoteUrl(sourceUrl)) continue
 
@@ -317,7 +452,8 @@ function collectEntries(brands: BrandSeed[], products: ProductSeed[]) {
         sourceUrl,
         kind: 'products',
         label,
-        sourcePageUrl: typeof variant.sourceProductUrl === 'string' ? variant.sourceProductUrl : undefined,
+        preferredSourceUrl,
+        sourcePageUrl,
       })
     }
   }
@@ -419,7 +555,11 @@ async function main() {
   const brandBackupPath = createBackup(BRANDS_PATH, now)
   const productBackupPath = createBackup(PRODUCTS_PATH, now)
   const reusedExistingBrandImages = applyExistingBrandImages(brands)
-  const entries = collectEntries(brands, products)
+  const sourceIndexes = {
+    brandImagesBySlug: await scrapeBrandIndexImages(),
+    productImagesByUrl: await scrapeProductIndexImages(),
+  }
+  const entries = collectEntries(brands, products, sourceIndexes)
 
   console.log(
     JSON.stringify(
@@ -429,6 +569,10 @@ async function main() {
         uniqueRemoteImages: entries.length,
         concurrency: CONCURRENCY,
         reusedExistingBrandImages,
+        sourceIndexes: {
+          brandImages: sourceIndexes.brandImagesBySlug.size,
+          productImages: sourceIndexes.productImagesByUrl.size,
+        },
         backups: {
           brands: brandBackupPath,
           products: productBackupPath,
@@ -458,6 +602,10 @@ async function main() {
       downloaded: successes.length,
       failed: failures.length,
       reusedExistingBrandImages,
+      sourceIndexes: {
+        brandImages: sourceIndexes.brandImagesBySlug.size,
+        productImages: sourceIndexes.productImagesByUrl.size,
+      },
       ...applied,
     },
     failures,
