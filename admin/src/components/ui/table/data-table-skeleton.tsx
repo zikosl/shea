@@ -28,7 +28,7 @@ export function DataTableSkeleton({
               : null}
             {filterableColumnCount > 0
               ? Array.from({ length: filterableColumnCount }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-[70px] border-dashed" />
+                <Skeleton key={i} className="h-10 w-[70px] rounded-md border border-border" />
               ))
               : null}
           </div>

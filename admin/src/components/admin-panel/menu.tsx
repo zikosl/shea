@@ -28,12 +28,12 @@ export function Menu({ isOpen }: MenuProps) {
 
   return (
     <ScrollArea className="[&>div>div[style]]:block!">
-      <nav className="mt-6 h-full w-full">
-        <ul className="flex min-h-[calc(100vh-240px)] flex-col items-start space-y-1 px-1">
+      <nav className="h-full w-full">
+        <ul className="flex min-h-[calc(100vh-96px)] flex-col items-start space-y-1">
           {menuList.map(({ groupLabel, menus }, index) => (
             <li className={cn("w-full", groupLabel ? "pt-5" : "")} key={index}>
               {(isOpen && groupLabel) || isOpen === undefined ? (
-                <p className="max-w-[248px] truncate px-4 pb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground/80 dark:text-slate-400">
+                  <p className="max-w-[220px] truncate px-2 pb-2 pt-3 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                   {groupLabel}
                 </p>
               ) : !isOpen && isOpen !== undefined && groupLabel ? (
@@ -62,9 +62,9 @@ export function Menu({ isOpen }: MenuProps) {
                             <Button
                               variant={active ? "secondary" : "ghost"}
                               className={cn(
-                                "mb-1 h-11 w-full justify-start rounded-2xl px-3 text-sidebar-foreground/82 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                                "mb-0.5 h-9 w-full justify-start rounded-md px-2 text-sm font-normal text-sidebar-foreground/82 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                                 active &&
-                                  "border border-primary/15 bg-primary/10 text-primary shadow-sm hover:bg-primary/15 dark:border-sky-400/18 dark:bg-sky-400/12 dark:text-sky-200 dark:hover:bg-sky-400/16"
+                                  "bg-sidebar-accent text-sidebar-accent-foreground"
                               )}
                               asChild
                             >
@@ -76,7 +76,7 @@ export function Menu({ isOpen }: MenuProps) {
                                 </span>
                                 <p
                                   className={cn(
-                                    "max-w-[200px] truncate text-sm font-medium",
+                                    "max-w-[180px] truncate text-sm",
                                     isOpen === false
                                       ? "-translate-x-96 opacity-0"
                                       : "translate-x-0 opacity-100"
@@ -121,7 +121,7 @@ export function Menu({ isOpen }: MenuProps) {
                       })
                     }}
                     variant="outline"
-                    className="mt-5 h-11 w-full justify-center rounded-2xl border-dashed bg-background/70 dark:border-slate-400/12 dark:bg-white/5 dark:text-slate-100"
+                    className="mt-5 h-9 w-full justify-center rounded-md border-border bg-background text-sm font-normal"
                   >
                     <span className={cn(isOpen === false ? "" : "mr-4")}>
                       <ExitIcon width={18} height={18} />

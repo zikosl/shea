@@ -38,7 +38,7 @@ export function UserNav({ children }: { children?: ReactNode | undefined }) {
                 <DropdownMenuTrigger asChild>
 
                   <Button
-                    className="h-10 w-10 rounded-full bg-background/85"
+                    className="h-9 w-9"
                     variant="outline"
                     size="icon"
                   >

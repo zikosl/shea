@@ -42,28 +42,28 @@ const stats = [
     value: "$45,231",
     change: "+12.8% vs last month",
     icon: CircleDollarSign,
-    tone: "text-emerald-700 bg-emerald-500/10 border-emerald-500/20 dark:text-emerald-300"
+    tone: "text-emerald-600"
   },
   {
     title: "Orders processed",
     value: "1,284",
     change: "+86 fulfilled today",
     icon: ShoppingBag,
-    tone: "text-blue-700 bg-blue-500/10 border-blue-500/20 dark:text-blue-300"
+    tone: "text-blue-600"
   },
   {
     title: "Active partners",
     value: "48",
     change: "+6 newly onboarded",
     icon: Users,
-    tone: "text-violet-700 bg-violet-500/10 border-violet-500/20 dark:text-violet-300"
+    tone: "text-violet-600"
   },
   {
     title: "Products in catalog",
     value: "362",
     change: "14 awaiting review",
     icon: Boxes,
-    tone: "text-amber-700 bg-amber-500/10 border-amber-500/20 dark:text-amber-300"
+    tone: "text-amber-600"
   }
 ];
 
@@ -103,30 +103,30 @@ export default function DashboardPage() {
     >
       <div className="space-y-6">
         <section className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,0.9fr)]">
-          <Card className="overflow-hidden border-primary/15 bg-gradient-to-br from-primary/10 via-card to-card dark:border-sky-400/14 dark:from-sky-400/10 dark:via-white/5 dark:to-white/4">
+          <Card className="overflow-hidden">
             <CardHeader className="pb-4">
-              <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-primary/15 bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-primary dark:bg-white/6 dark:text-sky-200">
+              <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-md border border-border bg-muted/40 px-2.5 py-1 text-xs font-medium text-muted-foreground">
                 <ChartNoAxesCombined className="h-3.5 w-3.5" />
                 Performance pulse
               </div>
-              <CardTitle className="max-w-3xl text-2xl sm:text-3xl">
+              <CardTitle className="max-w-3xl text-2xl">
                 Keep merchandising, partners, and fulfillment moving without noise.
               </CardTitle>
-              <CardDescription className="max-w-2xl text-sm sm:text-base dark:text-slate-300">
+              <CardDescription className="max-w-2xl text-sm">
                 Review today&apos;s momentum and jump straight into the admin sections that need attention.
               </CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-4 border-t border-border/70 pt-6 dark:border-slate-400/10 sm:grid-cols-3">
+            <CardContent className="grid gap-3 border-t border-border pt-5 sm:grid-cols-3">
               {highlights.map((item) => (
-                <div key={item.label} className="rounded-2xl border border-border/70 bg-background/75 p-4 dark:border-slate-400/10 dark:bg-white/4">
-                  <p className="text-sm text-muted-foreground dark:text-slate-400">{item.label}</p>
-                  <p className="mt-2 text-2xl font-semibold tracking-tight">{item.value}</p>
+                <div key={item.label} className="rounded-lg border border-border p-3">
+                  <p className="text-xs text-muted-foreground">{item.label}</p>
+                  <p className="mt-1 text-xl font-semibold tracking-tight">{item.value}</p>
                 </div>
               ))}
             </CardContent>
           </Card>
 
-          <Card className="border-border/80">
+          <Card>
             <CardHeader>
               <CardTitle>Quick actions</CardTitle>
               <CardDescription>
@@ -141,16 +141,16 @@ export default function DashboardPage() {
                   <Link
                     key={action.title}
                     href={action.href}
-                  className="group flex items-center gap-4 rounded-2xl border border-border/70 bg-background/55 p-4 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-background/80 dark:border-slate-400/10 dark:bg-white/4 dark:hover:border-sky-400/20 dark:hover:bg-white/7"
+                  className="group flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-muted/45"
                 >
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary dark:bg-sky-400/12 dark:text-sky-200">
-                      <Icon className="h-5 w-5" />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background text-muted-foreground">
+                      <Icon className="h-4 w-4" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold leading-tight">{action.title}</p>
                       <p className="text-sm text-muted-foreground dark:text-slate-400">{action.description}</p>
                     </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary dark:text-slate-500 dark:group-hover:text-sky-200" />
+                    <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1" />
                   </Link>
                 );
               })}
@@ -163,14 +163,14 @@ export default function DashboardPage() {
             const Icon = stat.icon;
 
             return (
-              <Card key={stat.title} className="group overflow-hidden">
+              <Card key={stat.title}>
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
                   <div>
                     <CardDescription className="text-sm">{stat.title}</CardDescription>
-                    <CardTitle className="mt-3 text-3xl tracking-tight">{stat.value}</CardTitle>
+                    <CardTitle className="mt-2 text-2xl tracking-tight">{stat.value}</CardTitle>
                   </div>
-                  <div className={`flex h-11 w-11 items-center justify-center rounded-2xl border transition-transform group-hover:scale-105 ${stat.tone}`}>
-                    <Icon className="h-5 w-5" />
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-md border border-border bg-muted/30 ${stat.tone}`}>
+                    <Icon className="h-4 w-4" />
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -183,7 +183,7 @@ export default function DashboardPage() {
 
         <section className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.85fr)]">
           <Card>
-            <CardHeader className="flex flex-col gap-2 border-b border-border/70 pb-5 dark:border-slate-400/10 sm:flex-row sm:items-end sm:justify-between">
+            <CardHeader className="flex flex-col gap-2 border-b border-border pb-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <CardTitle>Revenue overview</CardTitle>
                 <CardDescription className="dark:text-slate-300">

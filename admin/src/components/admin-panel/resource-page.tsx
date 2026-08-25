@@ -18,15 +18,15 @@ export function ResourcePage({
   children,
 }: ResourcePageProps) {
   return (
-    <section className="space-y-5">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <section className="space-y-4">
+      <div className="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-end sm:justify-between">
         <Heading title={title} description={description} />
         {action ? <div className="shrink-0">{action}</div> : null}
       </div>
 
-      <div className="admin-surface space-y-4 p-4 sm:p-5">
+      <div className="space-y-3">
         {filters ? (
-          <div className="admin-muted-surface flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             {filters}
           </div>
         ) : null}

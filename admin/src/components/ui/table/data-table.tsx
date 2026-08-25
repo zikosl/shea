@@ -129,7 +129,7 @@ export function DataTable<TData, TValue>({
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-44 text-center">
-                <div className="mx-auto max-w-sm rounded-3xl border border-dashed border-border bg-muted/35 p-6">
+                <div className="mx-auto max-w-sm rounded-xl border border-border bg-muted/30 p-6">
                   <p className="text-base font-semibold text-foreground">No results found</p>
                   <p className="mt-1 text-sm text-muted-foreground">Try changing the search or filters.</p>
                 </div>
@@ -138,7 +138,7 @@ export function DataTable<TData, TValue>({
           )}
         </TableBody>
       </Table>
-      <div className="admin-muted-surface flex flex-col items-center justify-end gap-3 px-4 py-3 sm:flex-row">
+      <div className="flex flex-col items-center justify-end gap-3 rounded-xl border border-border bg-card px-4 py-3 sm:flex-row">
         <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex-1 text-sm text-muted-foreground">
             {totalItems > 0 ? (

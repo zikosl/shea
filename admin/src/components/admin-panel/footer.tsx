@@ -1,11 +1,9 @@
 export function Footer() {
   return (
-    <div className="glass z-20 rounded-[28px] border border-border/70">
-      <div className="flex min-h-16 items-center justify-between gap-3 px-5 py-4 md:px-6">
-        <p className="text-sm font-medium text-foreground">SHEA Admin</p>
-        <p className="text-xs leading-loose text-muted-foreground md:text-sm">
-          Designed for faster daily operations and cleaner catalog management.
-        </p>
+    <div className="z-20 border-t border-border bg-background">
+      <div className="mx-auto flex h-14 w-full max-w-[1400px] items-center justify-between gap-3 px-4 text-sm text-muted-foreground sm:px-6">
+        <p className="font-medium text-foreground">Shea Admin</p>
+        <p>Clean catalog operations.</p>
       </div>
     </div>
   );
