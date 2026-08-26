@@ -2,7 +2,15 @@ type Partner = {
     id: string;
     email: string;
     password: string;
-    companyName: string
+    companyName: string;
+    niches?: number[];
+    partnerNiches?: PartnerNiche[];
+}
+
+type PartnerNiche = {
+    id: string;
+    niche_id: number | string;
+    niche?: Niche | null;
 }
 
 type Driver = {

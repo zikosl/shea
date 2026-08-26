@@ -1,6 +1,7 @@
 "use server";
 
 import { createResourceActions } from "@/lib/resource-actions";
+import { requestServerGraphQL } from "@/lib/server-request";
 
 import { Item, link, title_plural, title_singular } from "./_constant";
 import {
@@ -10,13 +11,19 @@ import {
   FIND_ONE_ITEM,
   UPDATE_ITEM
 } from "./_constant/request";
+import { FIND_MANY_NICHES } from "@/api/queries";
 
 type PartnerResponse = {
   id: string;
   companyName: string;
+  niches?: ({
+    id: string;
+    niche_id: number | string | null;
+    niche?: Niche | null;
+  } | number)[];
   user: {
     email: string;
-    password: string;
+    password?: string;
   };
 };
 
@@ -27,6 +34,10 @@ const mapPartner = (data: PartnerResponse) =>
         companyName: data.companyName,
         email: data.user.email,
         password: data.user.password,
+        niches: (data.niches ?? [])
+          .map((item) => Number(typeof item === "number" ? item : item.niche_id))
+          .filter((id) => Number.isFinite(id)),
+        partnerNiches: (data.niches ?? []).filter((item) => typeof item !== "number"),
       }
     : null;
 
@@ -47,3 +58,18 @@ export const {
   path: link,
   mapItem: mapPartner,
 });
+
+export async function getPartnerFormNiches() {
+  const response = await requestServerGraphQL<{
+    findManyNiches: {
+      niches: Niche[];
+    };
+  }>(FIND_MANY_NICHES, {
+    search: undefined,
+    page: 1,
+    limit: 100,
+    isFull: true,
+  });
+
+  return response.findManyNiches.niches;
+}

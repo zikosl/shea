@@ -12,13 +12,14 @@ import {
   FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
-import { redirect } from 'next/navigation';
+import { Check, Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { createItem, updateItem } from '../actions';
 import { Item, name_plural, title_singular } from '../_constant';
@@ -27,18 +28,21 @@ import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   companyName: z.string().min(2, {
-    message: "name must be at least 2 characters.",
+    message: "Company name must be at least 2 characters.",
   }),
-  email: z.union([z.string().email({
-    message: "email must be a valid."
-  }), z.string().optional()]),
+  email: z.string().email({
+    message: "Email must be valid.",
+  }),
+  niches: z.array(z.number()).default([]),
 })
 
 export default function ItemForm({
   initialData,
+  niches,
   pageTitle
 }: {
   initialData: Item | null;
+  niches: Niche[];
   pageTitle: string;
 }) {
   const router = useRouter();
@@ -49,33 +53,44 @@ export default function ItemForm({
     defaultValues: {
       companyName: initialData?.companyName ?? "",
       email: initialData?.email ?? "",
+      niches: initialData?.niches ?? [],
     },
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
     setLoading(true)
-    if (initialData) {
-      await updateItem(initialData.id, values)
+    try {
+      if (initialData) {
+        await updateItem(initialData.id, values)
+      }
+      else {
+        await createItem(values)
+        form.reset()
+      }
+      router.replace(`/${name_plural}`)
+      toast.success(`${title_singular} saved successfully.`)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : `Failed to save ${title_singular.toLowerCase()}.`)
+    } finally {
+      setLoading(false)
     }
-    else {
-      await createItem(values)
-      form.reset()
-    }
-    router.replace(`/${name_plural}`)
-    toast.success(`${title_singular} saved successfully.`)
-    setLoading(false)
   }
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-1 space-y-8 mx-auto">
-        <Card className="w-[300px] md:w-[600px] mx-auto">
-          <CardHeader>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="mx-auto flex w-full max-w-3xl flex-1">
+        <Card className="w-full">
+          <CardHeader className="space-y-2">
+            <Badge variant="outline" className="w-fit gap-1.5 rounded-full px-3 py-1">
+              <Sparkles className="h-3.5 w-3.5" />
+              Partner access
+            </Badge>
             <CardTitle>{pageTitle}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Manage the partner identity and assign the niches they can operate in.
+            </p>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 w-full items-center gap-4">
+          <CardContent className="space-y-8">
+            <div className="grid w-full items-start gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="companyName"
@@ -86,7 +101,7 @@ export default function ItemForm({
                       <Input placeholder="" {...field} />
                     </FormControl>
                     <FormDescription>
-                      This is your public display first name.
+                      The company name shown across partner workflows.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -102,18 +117,98 @@ export default function ItemForm({
                       <Input placeholder="" {...field} />
                     </FormControl>
                     <FormDescription>
-                      This is your public display email.
+                      Used for login and invite delivery.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="niches"
+              render={({ field }) => {
+                const selected = new Set(field.value ?? []);
+
+                const toggleNiche = (nicheId: number) => {
+                  const next = new Set(selected);
+                  if (next.has(nicheId)) {
+                    next.delete(nicheId);
+                  } else {
+                    next.add(nicheId);
+                  }
+                  field.onChange(Array.from(next));
+                };
+
+                return (
+                  <FormItem>
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <FormLabel>Assigned niches</FormLabel>
+                        <FormDescription>
+                          Select the catalog niches this partner can manage and sell from.
+                        </FormDescription>
+                      </div>
+                      <Badge variant="secondary" className="rounded-full">
+                        {selected.size} selected
+                      </Badge>
+                    </div>
+                    <FormControl>
+                      {niches.length > 0 ? (
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          {niches.map((niche) => {
+                            const nicheId = Number(niche.id);
+                            const isSelected = selected.has(nicheId);
+
+                            return (
+                              <button
+                                key={niche.id}
+                                type="button"
+                                onClick={() => toggleNiche(nicheId)}
+                                className={cn(
+                                  "group flex min-h-20 items-start justify-between gap-4 rounded-2xl border bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:border-foreground/30 hover:shadow-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring/35",
+                                  isSelected && "border-foreground bg-muted shadow-sm"
+                                )}
+                              >
+                                <span>
+                                  <span className="block text-sm font-medium text-foreground">
+                                    {niche.name}
+                                  </span>
+                                  <span className="mt-1 block text-xs text-muted-foreground">
+                                    {niche.name_ar || "No Arabic label"}
+                                  </span>
+                                </span>
+                                <span
+                                  className={cn(
+                                    "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-transparent transition-colors",
+                                    isSelected
+                                      ? "border-foreground bg-foreground text-background"
+                                      : "border-border bg-background group-hover:border-foreground/40"
+                                  )}
+                                >
+                                  <Check className="h-3.5 w-3.5" />
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="rounded-2xl border border-dashed p-6 text-sm text-muted-foreground">
+                          No niches found. Create a niche first, then assign it to this partner.
+                        </div>
+                      )}
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
+            />
           </CardContent>
           <CardFooter className="flex justify-between">
             <Button disabled={loading} type="submit">
               {loading && <Loader2 className="animate-spin" />}
-              {loading ? "Loading..." : "Submit"}
+              {loading ? "Saving..." : "Save partner"}
             </Button>
           </CardFooter>
         </Card>

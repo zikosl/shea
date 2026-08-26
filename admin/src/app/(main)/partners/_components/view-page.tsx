@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Form from './form';
-import { getItemById } from '../actions';
+import { getItemById, getPartnerFormNiches } from '../actions';
 import { title_singular } from '../_constant';
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
@@ -16,6 +16,7 @@ export default async function ItemViewPage({
 }: TItemViewPageProps) {
   let item = null;
   let pageTitle = `Create New ${title_singular}`;
+  const niches = await getPartnerFormNiches();
 
   if (itemId !== 'new') {
     item = await getItemById(itemId);
@@ -25,5 +26,5 @@ export default async function ItemViewPage({
     pageTitle = `Edit Partner`;
   }
 
-  return <Form initialData={item} pageTitle={pageTitle} />;
+  return <Form initialData={item} niches={niches} pageTitle={pageTitle} />;
 }

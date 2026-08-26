@@ -6,6 +6,15 @@ export const FIND_ONE_PARTNER = gql`
     findOnePartner(id: $id) {
       id
       companyName
+      niches {
+        id
+        niche_id
+        niche {
+          id
+          name
+          name_ar
+        }
+      }
       user {
           email
       }
@@ -20,6 +29,15 @@ export const FIND_MANY_PARTNERS = gql`
       partners {
         id
         companyName
+        niches {
+          id
+          niche_id
+          niche {
+            id
+            name
+            name_ar
+          }
+        }
         user {
           email
         }
