@@ -239,7 +239,7 @@ export default function ItemForm({
                 maxFiles={6}
                 multiple
                 progresses={progresses}
-                    onUpload={handleUpload}
+                onUpload={handleUpload}
                 disabled={isUploading}
               />
               <FormDescription>

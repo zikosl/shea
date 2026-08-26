@@ -6,3 +6,4 @@ export * from "./driver";
 export * from "./niche";
 export * from "./productType";
 export * from "./productTemplate";
+export * from "./dashboard";

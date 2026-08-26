@@ -64,5 +64,87 @@ export const PartnerDeliveryScheduleInput = inputObjectType({
     },
 });
 
+export const AdminDashboardWindowStats = objectType({
+    name: 'AdminDashboardWindowStats',
+    definition(t) {
+        t.nonNull.int('orders');
+        t.nonNull.float('grossRevenue');
+        t.nonNull.float('partnerFees');
+        t.nonNull.float('netRevenue');
+        t.nonNull.float('averageOrderValue');
+    },
+});
 
-export default { PricingNameEnum, Pricing, PartnerDeliverySchedule, PricingInput, Platform, PartnerFeeType } 
+export const AdminDashboardTrendPoint = objectType({
+    name: 'AdminDashboardTrendPoint',
+    definition(t) {
+        t.nonNull.string('label');
+        t.nonNull.int('orders');
+        t.nonNull.float('revenue');
+    },
+});
+
+export const AdminDashboardMetric = objectType({
+    name: 'AdminDashboardMetric',
+    definition(t) {
+        t.nonNull.string('id');
+        t.nonNull.string('name');
+        t.nonNull.int('count');
+        t.float('value');
+    },
+});
+
+export const AdminDashboardRecentOrder = objectType({
+    name: 'AdminDashboardRecentOrder',
+    definition(t) {
+        t.nonNull.int('id');
+        t.nonNull.string('date');
+        t.nonNull.float('total');
+        t.nonNull.string('source');
+        t.string('partnerName');
+        t.string('clientName');
+    },
+});
+
+export const AdminDashboardStats = objectType({
+    name: 'AdminDashboardStats',
+    definition(t) {
+        t.nonNull.field('today', { type: AdminDashboardWindowStats });
+        t.nonNull.field('week', { type: AdminDashboardWindowStats });
+        t.nonNull.field('month', { type: AdminDashboardWindowStats });
+        t.nonNull.int('totalOrders');
+        t.nonNull.int('pendingDeliveries');
+        t.nonNull.int('completedDeliveries');
+        t.nonNull.int('canceledDeliveries');
+        t.nonNull.int('clientsCount');
+        t.nonNull.int('partnersCount');
+        t.nonNull.int('activePartners');
+        t.nonNull.int('driversCount');
+        t.nonNull.int('activeDrivers');
+        t.nonNull.int('nichesCount');
+        t.nonNull.int('categoriesCount');
+        t.nonNull.int('productTemplatesCount');
+        t.nonNull.int('productsCount');
+        t.nonNull.int('lowStockProducts');
+        t.nonNull.int('outOfStockProducts');
+        t.nonNull.int('pendingProductRequests');
+        t.nonNull.list.nonNull.field('ordersTrend', { type: AdminDashboardTrendPoint });
+        t.nonNull.list.nonNull.field('topPartners', { type: AdminDashboardMetric });
+        t.nonNull.list.nonNull.field('topNiches', { type: AdminDashboardMetric });
+        t.nonNull.list.nonNull.field('recentOrders', { type: AdminDashboardRecentOrder });
+    },
+});
+
+export default {
+    PricingNameEnum,
+    Pricing,
+    PartnerDeliverySchedule,
+    PricingInput,
+    Platform,
+    PartnerFeeType,
+    AdminDashboardWindowStats,
+    AdminDashboardTrendPoint,
+    AdminDashboardMetric,
+    AdminDashboardRecentOrder,
+    AdminDashboardStats,
+} 

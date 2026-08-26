@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, ClipboardCheck, PackagePlus, Sparkles, XCircle } from "lucide-react";
 
 import { ResourcePage } from "@/components/admin-panel/resource-page";
 import { Button } from "@/components/ui/button";
@@ -22,30 +22,74 @@ export default async function ProductRequestsPage() {
       title="Product Requests"
       description="Review partner-submitted templates before they enter the global catalog."
     >
-      <div className="space-y-4">
-        <div className="text-sm text-muted-foreground">{totalRequests} pending requests</div>
-        {requests.length === 0 ? (
+      <div className="space-y-5">
+        <div className="grid gap-3 md:grid-cols-3">
           <Card>
-            <CardContent className="p-8 text-center text-sm text-muted-foreground">
-              No pending product requests.
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border bg-muted">
+                <ClipboardCheck className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-2xl font-semibold tracking-tight">{totalRequests}</p>
+                <p className="text-sm text-muted-foreground">Pending reviews</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border bg-muted">
+                <PackagePlus className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-2xl font-semibold tracking-tight">{requests.length}</p>
+                <p className="text-sm text-muted-foreground">Loaded on this page</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border bg-muted">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-2xl font-semibold tracking-tight">Admin</p>
+                <p className="text-sm text-muted-foreground">Approve or reject safely</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {requests.length === 0 ? (
+          <Card className="border-dashed">
+            <CardContent className="flex min-h-56 flex-col items-center justify-center gap-3 p-10 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border bg-muted">
+                <ClipboardCheck className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <div className="space-y-1">
+                <p className="font-medium">No pending product requests</p>
+                <p className="text-sm text-muted-foreground">
+                  Partner submissions that need catalog approval will appear here.
+                </p>
+              </div>
             </CardContent>
           </Card>
         ) : (
-          requests.map((request) => {
+          <div className="grid gap-4">
+            {requests.map((request) => {
             const image = resolvePublicAssetUrl(request.images?.[0] || request.variants?.find((variant) => variant.image)?.image);
 
             return (
               <Card key={request.id} className="overflow-hidden">
-                <CardHeader className="flex flex-row items-start justify-between gap-4">
+                <CardHeader className="flex flex-row items-start justify-between gap-4 border-b">
                   <div>
-                    <CardTitle>{request.name}</CardTitle>
+                    <CardTitle className="text-lg">{request.name}</CardTitle>
                     <p className="mt-1 text-sm text-muted-foreground">
                       {request.partner?.companyName ?? "Unknown partner"} · {request.partner?.user?.email ?? "No email"}
                     </p>
                   </div>
                   <Badge variant="outline">{request.status}</Badge>
                 </CardHeader>
-                <CardContent className="grid gap-5 md:grid-cols-[140px_minmax(0,1fr)_auto]">
+                <CardContent className="grid gap-5 p-5 md:grid-cols-[128px_minmax(0,1fr)_140px]">
                   <div className="relative aspect-square overflow-hidden rounded-2xl border bg-muted">
                     {image ? (
                       <Image unoptimized fill src={image} alt={request.name} className="object-cover" />
@@ -53,7 +97,7 @@ export default async function ProductRequestsPage() {
                       <div className="flex h-full items-center justify-center text-xs text-muted-foreground">No image</div>
                     )}
                   </div>
-                  <div className="space-y-3">
+                  <div className="min-w-0 space-y-3">
                     <div className="grid gap-2 text-sm sm:grid-cols-3">
                       <div>
                         <span className="text-muted-foreground">Brand</span>
@@ -82,14 +126,14 @@ export default async function ProductRequestsPage() {
                   <div className="flex min-w-36 flex-col gap-2">
                     <form action={approveRequest}>
                       <input type="hidden" name="id" value={request.id} />
-                      <Button className="w-full" type="submit">
+                      <Button className="w-full gap-2" type="submit">
                         <CheckCircle2 className="h-4 w-4" />
                         Approve
                       </Button>
                     </form>
                     <form action={rejectRequest}>
                       <input type="hidden" name="id" value={request.id} />
-                      <Button className="w-full" variant="outline" type="submit">
+                      <Button className="w-full gap-2" variant="outline" type="submit">
                         <XCircle className="h-4 w-4" />
                         Reject
                       </Button>
@@ -98,7 +142,8 @@ export default async function ProductRequestsPage() {
                 </CardContent>
               </Card>
             );
-          })
+          })}
+          </div>
         )}
       </div>
     </ResourcePage>

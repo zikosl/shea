@@ -33,6 +33,7 @@ const isDriver = hasRole('DRIVER')
 export const permissions = shield(
   {
     Query: {
+      adminDashboardStats: isAdmin,
       '*': isAuthenticated,
     },
     Mutation: {

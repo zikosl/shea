@@ -58,13 +58,15 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => router.push(`/${link}/${data.id}`)}>
-            <Edit className="mr-2 h-4 w-4" /> Update
+        <DropdownMenuContent align="end" className="w-44 rounded-xl p-1.5">
+          <DropdownMenuLabel className="px-2 py-1 text-xs font-medium text-muted-foreground">
+            Actions
+          </DropdownMenuLabel>
+          <DropdownMenuItem className="gap-2 rounded-lg px-2 py-2 text-sm" onClick={() => router.push(`/${link}/${data.id}`)}>
+            <Edit className="h-4 w-4" /> Update
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setOpen(true)}>
-            <Trash className="mr-2 h-4 w-4" /> Delete
+          <DropdownMenuItem className="gap-2 rounded-lg px-2 py-2 text-sm text-destructive focus:text-destructive" onClick={() => setOpen(true)}>
+            <Trash className="h-4 w-4" /> Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

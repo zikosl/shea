@@ -188,7 +188,7 @@ export const ProductTemplateQuery = extendType({
                 id: nonNull(intArg()),
             },
             resolve: async (_parent, { id }, ctx: Context) => {
-                return ctx.prisma.productTemplate.findUnique({
+                return ctx.prisma.productTemplateView.findFirst({
                     where: { id },
                 })
             },
