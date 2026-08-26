@@ -1,0 +1,787 @@
+{
+  "createdAt": "2026-08-26T12:07:35.119Z",
+  "backups": {
+    "brands": "/Users/zakaria/Desktop/cosmetica/shea/backend/prisma/data/cosmetics-brands.json.2026-08-26T12-06-39-694Z.backup",
+    "products": "/Users/zakaria/Desktop/cosmetica/shea/backend/prisma/data/cosmetics-products.json.2026-08-26T12-06-39-694Z.backup"
+  },
+  "totals": {
+    "requested": 151,
+    "downloaded": 0,
+    "failed": 151,
+    "reusedExistingBrandImages": 0,
+    "skippedExistingLocal": 3468,
+    "missingRemoteSource": 0,
+    "forceRefresh": false,
+    "nicheSlug": "cosmetics",
+    "migratedExistingPaths": {
+      "migratedBrandImages": 109,
+      "migratedProductImages": 1675,
+      "migratedVariantImages": 1684
+    },
+    "sourceIndexes": {
+      "brandImages": 59,
+      "productImagesByUrl": 1017,
+      "productImagesBySlug": 1144
+    },
+    "localizedBrands": 0,
+    "localizedProductImages": 0,
+    "localizedVariantImages": 0
+  },
+  "failures": [
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-06T131852.216-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-06T151256.923-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-01T153742.531-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-06T144730.658-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-06T163404.431-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T113205.576-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-13T103403.762-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-147-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/CC-70-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-557-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-591-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-239-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T115113.735-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T104504.425-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/09/CC-86-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-161-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-01T151650.882-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/CC-78-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T144502.789-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-639-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T170139.527-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T165208.782-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/CC-108-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/Design-sans-titre-2025-07-22T160105.560-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-08T133622.977-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/CC-118-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-778-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-08T160658.015-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-760-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-9-1-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-141-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/CC-119-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-140-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-07-30T140750.755-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/12/CC-56-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-143-1-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-2025-04-16T192340.911-300x300.jpg",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-46-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-07-30T112137.752-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-16-8-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-09-03T134638.268-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/cc-1052-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-872-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-2-8-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Photoroom-20240623_161539-10-e1719184482859-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-4-1-300x300.jpg",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-13T155044.042-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-55-2-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/12/CC-32-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-19T150945.255-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-222-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-19T151400.198-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-25-2-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/12/CC-22-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-05T104020.820-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/CC-138-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-1086-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-65-2-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/12/CC-13-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-5-2-300x300.jpg",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/09/CC-35-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/12/CC-29-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-19T145740.011-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-5-1-300x300.jpg",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/CC-57-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-101-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-205-1-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-03T172335.944-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/12/CC-9-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-1011-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-23-8-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-23-1-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/09/CC-43-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-40-300x300.jpg",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-127-1-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-85-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/07/Design-sans-titre-2025-07-22T111335.197-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-1019-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-19T153917.271-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-07-27T125342.955-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-03T094900.177-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/12/CC-91-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-83-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-47-1-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-146-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-19T153019.177-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-667-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-665-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T163156.506-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T163443.567-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T160634.904-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-237-1-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T162354.884-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T115113.735-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T173810.678-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-2024-09-10T162014.302-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T172410.543-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-791-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-07T162956.566-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-2024-09-10T134002.075-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-11T142340.449-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-26-6-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-08T164946.073-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-796-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-801-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-11T144100.844-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-11T143609.843-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-916-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-63-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-789-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-2024-09-10T142615.009-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-27-2-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-37-2-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-18-4-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-2-1-300x300.jpg",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-32-2-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-39-2-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-3-5-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-05T105920.064-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-53-2-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/10/CC-103-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-2025-04-15T114800.524-300x300.jpg",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-13-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-17-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-2025-04-13T085526.674-300x300.jpg",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-2025-04-13T085713.608-300x300.jpg",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-2025-04-13T085105.733-300x300.jpg",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-2025-04-13T084844.568-300x300.jpg",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-55-300x300.jpg",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-2025-04-13T085313.647-300x300.jpg",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-2025-04-15T115104.861-300x300.jpg",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-66-2-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-68-2-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-65-2-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-05T104020.820-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-67-2-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Design-sans-titre-69-2-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/NOYAU-DABRICOT-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-17-6-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/PIGNON-DE-PIN-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/NAYAU-DE-DATTE-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-19-5-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-04T192405.574-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/4005808745708-2-300x300.jpg",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/Ajouter-un-titre-2024-08-04T155731.842-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-1020-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-1076-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-20-6-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-1065-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-937-300x300.png",
+      "error": "HTTP 404"
+    },
+    {
+      "ok": false,
+      "sourceUrl": "https://cosmeticstoredz.com/wp-content/uploads/2025/06/CC-1032-300x300.png",
+      "error": "HTTP 404"
+    }
+  ]
+}

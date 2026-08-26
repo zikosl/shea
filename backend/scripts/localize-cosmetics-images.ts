@@ -39,8 +39,10 @@ type DownloadResult = {
 
 const DATA_DIR = path.resolve(process.cwd(), 'prisma', 'data')
 const UPLOADS_DIR = path.resolve(process.cwd(), 'uploads')
-const PRODUCTS_DIR = path.join(UPLOADS_DIR, 'products')
-const BRANDS_DIR = path.join(UPLOADS_DIR, 'brands')
+const NICHE_SLUG = process.env.COSMETICS_IMAGE_NICHE_SLUG ?? 'cosmetics'
+const NICHE_UPLOADS_DIR = path.join(UPLOADS_DIR, NICHE_SLUG)
+const PRODUCTS_DIR = path.join(NICHE_UPLOADS_DIR, 'products')
+const BRANDS_DIR = path.join(NICHE_UPLOADS_DIR, 'brands')
 const REPORTS_DIR = path.resolve(process.cwd(), 'prisma', 'reports')
 const BRANDS_PATH = path.join(DATA_DIR, 'cosmetics-brands.json')
 const PRODUCTS_PATH = path.join(DATA_DIR, 'cosmetics-products.json')
@@ -94,9 +96,42 @@ function isLocalizedPath(value?: string | null): value is string {
   return typeof value === 'string' && value.startsWith('/uploads/')
 }
 
+function isNicheLocalizedPath(value?: string | null): value is string {
+  return typeof value === 'string' && value.startsWith(`/uploads/${NICHE_SLUG}/`)
+}
+
 function localUploadFilePath(value: string) {
   const relativePath = value.replace(/^\/uploads\//, '')
   return path.join(UPLOADS_DIR, relativePath)
+}
+
+function nicheLocalizedPath(kind: ImageKind, fileName: string) {
+  return `/uploads/${NICHE_SLUG}/${kind}/${fileName}`
+}
+
+function migrateExistingLocalizedPath(value: string | undefined, kind: ImageKind) {
+  if (!isLocalizedPath(value) || isNicheLocalizedPath(value)) {
+    return { value, migrated: false }
+  }
+
+  const currentFilePath = localUploadFilePath(value)
+  if (!fs.existsSync(currentFilePath)) {
+    return { value, migrated: false }
+  }
+
+  const fileName = path.basename(currentFilePath)
+  const nextValue = nicheLocalizedPath(kind, fileName)
+  const nextFilePath = localUploadFilePath(nextValue)
+  fs.mkdirSync(path.dirname(nextFilePath), { recursive: true })
+
+  if (!fs.existsSync(nextFilePath)) {
+    fs.copyFileSync(currentFilePath, nextFilePath)
+  }
+
+  return {
+    value: nextValue,
+    migrated: nextValue !== value,
+  }
 }
 
 function hasLocalUploadFile(value?: string | null) {
@@ -420,7 +455,7 @@ async function localizeImages(entries: ImageEntry[]) {
     if (cache.has(cacheKey)) return
 
     const targetDirectory = entry.kind === 'brands' ? BRANDS_DIR : PRODUCTS_DIR
-    const publicPrefix = `/uploads/${entry.kind}`
+    const publicPrefix = `/uploads/${NICHE_SLUG}/${entry.kind}`
 
     try {
       let response
@@ -649,7 +684,7 @@ function applyExistingBrandImages(brands: BrandSeed[]) {
     const targetPath = path.join(BRANDS_DIR, fileName)
 
     fs.copyFileSync(localFilePath, targetPath)
-    brand.image = `/uploads/brands/${fileName}`
+    brand.image = nicheLocalizedPath('brands', fileName)
     matched += 1
   }
 
@@ -706,6 +741,44 @@ function applyLocalizedPaths(
   }
 }
 
+function migrateExistingLocalizedPaths(brands: BrandSeed[], products: ProductSeed[]) {
+  let migratedBrandImages = 0
+  let migratedProductImages = 0
+  let migratedVariantImages = 0
+
+  for (const brand of brands) {
+    const result = migrateExistingLocalizedPath(brand.image, 'brands')
+    if (result.migrated) {
+      brand.image = result.value
+      migratedBrandImages += 1
+    }
+  }
+
+  for (const product of products) {
+    for (const image of product.images ?? []) {
+      const result = migrateExistingLocalizedPath(image.url, 'products')
+      if (result.migrated) {
+        image.url = result.value ?? image.url
+        migratedProductImages += 1
+      }
+    }
+
+    for (const variant of product.variants ?? []) {
+      const result = migrateExistingLocalizedPath(variant.image, 'products')
+      if (result.migrated) {
+        variant.image = result.value
+        migratedVariantImages += 1
+      }
+    }
+  }
+
+  return {
+    migratedBrandImages,
+    migratedProductImages,
+    migratedVariantImages,
+  }
+}
+
 async function main() {
   ensureDirectories()
 
@@ -714,6 +787,7 @@ async function main() {
   const products = readJson<ProductSeed[]>(PRODUCTS_PATH)
   const brandBackupPath = createBackup(BRANDS_PATH, now)
   const productBackupPath = createBackup(PRODUCTS_PATH, now)
+  const migratedExistingPaths = migrateExistingLocalizedPaths(brands, products)
   const reusedExistingBrandImages = applyExistingBrandImages(brands)
   const sourceIndexes = {
     brandImagesBySlug: await scrapeBrandIndexImages(),
@@ -730,6 +804,8 @@ async function main() {
         uniqueRemoteImages: entries.length,
         concurrency: CONCURRENCY,
         forceRefresh: FORCE_REFRESH,
+        nicheSlug: NICHE_SLUG,
+        migratedExistingPaths,
         reusedExistingBrandImages,
         skippedExistingLocal: collected.skippedExistingLocal,
         missingRemoteSource: collected.missingRemoteSource,
@@ -770,6 +846,8 @@ async function main() {
       skippedExistingLocal: collected.skippedExistingLocal,
       missingRemoteSource: collected.missingRemoteSource,
       forceRefresh: FORCE_REFRESH,
+      nicheSlug: NICHE_SLUG,
+      migratedExistingPaths,
       sourceIndexes: {
         brandImages: sourceIndexes.brandImagesBySlug.size,
         productImagesByUrl: sourceIndexes.productImagesByUrl.size,

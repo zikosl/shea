@@ -20,8 +20,10 @@
 		reverse_proxy backend:3001
 	}
 
-	@uploads path /uploads*
-	reverse_proxy @uploads backend:3001
+	handle /uploads/* {
+		root * /srv
+		file_server
+	}
 
 	@backend_health path /api/backend-health
 	handle @backend_health {
