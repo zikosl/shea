@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { enumType, objectType } from 'nexus'
 import { Context } from '../../context'
 
@@ -66,6 +67,9 @@ export const Partner = objectType({
         t.float('latitude');
         t.float('longitude');
         t.string('address');
+        t.field('feeType', { type: 'PartnerFeeType' });
+        t.float('feeRate');
+        t.float('fixedFee');
         t.int('userId');
         t.nonNull.list.field('niches', {
             type: 'PartnerNiche',

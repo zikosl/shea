@@ -33,6 +33,9 @@ const formSchema = z.object({
   email: z.string().email({
     message: "Email must be valid.",
   }),
+  feeType: z.enum(["NONE", "PERCENTAGE", "FIXED", "MIXED"]).default("NONE"),
+  feeRate: z.coerce.number().min(0).max(100).default(0),
+  fixedFee: z.coerce.number().min(0).default(0),
   niches: z.array(z.number()).default([]),
 })
 
@@ -53,6 +56,9 @@ export default function ItemForm({
     defaultValues: {
       companyName: initialData?.companyName ?? "",
       email: initialData?.email ?? "",
+      feeType: initialData?.feeType ?? "NONE",
+      feeRate: initialData?.feeRate ?? 0,
+      fixedFee: initialData?.fixedFee ?? 0,
       niches: initialData?.niches ?? [],
     },
   })
@@ -123,6 +129,64 @@ export default function ItemForm({
                   </FormItem>
                 )}
               />
+            </div>
+
+            <div className="rounded-2xl border bg-muted/30 p-4">
+              <div className="mb-4">
+                <FormLabel>Partner fees</FormLabel>
+                <FormDescription>
+                  Snapshot these fees on every order to calculate Shea benefit and partner net revenue.
+                </FormDescription>
+              </div>
+              <div className="grid gap-4 md:grid-cols-3">
+                <FormField
+                  control={form.control}
+                  name="feeType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Fee type</FormLabel>
+                      <FormControl>
+                        <select
+                          {...field}
+                          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                        >
+                          <option value="NONE">No fee</option>
+                          <option value="PERCENTAGE">Percentage</option>
+                          <option value="FIXED">Fixed</option>
+                          <option value="MIXED">Mixed</option>
+                        </select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="feeRate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Rate %</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.1" min="0" max="100" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="fixedFee"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Fixed fee DZD</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="1" min="0" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
 
             <FormField

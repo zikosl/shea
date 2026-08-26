@@ -29,6 +29,13 @@ type CosmeticsProductSeed = {
   }>
 }
 
+type CosmeticsTaxonomySeed = {
+  categories: Array<{
+    category: string
+    icon?: string
+  }>
+}
+
 const connectionString = process.env.DATABASE_URL
 
 if (!connectionString) {
@@ -41,11 +48,12 @@ const prisma = new PrismaClient({ adapter })
 const dataDir = path.resolve(process.cwd(), 'prisma', 'data')
 const brandsPath = path.join(dataDir, 'cosmetics-brands.json')
 const productsPath = path.join(dataDir, 'cosmetics-products.json')
+const taxonomyPath = path.join(dataDir, 'cosmetics-taxonomy.json')
 
 const COSMETICS_NICHE = {
   name: 'Cosmetics',
   name_ar: 'مستحضرات التجميل',
-  image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=80',
+  image: '/uploads/cosmetics/icons/niche-cosmetics.svg',
 }
 
 function readJson<T>(filePath: string): T {
@@ -124,6 +132,8 @@ async function upsertVariantTags(variantId: number, tags?: string[]) {
 async function main() {
   const brands = readJson<CosmeticsBrandSeed[]>(brandsPath)
   const products = readJson<CosmeticsProductSeed[]>(productsPath)
+  const taxonomy = readJson<CosmeticsTaxonomySeed>(taxonomyPath)
+  const categoryIconByName = new Map(taxonomy.categories.map((category) => [clean(category.category), clean(category.icon)]))
 
   const existingNiche = await prisma.niche.findFirst({
     where: { name: COSMETICS_NICHE.name },
@@ -216,7 +226,7 @@ async function main() {
             where: { id: existingCategory.id },
             data: {
               name_ar: categoryNameAr,
-              image: existingCategory.image,
+              image: categoryIconByName.get(categoryName) || existingCategory.image,
               niche_id: niche.id,
             },
           })
@@ -224,7 +234,7 @@ async function main() {
             data: {
               name: categoryName,
               name_ar: categoryNameAr,
-              image: '',
+              image: categoryIconByName.get(categoryName) || '',
               niche_id: niche.id,
             },
           })

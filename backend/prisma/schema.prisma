@@ -20,6 +20,20 @@ enum OrderSource {
   POS
 }
 
+enum PartnerFeeType {
+  NONE
+  PERCENTAGE
+  FIXED
+  MIXED
+}
+
+enum ProductTemplateRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  MERGED
+}
+
 enum StockMovementType {
   SALE
   RETURN
@@ -181,6 +195,9 @@ model Partner {
   latitude       Float           @default(0)
   longitude      Float           @default(0)
   address        String?
+  feeType        PartnerFeeType @default(NONE)
+  feeRate        Float          @default(0)
+  fixedFee       Float          @default(0)
   Product        Product[]
   Order          Order[]
   devices        Device[]
@@ -190,6 +207,7 @@ model Partner {
   stockMovements StockMovement[]
   auditLogs      AuditLog[]
   partnerNiches  Partner_Niche[]
+  templateRequests ProductTemplateRequest[]
 }
 
 model Driver {
@@ -246,6 +264,7 @@ model ProductType {
   category_id Int
   category    Category          @relation(fields: [category_id], references: [id])
   products    ProductTemplate[]
+  templateRequests ProductTemplateRequest[]
 
   @@index([category_id])
 }
@@ -257,6 +276,7 @@ model Brand {
   niche            Niche?            @relation(fields: [niche_id], references: [id])
   niche_id         Int?
   productTemplates ProductTemplate[]
+  templateRequests ProductTemplateRequest[]
 
   @@index([niche_id])
 }
@@ -493,6 +513,49 @@ model ProductTemplate {
 
   variants Variant[]
   images   ProductImage[]
+  requests ProductTemplateRequest[] @relation("ApprovedTemplateRequests")
+}
+
+model ProductTemplateRequest {
+  id                 Int                          @id @default(autoincrement())
+  name               String
+  name_ar            String                       @default("")
+  description        String                       @default("")
+  images             String[]                     @default([])
+  product_type_id    Int
+  brand_id           Int?
+  partnerId          Int
+  status             ProductTemplateRequestStatus @default(PENDING)
+  rejectionReason    String?
+  adminNote          String?
+  approvedTemplateId Int?
+  mergedIntoTemplateId Int?
+  hasOrder           Boolean                      @default(false)
+  createdAt          DateTime                     @default(now())
+  updatedAt          DateTime                     @updatedAt
+
+  partner          Partner          @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
+  productType      ProductType      @relation(fields: [product_type_id], references: [id])
+  brand            Brand?           @relation(fields: [brand_id], references: [id])
+  approvedTemplate ProductTemplate? @relation("ApprovedTemplateRequests", fields: [approvedTemplateId], references: [id])
+  variants         ProductTemplateRequestVariant[]
+
+  @@index([partnerId, status])
+  @@index([product_type_id])
+  @@index([brand_id])
+}
+
+model ProductTemplateRequestVariant {
+  id        Int                    @id @default(autoincrement())
+  requestId Int
+  name      String?
+  sku       String?
+  image     String?
+  tags      String[]               @default([])
+  price     Float?
+  stock     Int?
+
+  request ProductTemplateRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
 }
 
 // ---------- VARIANTS ----------
@@ -536,6 +599,13 @@ model Order {
   appTax      Int   @default(0)
   storeTax    Int   @default(0)
   discount    Float @default(0)
+  subtotal    Float @default(0)
+  partnerGross Float @default(0)
+  partnerFee   Float @default(0)
+  partnerNet   Float @default(0)
+  partnerFeeType PartnerFeeType @default(NONE)
+  partnerFeeRate Float @default(0)
+  partnerFixedFee Float @default(0)
 
   source             OrderSource @default(ONLINE)
   walkInCustomerName String?

@@ -17,6 +17,11 @@ export const Platform = enumType({
     members: ['ANDROID', 'IOS', 'WEB', 'DESKTOP'],
 });
 
+export const PartnerFeeType = enumType({
+    name: 'PartnerFeeType',
+    members: ['NONE', 'PERCENTAGE', 'FIXED', 'MIXED'],
+});
+
 
 export const Pricing = objectType({
     name: 'Pricing',
@@ -60,4 +65,4 @@ export const PartnerDeliveryScheduleInput = inputObjectType({
 });
 
 
-export default { PricingNameEnum, Pricing, PartnerDeliverySchedule, PricingInput, Platform } 
+export default { PricingNameEnum, Pricing, PartnerDeliverySchedule, PricingInput, Platform, PartnerFeeType } 

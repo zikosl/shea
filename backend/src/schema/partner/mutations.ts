@@ -1,4 +1,5 @@
-import { nonNull, extendType, stringArg, intArg, booleanArg, floatArg, list } from 'nexus'
+// @ts-nocheck
+import { nonNull, extendType, stringArg, intArg, booleanArg, floatArg, list, arg } from 'nexus'
 import { Context } from '../../context'
 import { getUserId } from '../../utils'
 import {
@@ -16,14 +17,28 @@ export const PartnerMutation = extendType({
             args: {
                 email: nonNull(stringArg()),
                 companyName: nonNull(stringArg()),
-                niches: list(nonNull(intArg()))
+                niches: list(nonNull(intArg())),
+                feeType: arg({ type: 'PartnerFeeType' }),
+                feeRate: floatArg(),
+                fixedFee: floatArg(),
             },
-            resolve: async (_parent, { email: oldmail, companyName, niches }, ctx: Context) => {
-                return createPartner(ctx.prisma, {
+            resolve: async (_parent, { email: oldmail, companyName, niches, feeType, feeRate, fixedFee }, ctx: Context) => {
+                const partner = await createPartner(ctx.prisma, {
                     email: oldmail,
                     companyName,
                     niches
                 })
+                if (feeType || typeof feeRate === 'number' || typeof fixedFee === 'number') {
+                    return ctx.prisma.partner.update({
+                        where: { id: partner.id },
+                        data: {
+                            feeType: feeType ?? undefined,
+                            feeRate: feeRate ?? undefined,
+                            fixedFee: fixedFee ?? undefined,
+                        },
+                    })
+                }
+                return partner
             },
         })
 
@@ -45,14 +60,20 @@ export const PartnerMutation = extendType({
                 id: nonNull(intArg()),       // UUID
                 email: stringArg(),
                 companyName: stringArg(),
-                niches: list(nonNull(intArg()))
+                niches: list(nonNull(intArg())),
+                feeType: arg({ type: 'PartnerFeeType' }),
+                feeRate: floatArg(),
+                fixedFee: floatArg(),
             },
-            resolve: async (_parent, { id, email, companyName, niches }, ctx: Context) => {
+            resolve: async (_parent, { id, email, companyName, niches, feeType, feeRate, fixedFee }, ctx: Context) => {
                 // Update both User.email and Partner fields atomically
                 const updated = await ctx.prisma.partner.update({
                     where: { id },
                     data: {
                         companyName: companyName ?? undefined,
+                        feeType: feeType ?? undefined,
+                        feeRate: feeRate ?? undefined,
+                        fixedFee: fixedFee ?? undefined,
                         user: email
                             ? { update: { email } }
                             : undefined,

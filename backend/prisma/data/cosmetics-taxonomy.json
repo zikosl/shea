@@ -4,6 +4,7 @@
   "categories": [
     {
       "category": "Bath & Body",
+      "icon": "/uploads/cosmetics/icons/category-bath-body.svg",
       "productTypes": [
         {
           "name": "Body Care",
@@ -37,6 +38,7 @@
     },
     {
       "category": "Fragrance",
+      "icon": "/uploads/cosmetics/icons/category-fragrance.svg",
       "productTypes": [
         {
           "name": "Body Mist & Splash",
@@ -54,6 +56,7 @@
     },
     {
       "category": "Hair Care",
+      "icon": "/uploads/cosmetics/icons/category-hair-care.svg",
       "productTypes": [
         {
           "name": "Shampoo",
@@ -91,6 +94,7 @@
     },
     {
       "category": "Makeup",
+      "icon": "/uploads/cosmetics/icons/category-makeup.svg",
       "productTypes": [
         {
           "name": "Foundation",
@@ -148,6 +152,7 @@
     },
     {
       "category": "Personal Care",
+      "icon": "/uploads/cosmetics/icons/category-personal-care.svg",
       "productTypes": [
         {
           "name": "Deodorant",
@@ -177,6 +182,7 @@
     },
     {
       "category": "Skincare",
+      "icon": "/uploads/cosmetics/icons/category-skincare.svg",
       "productTypes": [
         {
           "name": "Moisturizer",

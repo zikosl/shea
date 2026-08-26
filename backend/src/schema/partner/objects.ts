@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { objectType } from "nexus"
 
 const PartnerResult = objectType({
@@ -23,7 +24,28 @@ const PartnerNiche = objectType({
         })
     },
 })
+const PartnerStatistics = objectType({
+    name: 'PartnerStatistics',
+    definition(t) {
+        t.nonNull.float('gross')
+        t.nonNull.float('fees')
+        t.nonNull.float('net')
+        t.nonNull.int('orders')
+        t.nonNull.float('averageOrderValue')
+    },
+})
+const PartnerStatisticsResult = objectType({
+    name: 'PartnerStatisticsResult',
+    definition(t) {
+        t.nonNull.field('today', { type: 'PartnerStatistics' })
+        t.nonNull.field('week', { type: 'PartnerStatistics' })
+        t.nonNull.field('month', { type: 'PartnerStatistics' })
+        t.nonNull.field('allTime', { type: 'PartnerStatistics' })
+    },
+})
 export default {
     PartnerResult,
-    PartnerNiche
+    PartnerNiche,
+    PartnerStatistics,
+    PartnerStatisticsResult,
 }

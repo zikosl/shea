@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
-import { Loader2, X } from 'lucide-react';
+import { BadgeCheck, ImageIcon, Loader2, Package, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -78,6 +78,12 @@ export default function ItemForm({
       brand_id: initialData?.brand_id ?? "",
     },
   });
+  const watchedName = form.watch("name");
+  const watchedDescription = form.watch("description");
+  const watchedBrandId = form.watch("brand_id");
+  const watchedProductTypeId = form.watch("product_type_id");
+  const selectedBrand = references.brands.find((brand) => String(brand.id) === String(watchedBrandId));
+  const selectedProductType = references.productTypes.find((productType) => String(productType.id) === String(watchedProductTypeId));
 
   async function handleUpload(files: File[]) {
     const uploadedFiles = await uploadFiles(files);
@@ -128,7 +134,8 @@ export default function ItemForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 mx-auto">
-        <Card className="w-full max-w-4xl mx-auto">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <Card className="w-full">
           <CardHeader>
             <CardTitle>{pageTitle}</CardTitle>
           </CardHeader>
@@ -272,6 +279,55 @@ export default function ItemForm({
             </Button>
           </CardFooter>
         </Card>
+        <Card className="h-fit overflow-hidden xl:sticky xl:top-24">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <BadgeCheck className="h-4 w-4" />
+              Live preview
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="relative aspect-square overflow-hidden rounded-2xl border bg-muted">
+              {previewImages[0] ? (
+                <Image
+                  unoptimized
+                  fill
+                  src={previewImages[0]}
+                  alt="Product template preview"
+                  className="object-cover"
+                />
+              ) : (
+                <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
+                  <ImageIcon className="h-8 w-8" />
+                  <span className="text-sm">No image yet</span>
+                </div>
+              )}
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Package className="h-3.5 w-3.5" />
+                {selectedProductType?.name ?? "Product type"}
+              </div>
+              <h3 className="text-xl font-semibold tracking-tight">
+                {watchedName || "Product template name"}
+              </h3>
+              <p className="line-clamp-4 text-sm text-muted-foreground">
+                {watchedDescription || "Add a clear product description so partners understand what they are activating."}
+              </p>
+            </div>
+            <div className="rounded-2xl border bg-muted/40 p-4 text-sm">
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-muted-foreground">Brand</span>
+                <span className="font-medium">{selectedBrand?.name ?? "Not selected"}</span>
+              </div>
+              <div className="mt-3 flex items-center justify-between gap-4">
+                <span className="text-muted-foreground">Images</span>
+                <span className="font-medium">{imageUrls.length}/6</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        </div>
       </form>
     </Form>
   );

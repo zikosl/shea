@@ -1,10 +1,13 @@
 import { gql } from "graphql-request"
 
 const CREATE_PARTNER = gql`
-  mutation createPartner($companyName: String!, $email: String!, $niches: [Int!]) {
-    createPartner(companyName: $companyName, email: $email, niches: $niches) {
+  mutation createPartner($companyName: String!, $email: String!, $niches: [Int!], $feeType: PartnerFeeType, $feeRate: Float, $fixedFee: Float) {
+    createPartner(companyName: $companyName, email: $email, niches: $niches, feeType: $feeType, feeRate: $feeRate, fixedFee: $fixedFee) {
       id
       companyName
+      feeType
+      feeRate
+      fixedFee
       niches {
         id
         niche_id
@@ -23,10 +26,13 @@ const CREATE_PARTNER = gql`
 
 // Mutation to update an existing partner
 const UPDATE_PARTNER = gql`
-  mutation updatePartner($id: Int!, $companyName: String, $email: String, $niches: [Int!]) {
-    updatePartner(id: $id, companyName: $companyName, email: $email, niches: $niches) {
+  mutation updatePartner($id: Int!, $companyName: String, $email: String, $niches: [Int!], $feeType: PartnerFeeType, $feeRate: Float, $fixedFee: Float) {
+    updatePartner(id: $id, companyName: $companyName, email: $email, niches: $niches, feeType: $feeType, feeRate: $feeRate, fixedFee: $fixedFee) {
       id
       companyName
+      feeType
+      feeRate
+      fixedFee
       niches {
         id
         niche_id

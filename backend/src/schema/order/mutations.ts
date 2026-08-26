@@ -7,6 +7,7 @@ import { DispatchStatus, DeliveryStatus, DeliveryType, LogSatus, PricingName } f
 import { pickSchedule, todayAt } from "../../utils/order"
 import { sendNotification } from "../../servers/firebase"
 import { ensurePartnerPosIdentity } from "./pos"
+import { calculatePartnerFee } from "../../utils/partner-fees"
 // import { DeliveryStatus } from "../../types"
 
 const Mutation = extendType({
@@ -72,6 +73,10 @@ const Mutation = extendType({
                             }
                         }
                     })
+                    const subtotal = data.items.reduce((sum: number, item: any) => {
+                        return sum + (Number(item.price ?? 0) * Number(item.quantity ?? 0))
+                    }, 0)
+                    const financials = calculatePartnerFee(subtotal, partner)
                     const order = await tx.order.create({
                         data: {
                             clientId: userId,
@@ -80,6 +85,7 @@ const Mutation = extendType({
                             deliveryTax: pricing.find(v => pricing.find(v => data.deliveryType == v.name))?.price ?? 0,
                             appTax: pricing.find(v => v.name == PricingName.APP_TAX)?.price ?? 0,
                             storeTax: pricing.find(v => v.name == PricingName.STORE_TAX)?.price ?? 0,
+                            ...financials,
                             items: {
                                 create: data.items,
                             }
@@ -525,6 +531,14 @@ const Mutation = extendType({
                         }
                     }
 
+                    const saleSubtotal = data.items.reduce((sum: number, item: any) => {
+                        const product = products.find((entry: any) => entry.id === item.productId)
+                        return sum + ((item.price ?? product?.price ?? 0) * item.quantity)
+                    }, 0)
+                    const partner = await tx.partner.findUnique({
+                        where: { userId: partnerId },
+                    })
+                    const financials = calculatePartnerFee(saleSubtotal, partner)
                     const order = await tx.order.create({
                         data: {
                             partnerId,
@@ -534,6 +548,7 @@ const Mutation = extendType({
                             appTax: 0,
                             storeTax: 0,
                             discount: data.discount ?? 0,
+                            ...financials,
                             source: "POS",
                             walkInCustomerName: data.customerName ?? null,
                             note: data.note ?? null,
@@ -547,11 +562,6 @@ const Mutation = extendType({
                             },
                         },
                     })
-
-                    const saleSubtotal = data.items.reduce((sum: number, item: any) => {
-                        const product = products.find((entry: any) => entry.id === item.productId)
-                        return sum + ((item.price ?? product?.price ?? 0) * item.quantity)
-                    }, 0)
 
                     const paymentMethod = ['CASH', 'CARD', 'MIXED', 'OTHER'].includes(String(data.paymentMethod ?? '').toUpperCase())
                         ? String(data.paymentMethod).toUpperCase()

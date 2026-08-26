@@ -3,6 +3,9 @@ type Partner = {
     email: string;
     password: string;
     companyName: string;
+    feeType?: "NONE" | "PERCENTAGE" | "FIXED" | "MIXED";
+    feeRate?: number;
+    fixedFee?: number;
     niches?: number[];
     partnerNiches?: PartnerNiche[];
 }

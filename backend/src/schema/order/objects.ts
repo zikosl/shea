@@ -15,6 +15,13 @@ const Order = objectType({
         t.float('appTax')
         t.float('deliveryTax')
         t.float('storeTax')
+        t.float('subtotal')
+        t.float('partnerGross')
+        t.float('partnerFee')
+        t.float('partnerNet')
+        t.field('partnerFeeType', { type: 'PartnerFeeType' })
+        t.float('partnerFeeRate')
+        t.float('partnerFixedFee')
         t.float('price')
         t.int('addressId')
         t.field('address', {
