@@ -36,6 +36,7 @@ const dataDir = path.resolve(process.cwd(), 'prisma', 'data')
 const brandsPath = path.join(dataDir, 'cosmetics-brands.json')
 const productsPath = path.join(dataDir, 'cosmetics-products.json')
 const nicheName = process.env.COSMETICS_NICHE_NAME ?? 'Cosmetics'
+const nicheSlug = process.env.COSMETICS_IMAGE_NICHE_SLUG ?? 'cosmetics'
 
 function readJson<T>(filePath: string): T {
   return JSON.parse(fs.readFileSync(filePath, 'utf-8')) as T
@@ -51,6 +52,106 @@ function isLocalUploadPath(value?: string | null): value is string {
 
 function unique(values: string[]) {
   return Array.from(new Set(values.map(clean).filter(Boolean)))
+}
+
+function migrateUploadPath(value: string) {
+  if (value.startsWith(`/uploads/${nicheSlug}/`)) return value
+  if (value.startsWith('/uploads/brands/')) {
+    return value.replace('/uploads/brands/', `/uploads/${nicheSlug}/brands/`)
+  }
+  if (value.startsWith('/uploads/products/')) {
+    return value.replace('/uploads/products/', `/uploads/${nicheSlug}/products/`)
+  }
+
+  return value
+}
+
+async function migrateExistingDbUploadPaths(nicheId: number) {
+  let brandsUpdated = 0
+  let productImagesUpdated = 0
+  let productImageConflictsMerged = 0
+
+  const brands = await prisma.brand.findMany({
+    where: {
+      niche_id: nicheId,
+      image: {
+        startsWith: '/uploads/brands/',
+      },
+    },
+    select: {
+      id: true,
+      image: true,
+    },
+  })
+
+  for (const brand of brands) {
+    const nextImage = migrateUploadPath(brand.image)
+    if (nextImage === brand.image) continue
+
+    await prisma.brand.update({
+      where: { id: brand.id },
+      data: { image: nextImage },
+    })
+    brandsUpdated += 1
+  }
+
+  const productImages = await prisma.productImage.findMany({
+    where: {
+      url: {
+        startsWith: '/uploads/products/',
+      },
+    },
+    select: {
+      id: true,
+      url: true,
+      altText: true,
+      variantId: true,
+      product_template_id: true,
+    },
+  })
+
+  for (const image of productImages) {
+    const nextUrl = migrateUploadPath(image.url)
+    if (nextUrl === image.url) continue
+
+    const existingTarget = await prisma.productImage.findUnique({
+      where: { url: nextUrl },
+      select: {
+        id: true,
+        altText: true,
+        variantId: true,
+        product_template_id: true,
+      },
+    })
+
+    if (existingTarget) {
+      await prisma.productImage.update({
+        where: { id: existingTarget.id },
+        data: {
+          altText: existingTarget.altText ?? image.altText,
+          variantId: existingTarget.variantId ?? image.variantId,
+          product_template_id: existingTarget.product_template_id ?? image.product_template_id,
+        },
+      })
+      await prisma.productImage.delete({
+        where: { id: image.id },
+      })
+      productImageConflictsMerged += 1
+      continue
+    }
+
+    await prisma.productImage.update({
+      where: { id: image.id },
+      data: { url: nextUrl },
+    })
+    productImagesUpdated += 1
+  }
+
+  return {
+    brandsUpdated,
+    productImagesUpdated,
+    productImageConflictsMerged,
+  }
 }
 
 async function syncBrandImages(brands: BrandSeed[], nicheId: number) {
@@ -191,6 +292,7 @@ async function main() {
     throw new Error(`Niche "${nicheName}" was not found. Run the cosmetics seed first.`)
   }
 
+  const pathMigration = await migrateExistingDbUploadPaths(niche.id)
   const brandResult = await syncBrandImages(brands, niche.id)
   let templatesMatched = 0
   let templatesSkipped = 0
@@ -252,6 +354,8 @@ async function main() {
     JSON.stringify(
       {
         niche: niche.name,
+        nicheSlug,
+        pathMigration,
         brands: brandResult,
         templates: {
           matched: templatesMatched,
