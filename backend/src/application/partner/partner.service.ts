@@ -11,8 +11,7 @@ export async function createPartner(
   input: { email: string; companyName: string; niches?: number[] | null },
 ) {
   const email = ensureEmail(input.email)
-  // const password = generateRandomPassword(12)
-  const password = "12345678"
+  const password = generateRandomPassword(12)
   const passwordHash = await bcrypt.hash(password, 10)
   const userWithPartner = await prisma.$transaction(async (tx) => {
     const createdUser = await tx.user.create({
@@ -55,12 +54,16 @@ export async function createPartner(
     return createdUser
   })
 
-  // UNCOMMENT
-  // await sendEmailPassword({
-  //   email,
-  //   password,
-  //   name: input.companyName,
-  // })
+  try {
+    const messageId = await sendEmailPassword({
+      email,
+      password,
+      name: input.companyName,
+    })
+    console.log(`[Mail] Partner invite sent to ${email}: ${messageId}`)
+  } catch (error) {
+    console.error(`[Mail] Partner invite failed for ${email}`, error)
+  }
 
   return userWithPartner.partner
 }

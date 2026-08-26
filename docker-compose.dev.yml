@@ -63,6 +63,9 @@ services:
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost}
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      EMAIL_USER: ${EMAIL_USER:-}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD:-}
+      EMAIL_USER_NAME: ${EMAIL_USER_NAME:-Shea}
     volumes:
       - ./backend/src:/app/src
       - ./backend/prisma:/app/prisma
