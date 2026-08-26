@@ -69,7 +69,7 @@ services:
       - ./backend/tsconfig.json:/app/tsconfig.json:ro
       - ./backend/prisma.config.ts:/app/prisma.config.ts:ro
       - dev_backend_logs:/app/logs
-      - dev_uploads:/app/uploads
+      - ./backend/uploads:/app/uploads
       - /app/node_modules
     ports:
       - "3001:3001"
@@ -126,7 +126,7 @@ services:
       - "80:80"
     volumes:
       - ./docker/caddy/Caddyfile.dev:/etc/caddy/Caddyfile:ro
-      - dev_uploads:/srv/uploads:ro
+      - ./backend/uploads:/srv/uploads:ro
     networks:
       - shea-dev-network
 
@@ -134,7 +134,6 @@ volumes:
   dev_postgres_data:
   dev_redis_data:
   dev_backend_logs:
-  dev_uploads:
 
 networks:
   shea-dev-network:

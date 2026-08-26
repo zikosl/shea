@@ -1,6 +1,20 @@
 name: shea
 
 services:
+  uploads-init:
+    image: alpine:3.20
+    container_name: shea-uploads-init
+    command:
+      - sh
+      - -c
+      - |
+        mkdir -p /app/uploads/products /app/uploads/brands /app/uploads/logos /app/uploads/favicons
+        chown -R 1001:1001 /app/uploads
+    volumes:
+      - ./backend/uploads:/app/uploads
+    restart: "no"
+    networks:
+      - shea-network
   
   backend:
     build:
@@ -9,6 +23,8 @@ services:
     container_name: shea-backend
     restart: unless-stopped
     depends_on:
+      uploads-init:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
@@ -26,7 +42,7 @@ services:
       FIREBASE_SERVICE_ACCOUNT_PATH: ${FIREBASE_SERVICE_ACCOUNT_PATH:-/app/secrets/firebase-service-account.json}
     volumes:
       - backend_logs:/app/logs
-      - uploads_data:/app/uploads
+      - ./backend/uploads:/app/uploads
       - ./secrets/firebase-service-account.json:/app/secrets/firebase-service-account.json:ro
     expose:
       - "3001"
@@ -87,7 +103,7 @@ services:
       - "443:443"
     volumes:
       - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - uploads_data:/srv/uploads:ro
+      - ./backend/uploads:/srv/uploads:ro
       - caddy_data:/data
       - caddy_config:/config
     networks:
@@ -95,7 +111,6 @@ services:
 
 volumes:
   backend_logs:
-  uploads_data:
   caddy_data:
   caddy_config:
 
