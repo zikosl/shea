@@ -86,9 +86,11 @@ const Mutation = extendType({
                         }
                     })
                     sendNotification({
-                        tokens: partner.user.pushTokens[0].token,
+                        tokens: partner.user.pushTokens[0]?.token,
                         title: "New Order Placed",
                         body: "A customer has placed a new order at your store. Accept now to fulfill this order!",
+                        androidChannelId: "new-order-alerts",
+                        sound: "new-order.wav",
                         data: {
                             event: "NEW_ORDER",
                             orderId: `${order.id}`,

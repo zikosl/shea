@@ -8,6 +8,8 @@ interface NotificationPayload {
   title: string
   body: string
   data?: Record<string, string>
+  androidChannelId?: string
+  sound?: string
 }
 
 function resolveServiceAccountPath() {
@@ -60,6 +62,20 @@ export async function sendNotification(payload: NotificationPayload) {
       body: payload.body,
     },
     data: payload.data,
+    android: {
+      priority: 'high',
+      notification: {
+        channelId: payload.androidChannelId,
+        sound: payload.sound,
+      },
+    },
+    apns: {
+      payload: {
+        aps: {
+          sound: payload.sound ?? 'default',
+        },
+      },
+    },
   }
 
   try {
