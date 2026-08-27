@@ -96,7 +96,7 @@ const Mutation = extendType({
                         title: "New Order Placed",
                         body: "A customer has placed a new order at your store. Accept now to fulfill this order!",
                         androidChannelId: "new-order-alerts",
-                        sound: "new-order.wav",
+                        sound: "new_order.wav",
                         data: {
                             event: "NEW_ORDER",
                             orderId: `${order.id}`,
