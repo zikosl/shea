@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 
 import { Heading } from "@/components/ui/heading";
-import { Navbar } from "@/components/admin-panel/navbar";
 
 type ResourcePageProps = {
   title: string;
@@ -20,7 +19,6 @@ export function ResourcePage({
 }: ResourcePageProps) {
   return (
     <div>
-      <Navbar title={title} />
       <section className="mx-auto w-full max-w-[1400px] space-y-4 px-4 py-5 sm:px-6">
         <div className="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-end sm:justify-between">
           <Heading title={title} description={description} />
