@@ -59,7 +59,11 @@ export const ProductQuery = extendType({
                         partnerId,
                         OR: [
                             { name: { contains: search, mode: 'insensitive' } },
-                            // { description: { contains: search, mode: 'insensitive' } },
+                            { name_ar: { contains: search, mode: 'insensitive' } },
+                            { sku: { contains: search, mode: 'insensitive' } },
+                            { customName: { contains: search, mode: 'insensitive' } },
+                            { vendorSku: { contains: search, mode: 'insensitive' } },
+                            { vendorBarcode: { contains: search, mode: 'insensitive' } },
                         ],
                     }
                     : {
@@ -83,8 +87,6 @@ export const ProductQuery = extendType({
                         category_id: category_id,
                     }
                 }
-
-
                 const totalProducts = await ctx.prisma.productView.count({ where });
 
                 const args: Prisma.ProductViewFindManyArgs = isFull ? { where } : {
@@ -211,7 +213,8 @@ export const ProductTemplateQuery = extendType({
                     ? {
                         OR: [
                             { name: { contains: search, mode: 'insensitive' } },
-                            // { description: { contains: search, mode: 'insensitive' } },
+                            { name_ar: { contains: search, mode: 'insensitive' } },
+                            { description: { contains: search, mode: 'insensitive' } },
                         ],
                     }
                     : {};

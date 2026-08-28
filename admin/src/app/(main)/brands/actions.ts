@@ -1,6 +1,8 @@
 "use server";
 
 import { createResourceActions } from "@/lib/resource-actions";
+import { requestServerGraphQL } from "@/lib/server-request";
+import { FIND_MANY_NICHES } from "@/api/queries";
 
 import { Item, link, title_plural, title_singular } from "./_constant";
 import {
@@ -27,3 +29,18 @@ export const {
   pluralKey: title_plural,
   path: link,
 });
+
+export async function getBrandFormNiches() {
+  const response = await requestServerGraphQL<{
+    findManyNiches: {
+      niches: Niche[];
+    };
+  }>(FIND_MANY_NICHES, {
+    search: undefined,
+    page: 1,
+    limit: 100,
+    isFull: true,
+  });
+
+  return response.findManyNiches.niches;
+}

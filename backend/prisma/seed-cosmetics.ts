@@ -6,6 +6,8 @@ import path from 'path'
 
 type CosmeticsBrandSeed = {
   name: string
+  niche?: string
+  nicheSlug?: string
   image?: string
 }
 
@@ -161,7 +163,6 @@ async function main() {
     const existing = await prisma.brand.findFirst({
       where: {
         name,
-        niche_id: niche.id,
       },
     })
 

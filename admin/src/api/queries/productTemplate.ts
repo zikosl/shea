@@ -19,6 +19,7 @@ export const FIND_ONE_PRODUCT_TEMPLATE = gql`
         id
         name
         image
+        niche_id
       }
       category {
         id
@@ -58,6 +59,7 @@ export const FIND_MANY_PRODUCT_TEMPLATES = gql`
           id
           name
           image
+          niche_id
         }
         category {
           id

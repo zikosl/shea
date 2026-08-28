@@ -11,6 +11,13 @@ import {
   FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -33,13 +40,16 @@ const formSchema = z.object({
   image: z.string().min(2, {
     message: "image must be uploaded.",
   }),
+  niche_id: z.string().optional(),
 })
 
 export default function ItemForm({
   initialData,
+  niches,
   pageTitle
 }: {
   initialData: Item | null;
+  niches: Niche[];
   pageTitle: string;
 }) {
   const router = useRouter();
@@ -50,6 +60,7 @@ export default function ItemForm({
     defaultValues: {
       name: initialData?.name ?? "",
       image: initialData?.image ?? "",
+      niche_id: initialData?.niche_id ? String(initialData.niche_id) : "",
     },
   })
   const [image, setImage] = useState(() => resolvePublicAssetUrl(initialData?.image))
@@ -59,10 +70,16 @@ export default function ItemForm({
     // ✅ This will be type-safe and validated.
     setLoading(true)
     if (initialData) {
-      await updateItem(initialData.id, values)
+      await updateItem(initialData.id, {
+        ...values,
+        niche_id: values.niche_id ? Number(values.niche_id) : undefined,
+      })
     }
     else {
-      await createItem(values)
+      await createItem({
+        ...values,
+        niche_id: values.niche_id ? Number(values.niche_id) : undefined,
+      })
       form.reset()
     }
     router.replace(`/${name_plural}`)
@@ -138,6 +155,33 @@ export default function ItemForm({
                   </FormControl>
                   <FormDescription>
                     Upload a square or horizontal logo. Local files are served from /uploads.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="niche_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Niche</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a niche" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {niches.map((niche) => (
+                        <SelectItem key={niche.id} value={String(niche.id)}>
+                          {niche.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Brands are scoped to a niche, so catalog forms can show only relevant options.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

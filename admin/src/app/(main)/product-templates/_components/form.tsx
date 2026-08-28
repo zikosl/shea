@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { BadgeCheck, ImageIcon, Loader2, Package, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -51,8 +51,8 @@ const formSchema = z.object({
 });
 
 type References = {
-  productTypes: Array<{ id: string; name: string }>;
-  brands: Array<{ id: string; name: string }>;
+  productTypes: Array<{ id: string; name: string; category?: { niche_id?: string | number | null } | null }>;
+  brands: Array<{ id: string; name: string; niche_id?: string | number | null }>;
 };
 
 export default function ItemForm({
@@ -82,8 +82,13 @@ export default function ItemForm({
   const watchedDescription = form.watch("description");
   const watchedBrandId = form.watch("brand_id");
   const watchedProductTypeId = form.watch("product_type_id");
-  const selectedBrand = references.brands.find((brand) => String(brand.id) === String(watchedBrandId));
   const selectedProductType = references.productTypes.find((productType) => String(productType.id) === String(watchedProductTypeId));
+  const selectedNicheId = selectedProductType?.category?.niche_id ? String(selectedProductType.category.niche_id) : undefined;
+  const filteredBrands = useMemo(() => {
+    if (!selectedNicheId) return references.brands;
+    return references.brands.filter((brand) => !brand.niche_id || String(brand.niche_id) === selectedNicheId);
+  }, [references.brands, selectedNicheId]);
+  const selectedBrand = references.brands.find((brand) => String(brand.id) === String(watchedBrandId));
 
   async function handleUpload(files: File[]) {
     const uploadedFiles = await uploadFiles(files);
@@ -97,6 +102,14 @@ export default function ItemForm({
     () => imageUrls.map((url) => resolvePublicAssetUrl(url)),
     [imageUrls],
   );
+
+  useEffect(() => {
+    if (!watchedBrandId || !selectedNicheId) return;
+    const stillValid = filteredBrands.some((brand) => String(brand.id) === String(watchedBrandId));
+    if (!stillValid) {
+      form.setValue("brand_id", "");
+    }
+  }, [filteredBrands, form, selectedNicheId, watchedBrandId]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
@@ -171,7 +184,7 @@ export default function ItemForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {references.brands.map((brand) => (
+                        {filteredBrands.map((brand) => (
                           <SelectItem key={brand.id} value={brand.id.toString()}>
                             {brand.name}
                           </SelectItem>

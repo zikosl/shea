@@ -56,6 +56,8 @@ type Brand = {
     id: number
     name: string
     image: string
+    niche_id?: number | null
+    niche?: Niche | null
 }
 
 type Product = {

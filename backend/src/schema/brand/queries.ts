@@ -20,8 +20,14 @@ export const Query = extendType({
 
         t.nonNull.list.nonNull.field('getAllBrands', {
             type: 'Brand',
-            resolve: async (_parent, _args, ctx: Context) => {
-                return ctx.prisma.brand.findMany({})
+            args: {
+                niche_id: intArg(),
+            },
+            resolve: async (_parent, { niche_id }, ctx: Context) => {
+                return ctx.prisma.brand.findMany({
+                    where: niche_id ? { niche_id } : {},
+                    orderBy: { name: 'asc' },
+                })
             },
         })
 

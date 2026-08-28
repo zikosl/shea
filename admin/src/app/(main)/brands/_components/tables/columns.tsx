@@ -29,6 +29,11 @@ export const columns: ColumnDef<Item>[] = [
     header: 'Name',
   },
   {
+    id: 'niche',
+    header: 'Niche',
+    cell: ({ row }) => row.original.niche?.name ?? 'Unassigned',
+  },
+  {
     id: 'actions',
     cell: ({ row }) => <CellAction data={row.original} />,
     size: 50,

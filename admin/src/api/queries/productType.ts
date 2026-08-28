@@ -26,6 +26,7 @@ export const GET_ALL_PRODUCT_TYPES = gql`
           id
           name
           name_ar
+          niche_id
         }
       }
       totalProductTypes
@@ -44,6 +45,7 @@ export const FIND_MANY_PRODUCT_TYPES = gql`
           id
           name
           name_ar
+          niche_id
         }
       }
       totalProductTypes

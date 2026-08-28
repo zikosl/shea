@@ -37,7 +37,9 @@
       "غسول الجسم وجل الاستحمام",
       "العناية بالمناطق الحساسة",
       "عطر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "ACM",
@@ -57,7 +59,9 @@
     ],
     "productTypes_ar": [
       "واقي الشمس"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "AMEERAT",
@@ -77,7 +81,9 @@
     ],
     "productTypes_ar": [
       "عطر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "ANDREA",
@@ -103,7 +109,9 @@
       "زيت الجسم",
       "صبغة الشعر",
       "سيروم الشعر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "ANUA",
@@ -127,7 +135,9 @@
       "علاجات ومكافحة الشيخوخة",
       "سيروم وأمبولات",
       "تونر ورذاذ الوجه"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "APPAREIL",
@@ -151,7 +161,9 @@
     "productTypes_ar": [
       "إزالة الشعر والشمع",
       "مقشر البشرة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "APPAREILLE",
@@ -171,7 +183,9 @@
     ],
     "productTypes_ar": [
       "واقي الشمس"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "ARVEA",
@@ -235,7 +249,9 @@
       "مزيل العرق",
       "شامبو",
       "واقي الشمس"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "AVEN",
@@ -257,7 +273,9 @@
     "productTypes_ar": [
       "مرطب البشرة",
       "واقي الشمس"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "AVENE",
@@ -277,7 +295,9 @@
     ],
     "productTypes_ar": [
       "غسول ومزيل مكياج"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "AXIS-Y",
@@ -297,7 +317,9 @@
     ],
     "productTypes_ar": [
       "علاجات ومكافحة الشيخوخة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "AYAM",
@@ -317,7 +339,9 @@
     ],
     "productTypes_ar": [
       "قطن وإزالة المكياج"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "BABY",
@@ -359,7 +383,9 @@
       "مزيل العرق",
       "تصفيف الشعر",
       "بودرة الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "BABYLISS",
@@ -379,7 +405,9 @@
     ],
     "productTypes_ar": [
       "أدوات الشعر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "BABYLISSE",
@@ -399,7 +427,9 @@
     ],
     "productTypes_ar": [
       "أدوات الشعر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "BEAUTTMAX",
@@ -419,7 +449,9 @@
     ],
     "productTypes_ar": [
       "كريم ولوشن الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "BEAUTY",
@@ -441,7 +473,9 @@
     "productTypes_ar": [
       "واقي الشمس",
       "علاجات ومكافحة الشيخوخة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "BEDOUINE",
@@ -465,7 +499,9 @@
     "productTypes_ar": [
       "مقشر الجسم",
       "عطر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "BIO",
@@ -489,7 +525,9 @@
     "productTypes_ar": [
       "صابون",
       "مرطب البشرة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "BIO-NESS",
@@ -515,7 +553,9 @@
       "رذاذ ومعطر الجسم",
       "مزيل العرق",
       "عطر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "BIOAQOUA",
@@ -535,7 +575,9 @@
     ],
     "productTypes_ar": [
       "مقشر البشرة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "BIODERMA",
@@ -557,7 +599,9 @@
     "productTypes_ar": [
       "علاجات ومكافحة الشيخوخة",
       "غسول ومزيل مكياج"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "BIOLILA",
@@ -583,7 +627,9 @@
       "كريم ولوشن الجسم",
       "غسول ومزيل مكياج",
       "واقي الشمس"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "BIOPLEX",
@@ -603,7 +649,9 @@
     ],
     "productTypes_ar": [
       "سيروم وأمبولات"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "BIORE",
@@ -623,7 +671,9 @@
     ],
     "productTypes_ar": [
       "مقشر البشرة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "BIOVA",
@@ -649,7 +699,9 @@
       "واقي الشمس",
       "غسول ومزيل مكياج",
       "ماسك الوجه"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "BIOXCIN",
@@ -669,7 +721,9 @@
     ],
     "productTypes_ar": [
       "شامبو"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "BIOXCINE",
@@ -689,7 +743,9 @@
     ],
     "productTypes_ar": [
       "شامبو"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "BOURJOIS",
@@ -729,7 +785,9 @@
       "باليت مكياج",
       "بودرة الوجه",
       "برايمر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "CALLIDERM",
@@ -765,7 +823,9 @@
       "مقشر البشرة",
       "ماسك الوجه",
       "سيروم وأمبولات"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "CALLIDERME",
@@ -787,7 +847,9 @@
     "productTypes_ar": [
       "واقي الشمس",
       "علاجات ومكافحة الشيخوخة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "CANTU",
@@ -807,7 +869,9 @@
     ],
     "productTypes_ar": [
       "ماسك الوجه"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "CARELIA",
@@ -827,7 +891,9 @@
     ],
     "productTypes_ar": [
       "كريم ولوشن الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "CELCENES",
@@ -847,7 +913,9 @@
     ],
     "productTypes_ar": [
       "غسول ومزيل مكياج"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "CELENES",
@@ -879,7 +947,9 @@
       "واقي الشمس",
       "مرطب البشرة",
       "سيروم وأمبولات"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "CENTELLA",
@@ -911,7 +981,9 @@
       "غسول ومزيل مكياج",
       "مرطب البشرة",
       "كريم ولوشن الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "CENTILLA",
@@ -931,7 +1003,9 @@
     ],
     "productTypes_ar": [
       "سيروم وأمبولات"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "CERAVE",
@@ -955,7 +1029,9 @@
       "مرطب البشرة",
       "سيروم وأمبولات",
       "علاجات ومكافحة الشيخوخة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "CHALINE",
@@ -995,7 +1071,9 @@
       "سيروم وأمبولات",
       "شامبو",
       "تصفيف الشعر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "CHLINE",
@@ -1015,7 +1093,9 @@
     ],
     "productTypes_ar": [
       "مرطب البشرة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "CLARISTONE",
@@ -1035,7 +1115,9 @@
     ],
     "productTypes_ar": [
       "ماسك الوجه"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "CLEAR",
@@ -1055,7 +1137,9 @@
     ],
     "productTypes_ar": [
       "شامبو"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "COLGATE",
@@ -1075,7 +1159,9 @@
     ],
     "productTypes_ar": [
       "العناية بالفم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "COLORRISTA",
@@ -1095,7 +1181,9 @@
     ],
     "productTypes_ar": [
       "شامبو"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "COSRX",
@@ -1117,7 +1205,9 @@
     "productTypes_ar": [
       "مرطب البشرة",
       "واقي الشمس"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "DAHLIA",
@@ -1137,7 +1227,9 @@
     ],
     "productTypes_ar": [
       "سيروم وأمبولات"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "DAYLONG",
@@ -1157,7 +1249,9 @@
     ],
     "productTypes_ar": [
       "واقي الشمس"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "DEO",
@@ -1177,7 +1271,9 @@
     ],
     "productTypes_ar": [
       "مزيل العرق"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "DEP",
@@ -1197,7 +1293,9 @@
     ],
     "productTypes_ar": [
       "إزالة الشعر والشمع"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "DERMAB",
@@ -1219,7 +1317,9 @@
     "productTypes_ar": [
       "مرطب البشرة",
       "واقي الشمس"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "DERMACTIVE",
@@ -1267,7 +1367,9 @@
       "سيروم الشعر",
       "سيروم وأمبولات",
       "تصفيف الشعر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "DERMOMED",
@@ -1287,7 +1389,9 @@
     ],
     "productTypes_ar": [
       "غسول الجسم وجل الاستحمام"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "DERMOVIVA",
@@ -1315,7 +1419,9 @@
       "مرطب البشرة",
       "غسول ومزيل مكياج",
       "صابون"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "DESSANGE",
@@ -1341,7 +1447,9 @@
       "كريم ولوشن الجسم",
       "تصفيف الشعر",
       "شامبو"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "DIADERMINE",
@@ -1361,7 +1469,9 @@
     ],
     "productTypes_ar": [
       "مرطب البشرة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "DOVE",
@@ -1395,7 +1505,9 @@
       "زيت الشعر",
       "شامبو",
       "صابون"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "DR.ALTHEA",
@@ -1415,7 +1527,9 @@
     ],
     "productTypes_ar": [
       "سيروم وأمبولات"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "ECRAN",
@@ -1435,7 +1549,9 @@
     ],
     "productTypes_ar": [
       "واقي الشمس"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "EL",
@@ -1455,7 +1571,9 @@
     ],
     "productTypes_ar": [
       "إزالة الشعر والشمع"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "EL-SAIN",
@@ -1475,7 +1593,9 @@
     ],
     "productTypes_ar": [
       "إزالة الشعر والشمع"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "ELLEA",
@@ -1507,7 +1627,9 @@
       "أو دو تواليت وكولونيا",
       "العناية بالمناطق الحساسة",
       "شامبو"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "ELSAIN",
@@ -1527,7 +1649,9 @@
     ],
     "productTypes_ar": [
       "مزيل العرق"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "ELSEVE",
@@ -1557,7 +1681,9 @@
       "زيت الجسم",
       "شامبو",
       "ماسك الوجه"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "ELSEVESHP",
@@ -1577,7 +1703,9 @@
     ],
     "productTypes_ar": [
       "شامبو"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "ELVIVE",
@@ -1601,7 +1729,9 @@
     "productTypes_ar": [
       "كريم ولوشن الجسم",
       "شامبو"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "EMAIL",
@@ -1621,7 +1751,9 @@
     ],
     "productTypes_ar": [
       "العناية بالفم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "EMBRYOLISSE",
@@ -1641,7 +1773,9 @@
     ],
     "productTypes_ar": [
       "مرطب البشرة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "ENERGIE",
@@ -1665,7 +1799,9 @@
     "productTypes_ar": [
       "كريم ولوشن الجسم",
       "شامبو"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "EQQUAL",
@@ -1685,7 +1821,9 @@
     ],
     "productTypes_ar": [
       "سيروم وأمبولات"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "ESSENCE",
@@ -1705,7 +1843,9 @@
     ],
     "productTypes_ar": [
       "ماسكارا"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "ETIAXIL",
@@ -1725,7 +1865,9 @@
     ],
     "productTypes_ar": [
       "مزيل العرق"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "EUCERIN",
@@ -1745,7 +1887,9 @@
     ],
     "productTypes_ar": [
       "واقي الشمس"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "EVOLUDERM",
@@ -1783,7 +1927,9 @@
       "تونر ورذاذ الوجه",
       "ماسك الوجه",
       "شامبو"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "EVORIA",
@@ -1807,7 +1953,9 @@
     "productTypes_ar": [
       "صبغة الشعر",
       "رذاذ ومعطر الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "EXCELLENCE",
@@ -1827,7 +1975,9 @@
     ],
     "productTypes_ar": [
       "صبغة الشعر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "FLORE",
@@ -1857,7 +2007,9 @@
       "سيروم وأمبولات",
       "شامبو",
       "تونر ورذاذ الوجه"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "FLORMAR",
@@ -1881,7 +2033,9 @@
       "برايمر",
       "أحمر الشفاه ومنتجات الشفاه",
       "كريم أساس"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "FLUX",
@@ -1939,7 +2093,9 @@
       "سيروم وأمبولات",
       "أو دو تواليت وكولونيا",
       "صابون"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "FRANCK",
@@ -1965,7 +2121,9 @@
       "مزيل العرق",
       "أو دو تواليت وكولونيا",
       "عطر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "GABRINI",
@@ -1985,7 +2143,9 @@
     ],
     "productTypes_ar": [
       "العناية بالشفاه"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "GARNIER",
@@ -2019,7 +2179,9 @@
       "علاجات ومكافحة الشيخوخة",
       "ماسك وعلاج الشعر",
       "ماسك الوجه"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "GARRANSO",
@@ -2049,7 +2211,9 @@
       "رذاذ ومعطر الجسم",
       "مرطب البشرة",
       "كريم ولوشن الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "GARRANSOMINO",
@@ -2069,7 +2233,9 @@
     ],
     "productTypes_ar": [
       "رذاذ ومعطر الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "GILLETTE",
@@ -2089,7 +2255,9 @@
     ],
     "productTypes_ar": [
       "مزيل العرق"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "HAIR",
@@ -2111,7 +2279,9 @@
     "productTypes_ar": [
       "ماسك وعلاج الشعر",
       "شامبو"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "IL",
@@ -2135,7 +2305,9 @@
       "كونسيلر",
       "آيلاينر وكحل",
       "برايمر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "I’M",
@@ -2155,7 +2327,9 @@
     ],
     "productTypes_ar": [
       "تونر ورذاذ الوجه"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "KARSEELL",
@@ -2175,7 +2349,9 @@
     ],
     "productTypes_ar": [
       "ماسك الوجه"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "KERAGOLD",
@@ -2195,7 +2371,9 @@
     ],
     "productTypes_ar": [
       "سيروم وأمبولات"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "KIKO",
@@ -2219,7 +2397,9 @@
     "productTypes_ar": [
       "مرطب البشرة",
       "زيت الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "KRISENS",
@@ -2239,7 +2419,9 @@
     ],
     "productTypes_ar": [
       "مرطب البشرة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "L",
@@ -2277,7 +2459,9 @@
       "كريم أساس",
       "ماسكارا",
       "أحمر الخدود"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "L?OREAL",
@@ -2301,7 +2485,9 @@
     "productTypes_ar": [
       "ماسكارا",
       "كريم ولوشن الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "LA",
@@ -2323,7 +2509,9 @@
     "productTypes_ar": [
       "واقي الشمس",
       "علاجات ومكافحة الشيخوخة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "LABELLO",
@@ -2343,7 +2531,9 @@
     ],
     "productTypes_ar": [
       "العناية بالشفاه"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "LADYFRESH",
@@ -2363,7 +2553,9 @@
     ],
     "productTypes_ar": [
       "العناية بالمناطق الحساسة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "LAIA",
@@ -2383,7 +2575,9 @@
     ],
     "productTypes_ar": [
       "باليت مكياج"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "LANCOME",
@@ -2407,7 +2601,9 @@
     "productTypes_ar": [
       "العناية بالشفاه",
       "أحمر الشفاه ومنتجات الشفاه"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "LISAS",
@@ -2441,7 +2637,9 @@
       "واقي الشمس",
       "ماسك وعلاج الشعر",
       "كريم ولوشن الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "LISTERINE",
@@ -2461,7 +2659,9 @@
     ],
     "productTypes_ar": [
       "العناية بالفم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "LOE",
@@ -2481,7 +2681,9 @@
     ],
     "productTypes_ar": [
       "العناية بالشفاه"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "LOREAL",
@@ -2507,7 +2709,9 @@
       "علاجات ومكافحة الشيخوخة",
       "كريم أساس",
       "ماسكارا"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "LOVINA",
@@ -2545,7 +2749,9 @@
       "غسول ومزيل مكياج",
       "ماسك الوجه",
       "تصفيف الشعر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "LVL",
@@ -2569,7 +2775,9 @@
     "productTypes_ar": [
       "أحمر الشفاه ومنتجات الشفاه",
       "كريم ولوشن الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "L’OREAL",
@@ -2615,7 +2823,9 @@
       "أحمر الشفاه ومنتجات الشفاه",
       "صبغة الشعر",
       "مقشر البشرة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MAGIC",
@@ -2649,7 +2859,9 @@
       "زيت الجسم",
       "مرطب البشرة",
       "ماسك الوجه"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MAISON",
@@ -2669,7 +2881,9 @@
     ],
     "productTypes_ar": [
       "رذاذ ومعطر الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MAKE",
@@ -2705,7 +2919,9 @@
       "زيت الجسم",
       "ماسك الوجه",
       "رذاذ ومعطر الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MALIZIA",
@@ -2729,7 +2945,9 @@
     "productTypes_ar": [
       "أو دو تواليت وكولونيا",
       "غسول الجسم وجل الاستحمام"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MARI",
@@ -2749,7 +2967,9 @@
     ],
     "productTypes_ar": [
       "صبغة الشعر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MARIA",
@@ -2769,7 +2989,9 @@
     ],
     "productTypes_ar": [
       "كريم أساس"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MARIGOLD",
@@ -2789,7 +3011,9 @@
     ],
     "productTypes_ar": [
       "تصفيف الشعر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MAYBELLINE",
@@ -2821,7 +3045,9 @@
       "آيلاينر وكحل",
       "كريم أساس",
       "هايلايتر وبرونزر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MAYLA",
@@ -2841,7 +3067,9 @@
     ],
     "productTypes_ar": [
       "إزالة الشعر والشمع"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MEDICUBE",
@@ -2863,7 +3091,9 @@
     "productTypes_ar": [
       "مرطب البشرة",
       "غسول ومزيل مكياج"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MERE",
@@ -2887,7 +3117,9 @@
     "productTypes_ar": [
       "سيروم وأمبولات",
       "زيت الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MESKLUX",
@@ -2913,7 +3145,9 @@
       "زيت الجسم",
       "تونر ورذاذ الوجه",
       "العناية باليدين والقدمين"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MIELLE",
@@ -2935,7 +3169,9 @@
     "productTypes_ar": [
       "ماسك الوجه",
       "سيروم وأمبولات"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MINAS",
@@ -2955,7 +3191,9 @@
     ],
     "productTypes_ar": [
       "واقي الشمس"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MINAYS",
@@ -2975,7 +3213,9 @@
     ],
     "productTypes_ar": [
       "صابون"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MINYAS",
@@ -3007,7 +3247,9 @@
       "زيت الجسم",
       "عطر",
       "صابون"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MISS",
@@ -3037,7 +3279,9 @@
       "حماية الشعر من الحرارة",
       "مرطب البشرة",
       "كريم ولوشن الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MISWAK",
@@ -3057,7 +3301,9 @@
     ],
     "productTypes_ar": [
       "العناية بالفم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MIXA",
@@ -3079,7 +3325,9 @@
     "productTypes_ar": [
       "كريم ولوشن الجسم",
       "العناية باليدين والقدمين"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MONDEO",
@@ -3099,7 +3347,9 @@
     ],
     "productTypes_ar": [
       "مزيل العرق"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MONSAVON",
@@ -3119,7 +3369,9 @@
     ],
     "productTypes_ar": [
       "مزيل العرق"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MP3",
@@ -3139,7 +3391,9 @@
     ],
     "productTypes_ar": [
       "تصفيف الشعر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MYBELLINE",
@@ -3159,7 +3413,9 @@
     ],
     "productTypes_ar": [
       "كريم أساس"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "MYLA",
@@ -3183,7 +3439,9 @@
     "productTypes_ar": [
       "إزالة الشعر والشمع",
       "كريم ولوشن الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "NARTA",
@@ -3207,7 +3465,9 @@
     "productTypes_ar": [
       "مزيل العرق",
       "أو دو تواليت وكولونيا"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "NATURA",
@@ -3231,7 +3491,9 @@
     "productTypes_ar": [
       "واقي الشمس",
       "زيت الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "NATURE",
@@ -3251,7 +3513,9 @@
     ],
     "productTypes_ar": [
       "زيت الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "NEUTROGENA",
@@ -3279,7 +3543,9 @@
       "رذاذ ومعطر الجسم",
       "كريم ولوشن الجسم",
       "غسول ومزيل مكياج"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "NIALL",
@@ -3305,7 +3571,9 @@
       "كريم أساس",
       "غسول ومزيل مكياج",
       "ماسك الوجه"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "NIVEA",
@@ -3343,7 +3611,9 @@
       "شامبو",
       "واقي الشمس",
       "علاجات ومكافحة الشيخوخة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "NOTE",
@@ -3363,7 +3633,9 @@
     ],
     "productTypes_ar": [
       "كريم أساس"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "NOVEX",
@@ -3391,7 +3663,9 @@
       "مقشر الجسم",
       "غسول الجسم وجل الاستحمام",
       "شامبو"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "NUMBUZ",
@@ -3413,7 +3687,9 @@
     "productTypes_ar": [
       "تونر ورذاذ الوجه",
       "سيروم وأمبولات"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "NUMBUZIN",
@@ -3433,7 +3709,9 @@
     ],
     "productTypes_ar": [
       "سيروم وأمبولات"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "OE",
@@ -3459,7 +3737,9 @@
       "العناية بالمناطق الحساسة",
       "مزيل العرق",
       "غسول الجسم وجل الاستحمام"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "OLYMIEL",
@@ -3483,7 +3763,9 @@
       "بلسم الشعر",
       "سيروم الشعر",
       "شامبو"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "ORYAGE",
@@ -3509,7 +3791,9 @@
       "شامبو",
       "ماسك الوجه",
       "سيروم الشعر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "ORYAM",
@@ -3531,7 +3815,9 @@
     "productTypes_ar": [
       "بلسم الشعر",
       "شامبو"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "OSTWINT",
@@ -3555,7 +3841,9 @@
       "شامبو",
       "أوكسيدانت ومظهر الصبغة",
       "صبغة الشعر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "PANOXYL",
@@ -3575,7 +3863,9 @@
     ],
     "productTypes_ar": [
       "علاجات ومكافحة الشيخوخة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "PANOXYLE",
@@ -3595,7 +3885,9 @@
     ],
     "productTypes_ar": [
       "مرطب البشرة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "PEAU",
@@ -3619,7 +3911,9 @@
     "productTypes_ar": [
       "مرطب البشرة",
       "كريم ولوشن الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "PETROLE",
@@ -3639,7 +3933,9 @@
     ],
     "productTypes_ar": [
       "شامبو"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "PHARMAMIL",
@@ -3669,7 +3965,9 @@
       "مقشر الجسم",
       "العناية بمنطقة العين",
       "مقشر البشرة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "PIOVE",
@@ -3697,7 +3995,9 @@
       "بودرة الوجه",
       "كونسيلر",
       "العناية بالأظافر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "POLYCOS",
@@ -3759,7 +4059,9 @@
       "مقشر البشرة",
       "زيت الجسم",
       "سيروم وأمبولات"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "PRODERMA",
@@ -3803,7 +4105,9 @@
       "شامبو",
       "سيروم وأمبولات",
       "ماسك وعلاج الشعر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "PROTELISSE",
@@ -3823,7 +4127,9 @@
     ],
     "productTypes_ar": [
       "كريم ولوشن الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "PROTELLISSE",
@@ -3843,7 +4149,9 @@
     ],
     "productTypes_ar": [
       "شامبو"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "REACTION",
@@ -3863,7 +4171,9 @@
     ],
     "productTypes_ar": [
       "مزيل العرق"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "REEDLE",
@@ -3883,7 +4193,9 @@
     ],
     "productTypes_ar": [
       "كريم ولوشن الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "REVOLUTION",
@@ -3903,7 +4215,9 @@
     ],
     "productTypes_ar": [
       "باليت مكياج"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "REXONA",
@@ -3931,7 +4245,9 @@
       "مزيل العرق",
       "مرطب البشرة",
       "صابون"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "ROSAGYN",
@@ -3951,7 +4267,9 @@
     ],
     "productTypes_ar": [
       "العناية بالمناطق الحساسة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "SABIONA",
@@ -3989,7 +4307,9 @@
       "زيت الجسم",
       "شامبو",
       "كريم ولوشن الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "SANEX",
@@ -4009,7 +4329,9 @@
     ],
     "productTypes_ar": [
       "مزيل العرق"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "SAVON",
@@ -4029,7 +4351,9 @@
     ],
     "productTypes_ar": [
       "صابون"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "SHEGLAM",
@@ -4055,7 +4379,9 @@
       "ظلال العيون",
       "فرش وأدوات المكياج",
       "أحمر الشفاه ومنتجات الشفاه"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "SIGNAL",
@@ -4075,7 +4401,9 @@
     ],
     "productTypes_ar": [
       "العناية بالفم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "SNONA",
@@ -4095,7 +4423,9 @@
     ],
     "productTypes_ar": [
       "مرطب البشرة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "SNONAS",
@@ -4119,7 +4449,9 @@
     "productTypes_ar": [
       "مرطب البشرة",
       "تصفيف الشعر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "SOIN",
@@ -4139,7 +4471,9 @@
     ],
     "productTypes_ar": [
       "كريم ولوشن الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "SOLEIL",
@@ -4159,7 +4493,9 @@
     ],
     "productTypes_ar": [
       "زيت الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "SPLENDID",
@@ -4187,7 +4523,9 @@
       "مزيل العرق",
       "رذاذ ومعطر الجسم",
       "سيروم الشعر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "SUDOCREM",
@@ -4207,7 +4545,9 @@
     ],
     "productTypes_ar": [
       "مرطب البشرة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "SUNSILK",
@@ -4231,7 +4571,9 @@
     "productTypes_ar": [
       "شامبو",
       "واقي الشمس"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "SWALIS",
@@ -4263,7 +4605,9 @@
       "غسول الجسم وجل الاستحمام",
       "تونر ورذاذ الوجه",
       "سيروم وأمبولات"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "SWALISS",
@@ -4287,7 +4631,9 @@
     "productTypes_ar": [
       "شامبو",
       "غسول ومزيل مكياج"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "SYOSS",
@@ -4307,7 +4653,9 @@
     ],
     "productTypes_ar": [
       "شامبو"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "TARTE",
@@ -4327,7 +4675,9 @@
     ],
     "productTypes_ar": [
       "كونسيلر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "TECHNIC",
@@ -4347,7 +4697,9 @@
     ],
     "productTypes_ar": [
       "هايلايتر وبرونزر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "THE",
@@ -4371,7 +4723,9 @@
       "سيروم وأمبولات",
       "تونر ورذاذ الوجه",
       "علاجات ومكافحة الشيخوخة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "TOBOCO",
@@ -4391,7 +4745,9 @@
     ],
     "productTypes_ar": [
       "قطن وإزالة المكياج"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "TOPFACE",
@@ -4411,7 +4767,9 @@
     ],
     "productTypes_ar": [
       "كونسيلر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "TOUCHE",
@@ -4447,7 +4805,9 @@
       "مرطب البشرة",
       "واقي الشمس",
       "سيروم الشعر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "UDV",
@@ -4467,7 +4827,9 @@
     ],
     "productTypes_ar": [
       "كريم ولوشن الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "ULTRA",
@@ -4493,7 +4855,9 @@
       "زيت الشعر",
       "ماسك الوجه",
       "شامبو"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "URIAGE",
@@ -4517,7 +4881,9 @@
       "مرطب البشرة",
       "تونر ورذاذ الوجه",
       "ماسك الوجه"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "USHUAIA",
@@ -4537,7 +4903,9 @@
     ],
     "productTypes_ar": [
       "مزيل العرق"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "VAGUE",
@@ -4583,7 +4951,9 @@
       "صابون",
       "سيروم الشعر",
       "شامبو"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "VALERIA",
@@ -4615,7 +4985,9 @@
       "غسول الجسم وجل الاستحمام",
       "مزيل العرق",
       "مرطب البشرة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "VASELINE",
@@ -4637,7 +5009,9 @@
     "productTypes_ar": [
       "العناية باليدين والقدمين",
       "زيت الجسم"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "VATIKA",
@@ -4667,7 +5041,9 @@
       "مرطب البشرة",
       "زيت الجسم",
       "شامبو"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "VENUS",
@@ -4719,7 +5095,9 @@
       "قطن وإزالة المكياج",
       "ماسك الوجه",
       "سيروم الشعر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "VICHY",
@@ -4743,7 +5121,9 @@
       "واقي الشمس",
       "سيروم وأمبولات",
       "علاجات ومكافحة الشيخوخة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "VIOLA",
@@ -4775,7 +5155,9 @@
       "زيت الجسم",
       "سيروم وأمبولات",
       "سيروم الشعر"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "VOLUME",
@@ -4803,7 +5185,9 @@
       "صبغة الشعر",
       "آيلاينر وكحل",
       "كريم أساس"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   },
   {
     "name": "ZORAH",
@@ -4827,6 +5211,8 @@
     "productTypes_ar": [
       "مرطب البشرة",
       "العناية بالمناطق الحساسة"
-    ]
+    ],
+    "niche": "Cosmetics",
+    "nicheSlug": "cosmetics"
   }
 ]
