@@ -11,6 +11,7 @@ import { Suspense } from 'react';
 import { SearchParams } from 'nuqs';
 import TableAction from './_components/tables/table-action';
 import { name_plural, title_plural, title_singular, link } from "./_constant";
+import { getCatalogFilterOptions } from '@/lib/catalog-filter-options';
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
 // See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
@@ -30,6 +31,7 @@ export default async function Page({ searchParams: search }: pageProps) {
   // Allow nested RSCs to access the search params (in a type-safe way)
   const searchParams = await search;
   searchParamsCache.parse(searchParams);
+  const { niches } = await getCatalogFilterOptions();
 
   // This key is used for invoke suspense if any of the search params changed (used for filters).
   const key = serialize({ ...searchParams });
@@ -45,7 +47,7 @@ export default async function Page({ searchParams: search }: pageProps) {
           <PlusCircle className="mr-1 h-4 w-4" /> Add {title_singular}
         </Link>
       }
-      filters={<TableAction />}
+      filters={<TableAction niches={niches} />}
     >
       <Suspense
         key={key}

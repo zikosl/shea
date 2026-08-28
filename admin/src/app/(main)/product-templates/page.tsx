@@ -8,6 +8,7 @@ import TableAction from "./_components/tables/table-action";
 import { ResourcePage } from "@/components/admin-panel/resource-page";
 import { buttonVariants } from '@/components/ui/button';
 import { DataTableSkeleton } from '@/components/ui/table/data-table-skeleton';
+import { getCatalogFilterOptions } from "@/lib/catalog-filter-options";
 import { searchParamsCache, serialize } from '@/lib/searchparams';
 import { cn } from '@/lib/utils';
 import { link, title_plural, title_singular } from "./_constant";
@@ -29,6 +30,7 @@ type PageProps = {
 export default async function Page({ searchParams: search }: PageProps) {
   const searchParams = await search;
   searchParamsCache.parse(searchParams);
+  const { niches, categories, productTypes, brands } = await getCatalogFilterOptions();
   const key = serialize({ ...searchParams });
 
   return (
@@ -43,7 +45,7 @@ export default async function Page({ searchParams: search }: PageProps) {
           <PlusCircle className="mr-1 h-4 w-4" /> Add {title_singular}
         </Link>
       }
-      filters={<TableAction />}
+      filters={<TableAction niches={niches} categories={categories} productTypes={productTypes} brands={brands} />}
     >
       <Suspense key={key} fallback={<DataTableSkeleton columnCount={5} rowCount={10} />}>
         <ListingPage />

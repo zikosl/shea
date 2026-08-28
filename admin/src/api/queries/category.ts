@@ -28,8 +28,8 @@ export const GET_ALL_CATEGORIES = gql`
 `;
 
 export const FIND_MANY_CATEGORIES = gql`
-  query findManyCategories($search: String, $page: Int!, $limit: Int!, $isFull: Boolean) {
-    findManyCategories(search: $search, page: $page, limit: $limit, isFull: $isFull) {
+  query findManyCategories($search: String, $niche_id: Int, $page: Int!, $limit: Int!, $isFull: Boolean) {
+    findManyCategories(search: $search, niche_id: $niche_id, page: $page, limit: $limit, isFull: $isFull) {
       categories {
         id
         name

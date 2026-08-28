@@ -224,13 +224,13 @@ export const ProductTemplateQuery = extendType({
                         niche_id: niche_id,
                     }
                 }
-                else if (category_id) {
+                if (category_id) {
                     where = {
                         ...where,
                         category_id: category_id,
                     }
                 }
-                else if (product_type_id) {
+                if (product_type_id) {
                     where = {
                         ...where,
                         product_type_id: product_type_id,

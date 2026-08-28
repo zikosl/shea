@@ -14,8 +14,16 @@ export function useTableFilters() {
   );
 
   const [categoriesFilter, setCategoriesFilter] = useQueryState(
-    'categories',
-    searchParams.categories.withOptions({ shallow: false }).withDefault('')
+    'category_id',
+    searchParams.category_id.withOptions({ shallow: false }).withDefault('')
+  );
+  const [nicheFilter, setNicheFilter] = useQueryState(
+    'niche_id',
+    searchParams.niche_id.withOptions({ shallow: false }).withDefault('')
+  );
+  const [brandFilter, setBrandFilter] = useQueryState(
+    'brand_id',
+    searchParams.brand_id.withOptions({ shallow: false }).withDefault('')
   );
 
   const [page, setPage] = useQueryState(
@@ -26,13 +34,15 @@ export function useTableFilters() {
   const resetFilters = useCallback(() => {
     setSearchQuery(null);
     setCategoriesFilter(null);
+    setNicheFilter(null);
+    setBrandFilter(null);
 
     setPage(1);
-  }, [setSearchQuery, setCategoriesFilter, setPage]);
+  }, [setSearchQuery, setCategoriesFilter, setNicheFilter, setBrandFilter, setPage]);
 
   const isAnyFilterActive = useMemo(() => {
-    return !!searchQuery || !!categoriesFilter;
-  }, [searchQuery, categoriesFilter]);
+    return !!searchQuery || !!categoriesFilter || !!nicheFilter || !!brandFilter;
+  }, [searchQuery, categoriesFilter, nicheFilter, brandFilter]);
 
   return {
     searchQuery,
@@ -42,6 +52,10 @@ export function useTableFilters() {
     resetFilters,
     isAnyFilterActive,
     categoriesFilter,
-    setCategoriesFilter
+    setCategoriesFilter,
+    nicheFilter,
+    setNicheFilter,
+    brandFilter,
+    setBrandFilter
   };
 }

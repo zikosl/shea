@@ -42,6 +42,10 @@ type SearchParams = {
   page: number;
   limit: number;
   isFull?: boolean;
+  niche_id?: number;
+  category_id?: number;
+  product_type_id?: number;
+  brand_id?: number;
 };
 
 function mapItem(data: ProductTemplateResponse): ProductTemplate {
@@ -98,13 +102,17 @@ export async function getSearchItem({
   page,
   limit,
   isFull = false,
+  niche_id,
+  category_id,
+  product_type_id,
+  brand_id,
 }: SearchParams) {
   const response = await requestServerGraphQL<{
     findManyProductTemplates: {
       productTemplates: ProductTemplateResponse[];
       totalProductTemplates: number;
     };
-  }>(FIND_MANY_ITEMS, { search, page, limit, isFull });
+  }>(FIND_MANY_ITEMS, { search, page, limit, isFull, niche_id, category_id, product_type_id, brand_id });
 
   return {
     items: response.findManyProductTemplates.productTemplates.map(mapItem),

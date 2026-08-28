@@ -42,14 +42,16 @@ export const FIND_ONE_PRODUCT_TEMPLATE = gql`
 `;
 
 export const FIND_MANY_PRODUCT_TEMPLATES = gql`
-  query findManyProductTemplates($search: String, $page: Int!, $limit: Int!, $isFull: Boolean) {
-    findManyProductTemplates(search: $search, page: $page, limit: $limit, isFull: $isFull) {
+  query findManyProductTemplates($search: String, $niche_id: Int, $category_id: Int, $product_type_id: Int, $brand_id: Int, $page: Int!, $limit: Int!, $isFull: Boolean) {
+    findManyProductTemplates(search: $search, niche_id: $niche_id, category_id: $category_id, product_type_id: $product_type_id, brand_id: $brand_id, page: $page, limit: $limit, isFull: $isFull) {
       productTemplates {
         id
         name
         description
         product_type_id
         brand_id
+        category_id
+        niche_id
         productType {
           id
           name

@@ -17,6 +17,10 @@ export function useTableFilters() {
     'categories',
     searchParams.categories.withOptions({ shallow: false }).withDefault('')
   );
+  const [nicheFilter, setNicheFilter] = useQueryState(
+    'niche_id',
+    searchParams.niche_id.withOptions({ shallow: false }).withDefault('')
+  );
 
   const [page, setPage] = useQueryState(
     'page',
@@ -26,13 +30,14 @@ export function useTableFilters() {
   const resetFilters = useCallback(() => {
     setSearchQuery(null);
     setCategoriesFilter(null);
+    setNicheFilter(null);
 
     setPage(1);
-  }, [setSearchQuery, setCategoriesFilter, setPage]);
+  }, [setSearchQuery, setCategoriesFilter, setNicheFilter, setPage]);
 
   const isAnyFilterActive = useMemo(() => {
-    return !!searchQuery || !!categoriesFilter;
-  }, [searchQuery, categoriesFilter]);
+    return !!searchQuery || !!categoriesFilter || !!nicheFilter;
+  }, [searchQuery, categoriesFilter, nicheFilter]);
 
   return {
     searchQuery,
@@ -42,6 +47,8 @@ export function useTableFilters() {
     resetFilters,
     isAnyFilterActive,
     categoriesFilter,
-    setCategoriesFilter
+    setCategoriesFilter,
+    nicheFilter,
+    setNicheFilter
   };
 }

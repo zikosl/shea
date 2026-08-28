@@ -8,6 +8,10 @@ type SearchParams = {
   page: number;
   limit: number;
   isFull?: boolean;
+  niche_id?: number;
+  category_id?: number;
+  product_type_id?: number;
+  brand_id?: number;
 };
 
 type ResourceActionConfig<TItem, TMappedItem = TItem> = {
@@ -73,6 +77,10 @@ export function createResourceActions<TItem extends { id: number | string }, TMa
     page,
     limit,
     isFull = false,
+    niche_id,
+    category_id,
+    product_type_id,
+    brand_id,
   }: SearchParams): Promise<SearchResult<TMappedItem>> {
     const response = await requestServerGraphQL<Record<string, Record<string, TItem[]> & Record<string, number>>>(
       findManyQuery,
@@ -81,6 +89,10 @@ export function createResourceActions<TItem extends { id: number | string }, TMa
         page,
         limit,
         isFull,
+        ...(niche_id ? { niche_id } : {}),
+        ...(category_id ? { category_id } : {}),
+        ...(product_type_id ? { product_type_id } : {}),
+        ...(brand_id ? { brand_id } : {}),
       },
     );
 

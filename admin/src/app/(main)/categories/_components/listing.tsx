@@ -13,11 +13,13 @@ export default async function ListingPage({ }: ListingPage) {
   const page = searchParamsCache.get('page');
   const search = searchParamsCache.get('q');
   const pageLimit = searchParamsCache.get('limit');
+  const nicheId = searchParamsCache.get('niche_id');
 
   const filters = {
     page,
     limit: pageLimit,
     ...(search && { search }),
+    ...(nicheId && { niche_id: Number(nicheId) }),
   };
 
   const data = await getSearchItem(filters);
