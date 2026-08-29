@@ -34,6 +34,7 @@ export const permissions = shield(
   {
     Query: {
       adminDashboardStats: isAdmin,
+      getDriverRoute: isDriver,
       '*': isAuthenticated,
     },
     Mutation: {

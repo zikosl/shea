@@ -147,6 +147,15 @@ const OrderDispatch = objectType({
     },
 })
 
+const DriverRoute = objectType({
+    name: 'DriverRoute',
+    definition(t) {
+        t.nonNull.string('encodedPolyline')
+        t.nonNull.int('distanceMeters')
+        t.nonNull.int('durationSeconds')
+    },
+})
+
 
 
 const DeliveryStatus = enumType({
@@ -224,4 +233,4 @@ const OrderItemInput = inputObjectType({
         t.int('productId')
     }
 })
-export default { DeliveryStatus, DeliveryType, Delivery, OrderDispatch, DispatchStatus, OrderItemInput, OrderInput, PartnerPosOrderInput, OrderResult, Order, OrderItem } 
+export default { DriverRoute, DeliveryStatus, DeliveryType, Delivery, OrderDispatch, DispatchStatus, OrderItemInput, OrderInput, PartnerPosOrderInput, OrderResult, Order, OrderItem }

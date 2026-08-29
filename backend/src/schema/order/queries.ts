@@ -1,9 +1,11 @@
 // @ts-nocheck
-import { extendType, intArg, nonNull } from "nexus"
+import { extendType, floatArg, intArg, nonNull } from "nexus"
 import { Context } from "../../context"
 import { getUserId } from "../../utils"
 import { DispatchStatus, DeliveryStatus, DeliveryType } from "../../types"
 import { buildPartnerPosEmail } from "./pos"
+import { computeDrivingRoute, isValidRouteCoordinate } from "../../application/maps/driver-route.service"
+import { createBadRequestError, createNotFoundError } from "../../core/errors/app-error"
 
 export const Query = extendType({
     type: 'Query',
@@ -125,6 +127,66 @@ export const Query = extendType({
                         id: "desc"
                     }
                 })
+            },
+        })
+        t.field('getDriverRoute', {
+            type: 'DriverRoute',
+            args: {
+                dispatchId: nonNull(intArg()),
+                originLatitude: nonNull(floatArg()),
+                originLongitude: nonNull(floatArg()),
+            },
+            resolve: async (_parent, { dispatchId, originLatitude, originLongitude }, ctx: Context) => {
+                const driverId = getUserId(ctx)
+                const dispatch = await ctx.prisma.orderDispatch.findFirst({
+                    where: {
+                        id: dispatchId,
+                        driverId,
+                        status: DispatchStatus.ACCEPTED,
+                        order: {
+                            delivery: {
+                                driverId,
+                                status: {
+                                    in: [DeliveryStatus.ASSIGNED, DeliveryStatus.PICKED],
+                                },
+                            },
+                        },
+                    },
+                    include: {
+                        order: {
+                            include: {
+                                address: true,
+                                partner: true,
+                                delivery: true,
+                            },
+                        },
+                    },
+                })
+
+                if (!dispatch?.order?.delivery) {
+                    throw createNotFoundError('Active delivery was not found')
+                }
+
+                const origin = {
+                    latitude: originLatitude,
+                    longitude: originLongitude,
+                }
+                const pickupStep = dispatch.order.delivery.status === DeliveryStatus.ASSIGNED
+                const destination = pickupStep
+                    ? {
+                        latitude: dispatch.order.partner.latitude,
+                        longitude: dispatch.order.partner.longitude,
+                    }
+                    : {
+                        latitude: dispatch.order.address.latitude,
+                        longitude: dispatch.order.address.longitude,
+                    }
+
+                if (!isValidRouteCoordinate(origin) || !isValidRouteCoordinate(destination)) {
+                    throw createBadRequestError('Valid route coordinates are required')
+                }
+
+                return computeDrivingRoute(origin, destination)
             },
         })
         t.nonNull.list.field('listClientOrders', {
