@@ -1,0 +1,2 @@
+ALTER TABLE "Delivery"
+ALTER COLUMN "status" SET DEFAULT 0;

@@ -150,6 +150,16 @@ export async function verifyOtp(prisma: PrismaClient, phone: string, code: strin
     })
   }
 
+  if (user.role !== 'CLIENT') {
+    throw createBadRequestError('CLIENT_ACCOUNT_REQUIRED')
+  }
+
+  await prisma.client.upsert({
+    where: { userId: user.id },
+    update: {},
+    create: { userId: user.id },
+  })
+
   return createSession(user, prisma)
 }
 
@@ -168,6 +178,18 @@ export async function updateClientProfile(
   const clientData: Record<string, unknown> = {}
   const userData: Record<string, unknown> = {}
 
+  const existingUser = await prisma.user.findUnique({
+    where: { id: userId },
+  })
+
+  if (!existingUser) {
+    throw createNotFoundError('User not found')
+  }
+
+  if (existingUser.role !== 'CLIENT') {
+    throw createBadRequestError('CLIENT_ACCOUNT_REQUIRED')
+  }
+
   if (args.firstname) clientData.firstname = args.firstname
   if (args.lastname) clientData.lastname = args.lastname
   if (args.avatar) clientData.avatar = args.avatar
@@ -175,12 +197,14 @@ export async function updateClientProfile(
   if (args.theme !== undefined && args.theme !== null) clientData.theme = args.theme
   if (args.email) userData.email = args.email.toLowerCase()
 
-  if (Object.keys(clientData).length > 0) {
-    await prisma.client.update({
-      where: { userId },
-      data: clientData,
-    })
-  }
+  await prisma.client.upsert({
+    where: { userId },
+    update: clientData,
+    create: {
+      userId,
+      ...clientData,
+    },
+  })
 
   if (Object.keys(userData).length > 0) {
     await prisma.user.update({

@@ -632,7 +632,7 @@ model Delivery {
   orderId Int @unique
 
   type   Int
-  status Int @default(1)
+  status Int @default(0)
 
   price       Float     @default(0)
   addressId   Int?

@@ -85,7 +85,6 @@ const Mutation = extendType({
                             clientId: userId,
                             partnerId: data.partnerId,
                             addressId,
-                            status: DeliveryStatus.PENDING,
                             deliveryTax: pricing.find(v => v.name == deliveryPricingName)?.price ?? 0,
                             appTax: pricing.find(v => v.name == PricingName.APP_TAX)?.price ?? 0,
                             storeTax: pricing.find(v => v.name == PricingName.STORE_TAX)?.price ?? 0,
@@ -110,6 +109,7 @@ const Mutation = extendType({
                         data: {
                             orderId: order.id,
                             type: data.deliveryType,
+                            status: DeliveryStatus.PENDING,
                             addressId: data.deliveryType === DeliveryType.PICKUP ? null : addressId,
                         }
                     })
