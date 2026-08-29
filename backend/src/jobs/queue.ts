@@ -80,6 +80,7 @@ new Worker('dispatch-queue', async (job: Job) => {
                 .filter((token): token is string => Boolean(token)),
             title: "New Delivery Available",
             body: "A new order is waiting for pickup. Accept now to grab this opportunity!",
+            androidChannelId: "new_orders",
             data: {
                 event: "NEW_ORDER",
                 orderId: `${order.id}`,

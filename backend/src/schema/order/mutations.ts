@@ -26,16 +26,17 @@ const Mutation = extendType({
                 }
                 let addressId = data.addressId;
                 if (!addressId) {
-                    const data = await ctx.prisma.findUnique({
+                    const address = await ctx.prisma.address.findFirst({
                         where: {
                             userId,
-                            isDefault: true
-                        }
+                            isDefault: true,
+                        },
+                        orderBy: { createdAt: 'desc' },
                     })
-                    if (!data) {
-                        throw new GraphQLError("please use your address ")
+                    if (!address) {
+                        throw new GraphQLError("ADDRESS_REQUIRED")
                     }
-                    addressId = data.id;
+                    addressId = address.id;
                 }
                 return ctx.prisma.$transaction(async (tx: any) => {
                     const partner = await tx.partner.findUnique({
@@ -56,20 +57,22 @@ const Mutation = extendType({
                     })
                     if (partner) {
                         if (partner.latitude == 0 || partner.longitude == 0 || !partner.online)
-                            return new GraphQLError("wait till the store be online")
+                            throw new GraphQLError("STORE_UNAVAILABLE")
                     }
-                    else return new GraphQLError("no partner")
+                    else throw new GraphQLError("PARTNER_NOT_FOUND")
+                    const deliveryPricingName = data.deliveryType == DeliveryType.PICKUP
+                        ? PricingName.PICKUP_TAX
+                        : data.deliveryType == DeliveryType.GROUPED
+                            ? PricingName.GROUP_DELIVERY_TAX
+                            : PricingName.NORMAL_DELIVERY_TAX
                     const pricing: any[] = await tx.pricing.findMany({
                         where: {
                             name: {
                                 in: [
                                     PricingName.APP_TAX,
                                     PricingName.STORE_TAX,
-                                    data.deliveryType == DeliveryType.PICKUP ?
-                                        PricingName.PICKUP_TAX :
-                                        data.deliveryType == DeliveryType.GROUPED ?
-                                            PricingName.GROUP_DELIVERY_TAX :
-                                            PricingName.NORMAL_DELIVERY_TAX]
+                                    deliveryPricingName,
+                                ]
                             }
                         }
                     })
@@ -81,8 +84,9 @@ const Mutation = extendType({
                         data: {
                             clientId: userId,
                             partnerId: data.partnerId,
+                            addressId,
                             status: DeliveryStatus.PENDING,
-                            deliveryTax: pricing.find(v => pricing.find(v => data.deliveryType == v.name))?.price ?? 0,
+                            deliveryTax: pricing.find(v => v.name == deliveryPricingName)?.price ?? 0,
                             appTax: pricing.find(v => v.name == PricingName.APP_TAX)?.price ?? 0,
                             storeTax: pricing.find(v => v.name == PricingName.STORE_TAX)?.price ?? 0,
                             ...financials,
@@ -106,7 +110,7 @@ const Mutation = extendType({
                         data: {
                             orderId: order.id,
                             type: data.deliveryType,
-                            addressId: data.deliveryType === DeliveryType.PICKUP ? null : data.addressId,
+                            addressId: data.deliveryType === DeliveryType.PICKUP ? null : addressId,
                         }
                     })
 
