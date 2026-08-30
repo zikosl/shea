@@ -4,12 +4,14 @@ import { toast } from "sonner"
 import { getErrorMessage } from "@/lib/handle-error"
 import axios from "axios"
 import { endpoint } from "@/constant"
+import { useSession } from "next-auth/react"
 
 type UploadedFile = {
   url: string
 }
 
 export function useUploadFile(REQUEST: string) {
+  const { data: session } = useSession()
   const [uploadedFiles, setUploadedFiles] =
     React.useState<UploadedFile[]>([])
   const [progresses, setProgresses] = React.useState<Record<string, number>>({})
@@ -37,7 +39,10 @@ export function useUploadFile(REQUEST: string) {
           formData
           , {
             headers: {
-              'Content-Type': 'multipart/form-data'
+              'Content-Type': 'multipart/form-data',
+              ...(session?.accessToken
+                ? { Authorization: `Bearer ${session.accessToken}` }
+                : {}),
             },
             onUploadProgress: event => {
               if (event.lengthComputable) {
