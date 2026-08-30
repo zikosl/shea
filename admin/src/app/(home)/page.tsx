@@ -9,10 +9,10 @@ export const instant = false;
 
 export default function Page() {
   return (
-    <div className="marketing-shell">
+    <>
       <Hero />
       <Features />
       <AppDownload />
-    </div>
+    </>
   )
 }

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, ThemePreference } from '@prisma/client'
 import { createBadRequestError, createNotFoundError } from '../../core/errors/app-error'
 import { createSession } from '../auth/auth.service'
 import { sendOtpViaPhoneServer } from '../../utils/phone'
@@ -173,6 +173,7 @@ export async function updateClientProfile(
     email?: string | null
     language?: string | null
     theme?: boolean | null
+    themePreference?: ThemePreference | null
   },
 ) {
   const clientData: Record<string, unknown> = {}
@@ -195,6 +196,7 @@ export async function updateClientProfile(
   if (args.avatar) clientData.avatar = args.avatar
   if (args.language) clientData.language = args.language.toLowerCase()
   if (args.theme !== undefined && args.theme !== null) clientData.theme = args.theme
+  if (args.themePreference) clientData.themePreference = args.themePreference
   if (args.email) userData.email = args.email.toLowerCase()
 
   await prisma.client.upsert({

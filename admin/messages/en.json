@@ -28,7 +28,7 @@
       "verification": "Verification email"
     },
     "navbar": {
-      "tagline": "Beauty, curated softly",
+      "tagline": "Beauty commerce OS",
       "features": "Features",
       "products": "Products",
       "testimonials": "Reviews",
@@ -40,29 +40,50 @@
       "menu": "Toggle menu"
     },
     "hero": {
-      "eyebrow": "Designed for beauty routines with intention",
-      "title": "A softer, smarter beauty companion for every ritual.",
-      "description": "Shea helps you discover products, organize routines, and shop with more confidence through guided recommendations and elegant daily care flows.",
-      "primaryCta": "Open admin",
-      "secondaryCta": "See how it works",
-      "imageAlt": "Shea mobile app preview",
+      "eyebrow": "The operating system for beauty commerce",
+      "title": "Run every side of beauty commerce from one calm workspace.",
+      "titleLead": "Beauty commerce,",
+      "titleAccent": "composed.",
+      "titleTail": "One platform, every operation.",
+      "description": "Shea connects catalog, partner stores, orders, delivery and customer experience in one focused platform built for modern beauty businesses.",
+      "primaryCta": "Enter the workspace",
+      "secondaryCta": "Explore the platform",
+      "imageAlt": "Shea operations dashboard preview",
+      "proofLabel": "Built for connected commerce",
       "trust": {
-        "personalization": "Personalized care suggestions",
-        "rituals": "Morning and evening ritual planning",
-        "delivery": "Fast product discovery and reorder"
+        "personalization": "One source of catalog truth",
+        "rituals": "Live partner operations",
+        "delivery": "Order-to-door visibility"
       },
       "stats": {
         "glowPlans": {
-          "value": "12k+",
-          "label": "routine plans created with guided care steps"
+          "value": "4 apps",
+          "label": "working from one operational core"
         },
         "consultants": {
-          "value": "150+",
-          "label": "beauty consultants and partner brands onboarded"
+          "value": "1 catalog",
+          "label": "shared across every partner channel"
         },
         "satisfaction": {
-          "value": "4.9/5",
-          "label": "average satisfaction across our curated journeys"
+          "value": "Live",
+          "label": "fulfillment signals from order to delivery"
+        }
+      },
+      "console": {
+        "live": "All systems live",
+        "label": "Shea operations",
+        "title": "Today at a glance",
+        "period": "Last 7 days",
+        "chart": "Commerce activity",
+        "metrics": {
+          "revenue": { "label": "Gross sales", "value": "1.84M", "trend": "+18%" },
+          "orders": { "label": "Orders", "value": "428", "trend": "+12%" },
+          "fulfillment": { "label": "Fulfilled", "value": "96%", "trend": "+4%" }
+        },
+        "orders": {
+          "one": { "customer": "Order #1048", "meta": "Glow Lab · 4 items", "amount": "8,400 DZD", "status": "In transit" },
+          "two": { "customer": "Order #1047", "meta": "Maison N · 2 items", "amount": "4,250 DZD", "status": "Ready" },
+          "three": { "customer": "Order #1046", "meta": "Bloom · 3 items", "amount": "6,100 DZD", "status": "Delivered" }
         }
       },
       "routineCard": {
@@ -76,39 +97,39 @@
         "description": "Compare products through skin goals, ingredient comfort, and proven favorites."
       },
       "floatingCard": {
-        "eyebrow": "Glow notes",
-        "title": "Track what makes your skin feel better week after week",
-        "description": "Save formulas, reorders, and progress in one calm place."
+        "eyebrow": "Live signal",
+        "title": "12 orders moved to fulfillment in the last hour",
+        "description": "Operational events stay visible as they happen."
       }
     },
     "features": {
-      "eyebrow": "What makes Shea different",
-      "title": "A cleaner experience from discovery to daily use",
-      "description": "Every feature is shaped to make shopping and care routines feel lighter, more personal, and easier to trust.",
+      "eyebrow": "A focused system, end to end",
+      "title": "Complex operations without the operational clutter.",
+      "description": "Shea gives each team exactly what it needs while keeping products, inventory, money and fulfillment connected behind the scenes.",
       "items": {
         "diagnosis": {
-          "title": "Smart beauty diagnosis",
-          "description": "Start from skin needs, product textures, and comfort preferences instead of endless product lists."
+          "title": "Catalog intelligence",
+          "description": "Structure niches, categories, brands, product types and variants once, then distribute consistent product truth everywhere."
         },
         "pairing": {
-          "title": "Routine pairing",
-          "description": "Match serums, cleansers, oils, and creams in a sequence that feels simple and well balanced."
+          "title": "Partner operations",
+          "description": "Onboard stores, assign niches, review local products and keep partner economics visible from one workspace."
         },
         "rituals": {
-          "title": "Soft daily rituals",
-          "description": "Create morning and evening routines with reminders that support consistency without pressure."
+          "title": "Live business signals",
+          "description": "Follow sales, fees, net partner earnings and fulfillment health without assembling reports by hand."
         },
         "community": {
-          "title": "Trusted recommendations",
-          "description": "See products loved by shoppers with similar concerns and beauty goals."
+          "title": "Controlled product growth",
+          "description": "Review partner submissions, prevent duplicate templates and merge proven demand into the global catalog."
         },
         "ingredients": {
           "title": "Ingredient clarity",
           "description": "Understand formulas in a more human way with deeper ingredient guidance and comfort notes."
         },
         "delivery": {
-          "title": "Smooth reorder flow",
-          "description": "Come back to your favorites quickly and keep essentials close when you need them most."
+          "title": "Connected fulfillment",
+          "description": "Move every order from store acceptance to rider pickup and customer delivery with clear, live status."
         }
       }
     },
@@ -166,12 +187,24 @@
       }
     },
     "download": {
-      "eyebrow": "Ready for daily operations",
-      "title": "A calm beauty platform for shoppers, vendors, and the team behind it",
-      "description": "Use the admin workspace to manage the catalog, partners, product templates, and the operational pieces that keep Shea moving.",
+      "eyebrow": "One core, four focused experiences",
+      "title": "Every participant gets the right tool. Your data stays connected.",
+      "description": "Customer discovery, partner selling, rider fulfillment and central administration work as one product instead of four disconnected systems.",
       "imageAlt": "Shea app screen",
       "appStore": "Enter admin",
       "playStore": "Privacy policy",
+      "connected": "Connected",
+      "apps": {
+        "client": { "title": "Shea Client", "description": "Discover, shop and track every order." },
+        "partner": { "title": "Shea Partner", "description": "Manage products, orders, stock and earnings." },
+        "rider": { "title": "Shea Rider", "description": "Accept, navigate and complete deliveries." },
+        "admin": { "title": "Shea Admin", "description": "Control catalog, network and platform health." }
+      },
+      "cta": {
+        "eyebrow": "Your operations, finally in rhythm",
+        "title": "Build a beauty network that scales without losing control.",
+        "button": "Open Shea Admin"
+      },
       "benefits": {
         "guided": {
           "title": "Guided product journeys",
@@ -188,36 +221,36 @@
       }
     },
     "footer": {
-      "description": "Shea brings together premium beauty discovery, thoughtful routines, and a softer shopping experience.",
+      "description": "Shea is the connected operating system for modern beauty commerce, from catalog to doorstep.",
       "shop": {
-        "title": "Shop",
+        "title": "Platform",
         "items": {
-          "routine": "Routine sets",
-          "makeup": "Makeup edits",
-          "body": "Body and bath",
-          "gifts": "Gift selections"
+          "routine": "Catalog",
+          "makeup": "Partner operations",
+          "body": "Order management",
+          "gifts": "Fulfillment"
         }
       },
       "company": {
         "title": "Company",
         "items": {
-          "story": "Our story",
-          "partners": "Partner with Shea",
-          "journal": "Beauty journal",
-          "careers": "Careers"
+          "story": "About Shea",
+          "partners": "Partner network",
+          "journal": "Product vision",
+          "careers": "Contact"
         }
       },
       "support": {
         "title": "Support",
         "items": {
-          "help": "Help center",
-          "shipping": "Shipping",
+          "help": "Admin access",
+          "shipping": "System status",
           "privacy": "Privacy policy",
           "terms": "Terms of service"
         }
       },
       "copyright": "© {year} Shea. All rights reserved.",
-      "signature": "Built for a softer beauty journey."
+      "signature": "Beauty commerce, composed."
     }
   }
 }

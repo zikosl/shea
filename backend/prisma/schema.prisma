@@ -15,6 +15,12 @@ enum Role {
   DRIVER
 }
 
+enum ThemePreference {
+  SYSTEM
+  LIGHT
+  DARK
+}
+
 enum OrderSource {
   ONLINE
   POS
@@ -167,8 +173,9 @@ model Client {
   lastname  String  @default("")
   avatar    String  @default("")
   language  String  @default("en")
-  theme     Boolean @default(false) //0 DARK 1 LIGHT
-  userId    Int     @unique
+  theme           Boolean         @default(false) // Legacy: 0 DARK, 1 LIGHT
+  themePreference ThemePreference @default(SYSTEM)
+  userId          Int             @unique
   // add any client-only fields here
   Order     Order[]
 }

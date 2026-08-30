@@ -1,4 +1,4 @@
-import { booleanArg, extendType, nonNull, stringArg } from 'nexus'
+import { arg, booleanArg, extendType, nonNull, stringArg } from 'nexus'
 import { Context } from '../../context'
 import { getUserId } from '../../utils'
 import { sendOtp, updateClientProfile, verifyOtp } from '../../application/client/client.service'
@@ -35,6 +35,7 @@ const Mutation = extendType({
         email: stringArg(),
         language: stringArg(),
         theme: booleanArg(),
+        themePreference: arg({ type: 'ThemePreference' }),
       },
       resolve: async (_parent, args, context: Context) => {
         const userId = getUserId(context)

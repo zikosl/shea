@@ -28,7 +28,7 @@
       "verification": "E-mail de vérification"
     },
     "navbar": {
-      "tagline": "Beauté douce et bien pensée",
+      "tagline": "OS du commerce beauté",
       "features": "Fonctionnalités",
       "products": "Produits",
       "testimonials": "Avis",
@@ -40,29 +40,50 @@
       "menu": "Ouvrir le menu"
     },
     "hero": {
-      "eyebrow": "Pensé pour des rituels beauté plus intentionnels",
-      "title": "Un compagnon beauté plus doux et plus intelligent pour chaque rituel.",
-      "description": "Shea vous aide à découvrir des produits, organiser vos routines et acheter avec plus de confiance grâce à des recommandations guidées et une expérience quotidienne élégante.",
-      "primaryCta": "Ouvrir l’admin",
-      "secondaryCta": "Voir le fonctionnement",
-      "imageAlt": "Aperçu de l’application mobile Shea",
+      "eyebrow": "Le système d’exploitation du commerce beauté",
+      "title": "Pilotez chaque facette du commerce beauté depuis un espace serein.",
+      "titleLead": "Le commerce beauté,",
+      "titleAccent": "orchestré.",
+      "titleTail": "Une plateforme, toutes les opérations.",
+      "description": "Shea relie catalogue, boutiques partenaires, commandes, livraison et expérience client dans une plateforme pensée pour les entreprises beauté modernes.",
+      "primaryCta": "Entrer dans l’espace",
+      "secondaryCta": "Explorer la plateforme",
+      "imageAlt": "Aperçu du tableau de bord opérationnel Shea",
+      "proofLabel": "Conçu pour le commerce connecté",
       "trust": {
-        "personalization": "Conseils beauté personnalisés",
-        "rituals": "Planification des rituels du matin et du soir",
-        "delivery": "Découverte et réachat rapides"
+        "personalization": "Une source catalogue unique",
+        "rituals": "Opérations partenaires en direct",
+        "delivery": "Visibilité de la commande à la livraison"
       },
       "stats": {
         "glowPlans": {
-          "value": "12k+",
-          "label": "routines créées avec des étapes de soin guidées"
+          "value": "4 apps",
+          "label": "connectées à un même cœur opérationnel"
         },
         "consultants": {
-          "value": "150+",
-          "label": "conseillers beauté et marques partenaires intégrés"
+          "value": "1 catalogue",
+          "label": "partagé sur tous les canaux partenaires"
         },
         "satisfaction": {
-          "value": "4,9/5",
-          "label": "note moyenne sur l’ensemble des parcours proposés"
+          "value": "Temps réel",
+          "label": "du passage de commande à la livraison"
+        }
+      },
+      "console": {
+        "live": "Tous les systèmes actifs",
+        "label": "Opérations Shea",
+        "title": "Aujourd’hui en un coup d’œil",
+        "period": "7 derniers jours",
+        "chart": "Activité commerciale",
+        "metrics": {
+          "revenue": { "label": "Ventes brutes", "value": "1,84 M", "trend": "+18 %" },
+          "orders": { "label": "Commandes", "value": "428", "trend": "+12 %" },
+          "fulfillment": { "label": "Livrées", "value": "96 %", "trend": "+4 %" }
+        },
+        "orders": {
+          "one": { "customer": "Commande #1048", "meta": "Glow Lab · 4 articles", "amount": "8 400 DZD", "status": "En route" },
+          "two": { "customer": "Commande #1047", "meta": "Maison N · 2 articles", "amount": "4 250 DZD", "status": "Prête" },
+          "three": { "customer": "Commande #1046", "meta": "Bloom · 3 articles", "amount": "6 100 DZD", "status": "Livrée" }
         }
       },
       "routineCard": {
@@ -76,39 +97,39 @@
         "description": "Comparez les produits selon les objectifs peau, le confort des ingrédients et les coups de cœur validés."
       },
       "floatingCard": {
-        "eyebrow": "Notes d’éclat",
-        "title": "Suivez ce qui améliore votre peau semaine après semaine",
-        "description": "Gardez vos formules, réassorts et progrès dans un espace unique et apaisé."
+        "eyebrow": "Signal en direct",
+        "title": "12 commandes passées en livraison durant la dernière heure",
+        "description": "Les événements opérationnels restent visibles en temps réel."
       }
     },
     "features": {
-      "eyebrow": "Ce qui rend Shea unique",
-      "title": "Une expérience plus nette, de la découverte à l’usage quotidien",
-      "description": "Chaque fonctionnalité est pensée pour rendre l’achat et les routines beauté plus légers, plus personnels et plus fiables.",
+      "eyebrow": "Un système cohérent, de bout en bout",
+      "title": "Des opérations complexes, sans le désordre opérationnel.",
+      "description": "Shea donne à chaque équipe l’outil dont elle a besoin tout en gardant produits, stock, revenus et livraison connectés.",
       "items": {
         "diagnosis": {
-          "title": "Diagnostic beauté intelligent",
-          "description": "Commencez par les besoins de peau, les textures et vos préférences, pas par des listes de produits sans fin."
+          "title": "Intelligence catalogue",
+          "description": "Structurez niches, catégories, marques, types et variantes une fois, puis diffusez une donnée produit cohérente partout."
         },
         "pairing": {
-          "title": "Association de routine",
-          "description": "Associez sérums, nettoyants, huiles et crèmes dans un ordre simple et harmonieux."
+          "title": "Opérations partenaires",
+          "description": "Intégrez les boutiques, attribuez les niches, examinez les produits locaux et suivez l’économie partenaire."
         },
         "rituals": {
-          "title": "Rituels doux au quotidien",
-          "description": "Créez des routines du matin et du soir avec des rappels qui encouragent la régularité sans pression."
+          "title": "Signaux business en direct",
+          "description": "Suivez ventes, commissions, revenus nets et santé opérationnelle sans assembler des rapports manuellement."
         },
         "community": {
-          "title": "Recommandations fiables",
-          "description": "Découvrez les produits appréciés par des clientes ayant des préoccupations et objectifs similaires."
+          "title": "Croissance catalogue contrôlée",
+          "description": "Validez les propositions partenaires, évitez les doublons et fusionnez la demande prouvée dans le catalogue global."
         },
         "ingredients": {
           "title": "Lecture claire des ingrédients",
           "description": "Comprenez mieux les formules grâce à des explications plus humaines et plus détaillées."
         },
         "delivery": {
-          "title": "Réachat fluide",
-          "description": "Retrouvez rapidement vos essentiels et recommandez-les au bon moment."
+          "title": "Livraison connectée",
+          "description": "Faites avancer chaque commande de l’acceptation boutique à la remise client avec un statut clair en direct."
         }
       }
     },
@@ -166,12 +187,24 @@
       }
     },
     "download": {
-      "eyebrow": "Prêt pour les opérations quotidiennes",
-      "title": "Une plateforme beauté apaisée pour les clientes, les vendeurs et l’équipe",
-      "description": "Utilisez l’espace admin pour gérer le catalogue, les partenaires, les modèles produits et les opérations qui font avancer Shea.",
+      "eyebrow": "Un cœur, quatre expériences ciblées",
+      "title": "Chaque acteur a le bon outil. Vos données restent connectées.",
+      "description": "Découverte client, vente partenaire, livraison rider et administration centrale fonctionnent comme un seul produit.",
       "imageAlt": "Écran de l’application Shea",
       "appStore": "Ouvrir l’admin",
       "playStore": "Politique de confidentialité",
+      "connected": "Connecté",
+      "apps": {
+        "client": { "title": "Shea Client", "description": "Découvrir, acheter et suivre chaque commande." },
+        "partner": { "title": "Shea Partner", "description": "Gérer produits, commandes, stock et revenus." },
+        "rider": { "title": "Shea Rider", "description": "Accepter, naviguer et terminer les livraisons." },
+        "admin": { "title": "Shea Admin", "description": "Piloter catalogue, réseau et santé plateforme." }
+      },
+      "cta": {
+        "eyebrow": "Vos opérations, enfin en rythme",
+        "title": "Construisez un réseau beauté qui grandit sans perdre le contrôle.",
+        "button": "Ouvrir Shea Admin"
+      },
       "benefits": {
         "guided": {
           "title": "Parcours produit guidés",
@@ -188,36 +221,36 @@
       }
     },
     "footer": {
-      "description": "Shea réunit découverte beauté premium, routines réfléchies et expérience d’achat plus douce.",
+      "description": "Shea est le système d’exploitation connecté du commerce beauté moderne, du catalogue à la livraison.",
       "shop": {
-        "title": "Shopping",
+        "title": "Plateforme",
         "items": {
-          "routine": "Sets de routine",
-          "makeup": "Sélection maquillage",
-          "body": "Corps et bain",
-          "gifts": "Idées cadeaux"
+          "routine": "Catalogue",
+          "makeup": "Opérations partenaires",
+          "body": "Gestion des commandes",
+          "gifts": "Livraison"
         }
       },
       "company": {
         "title": "Entreprise",
         "items": {
-          "story": "Notre histoire",
-          "partners": "Devenir partenaire",
-          "journal": "Journal beauté",
-          "careers": "Carrières"
+          "story": "À propos de Shea",
+          "partners": "Réseau partenaire",
+          "journal": "Vision produit",
+          "careers": "Contact"
         }
       },
       "support": {
         "title": "Assistance",
         "items": {
-          "help": "Centre d’aide",
-          "shipping": "Livraison",
+          "help": "Accès admin",
+          "shipping": "État du système",
           "privacy": "Politique de confidentialité",
           "terms": "Conditions d’utilisation"
         }
       },
       "copyright": "© {year} Shea. Tous droits réservés.",
-      "signature": "Conçu pour un parcours beauté plus doux."
+      "signature": "Le commerce beauté, orchestré."
     }
   }
 }

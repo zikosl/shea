@@ -1,56 +1,102 @@
-import { PackageCheck, ScanSearch, Sparkles } from "lucide-react";
+import {
+  BarChart3,
+  Boxes,
+  Building2,
+  PackageSearch,
+  Route,
+} from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-const icons = [Sparkles, ScanSearch, PackageCheck];
-const featureKeys = ["diagnosis", "pairing", "delivery"] as const;
+import styles from "./landing-system.module.css";
 
-const Features = async () => {
+const features = [
+  { key: "diagnosis", icon: Boxes, size: "wide", visual: "catalog" },
+  { key: "pairing", icon: Building2, size: "narrow", visual: "partners" },
+  { key: "rituals", icon: BarChart3, size: "third", visual: "chart" },
+  { key: "community", icon: PackageSearch, size: "third", visual: "approval" },
+  { key: "delivery", icon: Route, size: "third", visual: "route" },
+] as const;
+
+function FeatureVisual({ type }: { type: (typeof features)[number]["visual"] }) {
+  if (type === "catalog") {
+    return (
+      <div className={styles.catalogVisual} aria-hidden="true">
+        {[0, 1, 2, 3].map((item) => (
+          <div className={styles.productTile} key={item}>
+            <div className={styles.productThumb} />
+            <div className={styles.productLine} />
+            <div className={styles.productLineShort} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (type === "partners" || type === "approval") {
+    const rows = type === "partners"
+      ? [["GL", "Glow Lab", "Active"], ["MN", "Maison N", "Active"], ["BL", "Bloom", "Review"]]
+      : [["01", "New catalog request", "Review"], ["02", "Variant matched", "Ready"], ["03", "Brand verified", "Ready"]];
+
+    return (
+      <div className={styles.partnerVisual} aria-hidden="true">
+        {rows.map(([initials, name, state]) => (
+          <div className={styles.partnerRow} key={name}>
+            <span className={styles.partnerAvatar}>{initials}</span>
+            <span className={styles.partnerName}>{name}</span>
+            <span className={styles.partnerState}>{state}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (type === "chart") {
+    return (
+      <svg className={styles.miniChart} viewBox="0 0 300 105" aria-hidden="true">
+        <path d="M0 92 C35 85 44 52 78 65 S133 83 164 42 S218 58 250 27 S280 18 300 10" fill="none" stroke="var(--lp-accent)" strokeWidth="3" strokeLinecap="round" />
+        <path d="M0 92 C35 85 44 52 78 65 S133 83 164 42 S218 58 250 27 S280 18 300 10 L300 105 L0 105 Z" fill="var(--lp-accent-soft)" opacity=".65" />
+      </svg>
+    );
+  }
+
+  return (
+    <div className={styles.routeVisual} aria-hidden="true">
+      <span className={`${styles.routeDot} ${styles.routeStart}`} />
+      <span className={`${styles.routeDot} ${styles.routeEnd}`} />
+    </div>
+  );
+}
+
+export default async function Features() {
   const t = await getTranslations("home.features");
 
   return (
-    <section id="features" className="px-4 py-12 md:px-6 md:py-16">
-      <div className="container">
-        <div className="mx-auto max-w-6xl rounded-[2rem] border border-rose-100/80 bg-white/55 p-5 backdrop-blur dark:border-rose-300/12 dark:bg-white/5 md:p-8">
-          <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
-            <div>
-              <div className="marketing-kicker">{t("eyebrow")}</div>
-              <h2 className="mt-5 font-display text-4xl leading-tight text-rose-950 dark:text-rose-50 md:text-5xl">
-                {t("title")}
-              </h2>
-              <p className="mt-4 text-base leading-8 text-rose-950/64 dark:text-rose-50/68">
-                {t("description")}
-              </p>
-            </div>
-
-            <div className="grid gap-3">
-              {featureKeys.map((key, index) => {
-                const Icon = icons[index];
-
-                return (
-                  <div
-                    key={key}
-                    className="group flex gap-4 rounded-3xl border border-rose-100/80 bg-white/70 p-4 transition-colors hover:bg-white dark:border-rose-300/12 dark:bg-white/5 dark:hover:bg-white/8"
-                  >
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 dark:bg-rose-200/12 dark:text-rose-200">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-rose-950 dark:text-rose-50">
-                        {t(`items.${key}.title`)}
-                      </h3>
-                      <p className="mt-1 text-sm leading-7 text-rose-950/64 dark:text-rose-50/66">
-                        {t(`items.${key}.description`)}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+    <section id="features" className={styles.section}>
+      <div className={styles.container}>
+        <div className={styles.sectionHeader}>
+          <div>
+            <p className={styles.eyebrow}>{t("eyebrow")}</p>
+            <h2 className={styles.sectionTitle}>{t("title")}</h2>
           </div>
+          <p className={styles.sectionDescription}>{t("description")}</p>
+        </div>
+
+        <div className={styles.bento}>
+          {features.map(({ key, icon: Icon, size, visual }) => (
+            <article
+              key={key}
+              className={`${styles.featureCard} ${
+                size === "wide" ? styles.featureWide : size === "narrow" ? styles.featureNarrow : styles.featureThird
+              }`}
+            >
+              <span className={styles.featureIcon}><Icon size={19} /></span>
+              <h3 className={styles.featureTitle}>{t(`items.${key}.title`)}</h3>
+              <p className={styles.featureDescription}>{t(`items.${key}.description`)}</p>
+              <FeatureVisual type={visual} />
+            </article>
+          ))}
         </div>
       </div>
     </section>
   );
-};
-
-export default Features;
+}

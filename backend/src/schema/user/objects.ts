@@ -35,6 +35,11 @@ export const Role = enumType({
     members: ['ADMIN', 'CLIENT', 'PARTNER', 'DRIVER'],
 });
 
+export const ThemePreference = enumType({
+    name: 'ThemePreference',
+    members: ['SYSTEM', 'LIGHT', 'DARK'],
+});
+
 // Profile types
 export const Client = objectType({
     name: 'Client',
@@ -45,6 +50,7 @@ export const Client = objectType({
         t.string("avatar");
         t.string("language");
         t.boolean("theme");
+        t.field("themePreference", { type: "ThemePreference" });
         t.int('userId');
         t.float('latitude');
         t.float('longitude');
@@ -132,5 +138,6 @@ export default {
     Driver,
     AuthPayload,
     User,
-    Role
+    Role,
+    ThemePreference
 }
