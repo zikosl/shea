@@ -67,7 +67,10 @@ export default function ItemForm({
     const latestFile = uploadedFiles[uploadedFiles.length - 1];
 
     if (latestFile) {
-      form.setValue("image", latestFile.url);
+      form.setValue("image", latestFile.url, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
       setImage(resolvePublicAssetUrl(latestFile.url));
     }
   }
@@ -150,13 +153,13 @@ export default function ItemForm({
             <FormField
               control={form.control}
               name="image"
-              render={({ field }) => (
+              render={() => (
                 <FormItem>
                   <FormLabel>Niche Image</FormLabel>
                   <FormControl>
                     <FileUploader
                       maxSize={25 * 1024 * 1024}
-                      onValueChange={(file) => field.onChange(file)}
+                      accept={{ "image/*": [".png", ".jpeg", ".jpg", ".webp", ".svg"] }}
                       progresses={progresses}
                       onUpload={handleUpload}
                       disabled={isUploading}
@@ -169,7 +172,7 @@ export default function ItemForm({
                 </FormItem>
               )}
             />
-            <Button disabled={!image || loading} type="submit">
+            <Button disabled={!image || loading || isUploading} type="submit">
               {loading && <Loader2 className="animate-spin" />}
               {loading ? "Saving..." : "Save niche"}
             </Button>
