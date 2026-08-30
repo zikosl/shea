@@ -96,8 +96,8 @@ const Mutation = extendType({
                     })
                     sendNotification({
                         tokens: partner.user.pushTokens[0]?.token,
-                        title: "New Order Placed",
-                        body: "A customer has placed a new order at your store. Accept now to fulfill this order!",
+                        title: `Order #${order.orderId} picked up`,
+                        body: "Your order was picked up and is on its way.",
                         androidChannelId: "new-order-alerts",
                         sound: "new_order.wav",
                         data: {
@@ -183,9 +183,16 @@ const Mutation = extendType({
                     where: {
                         id: id,
                         driverId: userId,
-                        status: DispatchStatus.ACCEPTED
+                        status: DispatchStatus.ACCEPTED,
+                        delivery: {
+                            driverId: userId,
+                            status: {
+                                in: [DeliveryStatus.ASSIGNED, DeliveryStatus.PICKED],
+                            },
+                        },
                     },
                     include: {
+                        delivery: true,
                         order: {
                             include: {
                                 client: {
@@ -205,38 +212,43 @@ const Mutation = extendType({
                         }
                     }
                 })
-                if (order.order) {
-                    await ctx.prisma.delivery.update({
-                        where: {
-                            id: order.order.id,
-                            driverId: userId,
-                        },
-                        data: {
-                            status: DeliveryStatus.PICKED
-                        }
-                    })
-                    sendNotification({
-                        tokens: order.order.client.user.pushTokens[0].token,
-                        title: "New Order Placed",
-                        body: "A customer has placed a new order at your store. Accept now to fulfill this order!",
-                        data: {
-                            event: "NEW_ORDER",
-                            orderId: `${id}`,
-                        }
-                    })
-                    await ctx.prisma.log.create({
-                        data: {
-                            title: `Order #${order.id} has been Picked`,
-                            body: `Order (ID: ${order.id}) has been Picked by a delivery driver.`,
-                            title_ar: `تم استلام الطلب رقم #${order.id}`,
-                            body_ar: `تم استلام الطلب (رقم: ${order.id}) بواسطة سائق التوصيل.`,
-                            type: LogSatus.ORDER_UPDATE,
-                            userId: order.clientId
-                        }
-                    })
+                if (order?.order) {
+                    if (order.delivery.status === DeliveryStatus.ASSIGNED) {
+                        await ctx.prisma.$transaction(async (tx) => {
+                            await tx.delivery.update({
+                                where: {
+                                    id: order.deliveryId,
+                                    driverId: userId,
+                                    status: DeliveryStatus.ASSIGNED,
+                                },
+                                data: {
+                                    status: DeliveryStatus.PICKED
+                                }
+                            })
+                            await tx.log.create({
+                                data: {
+                                    title: `Order #${order.orderId} has been Picked`,
+                                    body: `Order (ID: ${order.orderId}) has been Picked by a delivery driver.`,
+                                    title_ar: `تم استلام الطلب رقم #${order.orderId}`,
+                                    body_ar: `تم استلام الطلب (رقم: ${order.orderId}) بواسطة سائق التوصيل.`,
+                                    type: LogSatus.ORDER_UPDATE,
+                                    userId: order.order.clientId
+                                }
+                            })
+                        })
+                        await sendNotification({
+                            tokens: order.order.client.user.pushTokens[0]?.token ?? '',
+                            title: `Order #${order.orderId} picked up`,
+                            body: "Your order was picked up and is on its way.",
+                            data: {
+                                event: "ORDER_PICKED_UP",
+                                orderId: `${order.orderId}`,
+                            }
+                        })
+                    }
                     return order;
                 }
-                return new GraphQLError("Not Allowed")
+                throw new GraphQLError("ORDER_NOT_READY_FOR_PICKUP")
             },
         })
 
@@ -251,35 +263,47 @@ const Mutation = extendType({
                     where: {
                         id: id,
                         driverId: userId,
-                        status: DispatchStatus.ACCEPTED
+                        status: DispatchStatus.ACCEPTED,
+                        delivery: {
+                            driverId: userId,
+                            status: {
+                                in: [DeliveryStatus.PICKED, DeliveryStatus.DELIVERED],
+                            },
+                        },
                     },
                     include: {
+                        delivery: true,
                         order: true
                     }
                 })
-                if (order.order) {
-                    await ctx.prisma.delivery.update({
-                        where: {
-                            id: order.order.id,
-                            driverId: userId
-                        },
-                        data: {
-                            status: DeliveryStatus.DELIVERED
-                        }
-                    })
-                    await ctx.prisma.log.create({
-                        data: {
-                            title: `Order #${order.id} has been Delivered`,
-                            body: `Order (ID: ${order.id}) has been Delivered by a delivery driver.`,
-                            title_ar: `تم تسليم الطلب رقم #${order.id}`,
-                            body_ar: `تم تسليم الطلب (رقم: ${order.id}) بواسطة سائق التوصيل.`,
-                            type: LogSatus.ORDER_UPDATE,
-                            userId: order.clientId
-                        }
-                    })
+                if (order?.order) {
+                    if (order.delivery.status === DeliveryStatus.PICKED) {
+                        await ctx.prisma.$transaction(async (tx) => {
+                            await tx.delivery.update({
+                                where: {
+                                    id: order.deliveryId,
+                                    driverId: userId,
+                                    status: DeliveryStatus.PICKED,
+                                },
+                                data: {
+                                    status: DeliveryStatus.DELIVERED
+                                }
+                            })
+                            await tx.log.create({
+                                data: {
+                                    title: `Order #${order.orderId} has been Delivered`,
+                                    body: `Order (ID: ${order.orderId}) has been Delivered by a delivery driver.`,
+                                    title_ar: `تم تسليم الطلب رقم #${order.orderId}`,
+                                    body_ar: `تم تسليم الطلب (رقم: ${order.orderId}) بواسطة سائق التوصيل.`,
+                                    type: LogSatus.ORDER_UPDATE,
+                                    userId: order.order.clientId
+                                }
+                            })
+                        })
+                    }
                     return order;
                 }
-                return new GraphQLError("Not Allowed")
+                throw new GraphQLError("ORDER_NOT_READY_FOR_DELIVERY")
             },
         })
 
