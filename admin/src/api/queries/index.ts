@@ -7,3 +7,5 @@ export * from "./niche";
 export * from "./productType";
 export * from "./productTemplate";
 export * from "./dashboard";
+export * from "./variant";
+export * from "./settings";

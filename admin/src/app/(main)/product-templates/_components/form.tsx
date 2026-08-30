@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
-import { BadgeCheck, ImageIcon, Loader2, Package, X } from 'lucide-react';
+import Link from 'next/link';
+import { BadgeCheck, ImageIcon, Layers3, Loader2, Package, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -338,6 +339,16 @@ export default function ItemForm({
                 <span className="font-medium">{imageUrls.length}/6</span>
               </div>
             </div>
+            {initialData ? (
+              <Button asChild variant="outline" className="w-full">
+                <Link href={`/product-templates/${initialData.id}/variants`}>
+                  <Layers3 className="h-4 w-4" />
+                  Manage variants
+                </Link>
+              </Button>
+            ) : (
+              <p className="text-xs text-muted-foreground">Save the template before creating variants.</p>
+            )}
           </CardContent>
         </Card>
         </div>

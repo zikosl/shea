@@ -62,6 +62,21 @@ const Mutation = objectType({
                 time: nonNull(stringArg()),
             },
             resolve: async (_, { time }, ctx) => {
+                if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) {
+                    throw createBadRequestError('Invalid delivery time');
+                }
+                const existing = await ctx.prisma.partnerDeliverySchedule.findFirst({
+                    where: { time },
+                });
+                if (existing?.isActive) {
+                    throw createBadRequestError('Delivery time already exists');
+                }
+                if (existing) {
+                    return ctx.prisma.partnerDeliverySchedule.update({
+                        where: { id: existing.id },
+                        data: { isActive: true },
+                    });
+                }
                 return ctx.prisma.partnerDeliverySchedule.create({
                     data: {
                         time,

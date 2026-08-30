@@ -7,3 +7,5 @@ export * from "./upload";
 export * from "./productType";
 export * from "./productTemplate";
 export * from "./driver";
+export * from "./variant";
+export * from "./settings";

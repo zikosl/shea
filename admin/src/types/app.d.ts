@@ -76,6 +76,16 @@ type ProductTemplate = {
     images: ProductTemplateImage[];
 }
 
+type ProductVariant = {
+    id: string;
+    name?: string | null;
+    sku?: string | null;
+    productId: string;
+    tags: Array<{ id: string; value: string }>;
+    images: ProductTemplateImage[];
+    productCount: number;
+}
+
 type User = {
     id: string
     email: string
