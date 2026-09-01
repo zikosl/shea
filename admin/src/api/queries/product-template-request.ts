@@ -23,7 +23,6 @@ export const FIND_MANY_PRODUCT_TEMPLATE_REQUESTS = gql`
         }
         brand {
           name
-          description
           image
         }
         productType {
