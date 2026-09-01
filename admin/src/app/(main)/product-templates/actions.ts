@@ -18,7 +18,7 @@ type ProductTemplateResponse = {
   id: number;
   name: string;
   description?: string | null;
-  product_type_id: number;
+  product_type_id?: number | null;
   brand_id: number;
   category_id?: number | null;
   niche_id?: number | null;
@@ -32,7 +32,8 @@ type ProductTemplateResponse = {
 type ProductTemplatePayload = {
   name: string;
   description?: string;
-  product_type_id: string;
+  category_id: string;
+  product_type_id?: string;
   brand_id: string;
   images?: string[];
 };
@@ -53,7 +54,7 @@ function mapItem(data: ProductTemplateResponse): ProductTemplate {
     id: String(data.id),
     name: data.name,
     description: data.description ?? "",
-    product_type_id: String(data.product_type_id),
+    product_type_id: data.product_type_id ? String(data.product_type_id) : "",
     brand_id: String(data.brand_id),
     category_id: data.category_id ? String(data.category_id) : undefined,
     niche_id: data.niche_id ? String(data.niche_id) : undefined,
@@ -74,7 +75,8 @@ export async function createItem(itemData: ProductTemplatePayload) {
     {
       name: itemData.name,
       description: itemData.description,
-      product_type_id: Number(itemData.product_type_id),
+      category_id: Number(itemData.category_id),
+      product_type_id: itemData.product_type_id ? Number(itemData.product_type_id) : null,
       brand_id: Number(itemData.brand_id),
       images: itemData.images?.length ? { images: itemData.images } : undefined,
     },
@@ -127,6 +129,9 @@ export async function updateItem(id: string, itemData: ProductTemplatePayload) {
       id: Number.parseInt(id, 10),
       name: itemData.name,
       description: itemData.description,
+      category_id: Number(itemData.category_id),
+      product_type_id: itemData.product_type_id ? Number(itemData.product_type_id) : null,
+      brand_id: Number(itemData.brand_id),
     },
   );
 

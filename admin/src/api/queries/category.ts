@@ -23,6 +23,7 @@ export const GET_ALL_CATEGORIES = gql`
       name
       name_ar
       image
+      niche_id
     }
   }
 `;

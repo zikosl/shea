@@ -9,6 +9,7 @@ import { requestServerGraphQL } from "@/lib/server-request";
 type VariantResponse = {
   id: number;
   name?: string | null;
+  description?: string | null;
   sku?: string | null;
   productId: number;
   tags?: Array<{ id: number; value: string }>;
@@ -20,6 +21,7 @@ function mapVariant(variant: VariantResponse): ProductVariant {
   return {
     id: String(variant.id),
     name: variant.name,
+    description: variant.description,
     sku: variant.sku,
     productId: String(variant.productId),
     tags: (variant.tags ?? []).map((tag) => ({ id: String(tag.id), value: tag.value })),
@@ -66,12 +68,19 @@ export async function createVariantCombinations(productId: number, dimensions: s
 export async function updateVariantItem(
   productId: number,
   id: number,
-  data: { name: string; sku: string; images: string[] },
+  data: { name: string; description: string; sku: string; tags: string[]; images: string[] },
 ) {
-  if (!data.name.trim()) throw new Error("Variant name is required");
+  const tags = Array.from(new Set(data.tags.map((tag) => tag.trim()).filter(Boolean)));
+  if (!data.name.trim() && !tags.length) throw new Error("Add a variant name or at least one tag");
   await requestServerGraphQL(UPDATE_VARIANT, {
     id,
-    data: { name: data.name.trim(), sku: data.sku.trim() || null, images: data.images },
+    data: {
+      name: data.name.trim() || null,
+      description: data.description.trim() || null,
+      sku: data.sku.trim() || null,
+      tags,
+      images: data.images,
+    },
   });
   revalidatePath(`/product-templates/${productId}/variants`);
 }

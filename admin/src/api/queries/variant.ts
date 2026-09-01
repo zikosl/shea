@@ -6,6 +6,7 @@ export const FIND_MANY_VARIANTS = gql`
       variants {
         id
         name
+        description
         sku
         productId
         tags {
@@ -30,6 +31,7 @@ export const FIND_ONE_VARIANT = gql`
     findOneVariant(id: $id) {
       id
       name
+      description
       sku
       productId
       tags {

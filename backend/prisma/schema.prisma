@@ -260,6 +260,8 @@ model Category {
   name_ar      String
   image        String
   productTypes ProductType[]
+  productTemplates ProductTemplate[]
+  templateRequests ProductTemplateRequest[]
   niche        Niche?        @relation(fields: [niche_id], references: [id])
   niche_id     Int?
 }
@@ -512,8 +514,10 @@ model ProductTemplate {
   name_ar     String @default("")
   description String @default("")
 
-  product_type_id Int
-  productType     ProductType @relation(fields: [product_type_id], references: [id])
+  category_id     Int
+  category        Category @relation(fields: [category_id], references: [id])
+  product_type_id Int?
+  productType     ProductType? @relation(fields: [product_type_id], references: [id])
 
   Brand    Brand? @relation(fields: [brand_id], references: [id])
   brand_id Int?
@@ -521,6 +525,8 @@ model ProductTemplate {
   variants Variant[]
   images   ProductImage[]
   requests ProductTemplateRequest[] @relation("ApprovedTemplateRequests")
+
+  @@index([category_id])
 }
 
 model ProductTemplateRequest {
@@ -529,7 +535,8 @@ model ProductTemplateRequest {
   name_ar            String                       @default("")
   description        String                       @default("")
   images             String[]                     @default([])
-  product_type_id    Int
+  category_id        Int
+  product_type_id    Int?
   brand_id           Int?
   partnerId          Int
   status             ProductTemplateRequestStatus @default(PENDING)
@@ -542,12 +549,14 @@ model ProductTemplateRequest {
   updatedAt          DateTime                     @updatedAt
 
   partner          Partner          @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
-  productType      ProductType      @relation(fields: [product_type_id], references: [id])
+  category         Category         @relation(fields: [category_id], references: [id])
+  productType      ProductType?     @relation(fields: [product_type_id], references: [id])
   brand            Brand?           @relation(fields: [brand_id], references: [id])
   approvedTemplate ProductTemplate? @relation("ApprovedTemplateRequests", fields: [approvedTemplateId], references: [id])
   variants         ProductTemplateRequestVariant[]
 
   @@index([partnerId, status])
+  @@index([category_id])
   @@index([product_type_id])
   @@index([brand_id])
 }
@@ -556,6 +565,7 @@ model ProductTemplateRequestVariant {
   id        Int                    @id @default(autoincrement())
   requestId Int
   name      String?
+  description String?
   sku       String?
   image     String?
   tags      String[]               @default([])
@@ -569,6 +579,7 @@ model ProductTemplateRequestVariant {
 model Variant {
   id   Int     @id @default(autoincrement())
   name String? // e.g. "Banana flavor", "Red color"
+  description String?
   sku  String? @unique
 
   productId Int
@@ -787,7 +798,7 @@ view ProductView {
   partnerId           Int
   variantId           Int
   brand_id            Int
-  product_type_id     Int
+  product_type_id     Int?
   category_id         Int
 }
 
@@ -796,7 +807,7 @@ view ProductTemplateView {
   name            String
   name_ar         String
   description     String
-  product_type_id Int
+  product_type_id Int?
   brand_id        Int?
   category_id     Int
   niche_id        Int?
@@ -817,7 +828,7 @@ view ProductTemplatePartnerPreview {
   name            String
   name_ar         String
   description     String
-  product_type_id Int
+  product_type_id Int?
   category_id     Int
   brand_id        Int?
 

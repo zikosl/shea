@@ -12,6 +12,7 @@ export const ProductTemplateRequestVariantInput = inputObjectType({
   name: 'ProductTemplateRequestVariantInput',
   definition(t) {
     t.string('name')
+    t.string('description')
     t.string('sku')
     t.string('image')
     t.list.string('tags')
@@ -26,6 +27,7 @@ export const ProductTemplateRequestVariant = objectType({
     t.nonNull.int('id')
     t.int('requestId')
     t.string('name')
+    t.string('description')
     t.string('sku')
     t.string('image')
     t.list.string('tags')
@@ -43,6 +45,7 @@ export const ProductTemplateRequest = objectType({
     t.string('description')
     t.list.string('images')
     t.int('product_type_id')
+    t.int('category_id')
     t.int('brand_id')
     t.int('partnerId')
     t.field('status', { type: 'ProductTemplateRequestStatus' })
@@ -59,7 +62,13 @@ export const ProductTemplateRequest = objectType({
     })
     t.field('productType', {
       type: 'ProductType',
-      resolve: (parent, _args, ctx) => ctx.prisma.productType.findUnique({ where: { id: parent.product_type_id } }),
+      resolve: (parent, _args, ctx) => parent.product_type_id
+        ? ctx.prisma.productType.findUnique({ where: { id: parent.product_type_id } })
+        : null,
+    })
+    t.field('category', {
+      type: 'Category',
+      resolve: (parent, _args, ctx) => ctx.prisma.category.findUnique({ where: { id: parent.category_id } }),
     })
     t.field('brand', {
       type: 'Brand',
@@ -90,30 +99,62 @@ export const ProductTemplateRequestMutation = extendType({
         name_ar: stringArg(),
         description: stringArg(),
         images: arg({ type: 'ImagesList' }),
-        product_type_id: nonNull(intArg()),
+        category_id: nonNull(intArg()),
+        product_type_id: intArg(),
         brand_id: intArg(),
         variants: list(arg({ type: 'ProductTemplateRequestVariantInput' })),
       },
       resolve: async (_parent, data, ctx: Context) => {
         const partnerId = getUserId(ctx)
+        const category = await ctx.prisma.category.findUnique({
+          where: { id: data.category_id },
+          select: { niche_id: true },
+        })
+        if (!category) throw new Error('CATEGORY_NOT_FOUND')
+
+        if (data.product_type_id) {
+          const productType = await ctx.prisma.productType.findFirst({
+            where: { id: data.product_type_id, category_id: data.category_id },
+            select: { id: true },
+          })
+          if (!productType) throw new Error('PRODUCT_TYPE_DOES_NOT_BELONG_TO_CATEGORY')
+        }
+
+        if (data.brand_id) {
+          const brand = await ctx.prisma.brand.findUnique({ where: { id: data.brand_id }, select: { niche_id: true } })
+          if (!brand) throw new Error('BRAND_NOT_FOUND')
+          if (brand.niche_id && category.niche_id && brand.niche_id !== category.niche_id) {
+            throw new Error('BRAND_DOES_NOT_BELONG_TO_NICHE')
+          }
+        }
+
+        const submittedVariants = data.variants?.length ? data.variants : [{ name: 'Default', tags: [] }]
+        const variants = submittedVariants.map((variant: any) => {
+          const name = variant?.name?.trim() || null
+          const tags = Array.from(new Set((variant?.tags ?? []).map((tag: string) => tag.trim()).filter(Boolean)))
+          if (!name && !tags.length) throw new Error('VARIANT_NAME_OR_TAG_REQUIRED')
+          return {
+            name,
+            description: variant?.description?.trim() || null,
+            sku: variant?.sku?.trim() || null,
+            image: variant?.image?.trim() || null,
+            tags,
+            price: variant?.price ?? null,
+            stock: variant?.stock ?? null,
+          }
+        })
         return ctx.prisma.productTemplateRequest.create({
           data: {
             name: data.name.trim(),
             name_ar: data.name_ar?.trim() ?? '',
             description: data.description?.trim() ?? '',
             images: data.images?.images ?? [],
-            product_type_id: data.product_type_id,
+            category_id: data.category_id,
+            product_type_id: data.product_type_id ?? null,
             brand_id: data.brand_id ?? null,
             partnerId,
             variants: {
-              create: (data.variants ?? []).map((variant: any) => ({
-                name: variant?.name?.trim() || null,
-                sku: variant?.sku?.trim() || null,
-                image: variant?.image?.trim() || null,
-                tags: variant?.tags ?? [],
-                price: variant?.price ?? null,
-                stock: variant?.stock ?? null,
-              })),
+              create: variants,
             },
           },
         })
@@ -139,14 +180,16 @@ export const ProductTemplateRequestMutation = extendType({
             name: request.name,
             name_ar: request.name_ar,
             description: request.description,
+            category_id: request.category_id,
             product_type_id: request.product_type_id,
             brand_id: request.brand_id,
             images: {
               create: request.images.map((url: string) => ({ url })),
             },
             variants: {
-              create: request.variants.map((variant: any) => ({
+              create: (request.variants.length ? request.variants : [{ name: 'Default', description: '', sku: null, image: null, tags: [] }]).map((variant: any) => ({
                 name: variant.name,
+                description: variant.description,
                 sku: variant.sku,
                 images: variant.image ? { create: [{ url: variant.image }] } : undefined,
                 tags: { create: (variant.tags ?? []).map((value: string) => ({ value })) },
@@ -239,11 +282,28 @@ export const ProductTemplateRequestQuery = extendType({
       type: 'ProductTemplateRequestResult',
       args: {
         status: 'ProductTemplateRequestStatus',
+        search: stringArg(),
+        niche_id: intArg(),
+        category_id: intArg(),
+        product_type_id: intArg(),
         page: nonNull(intArg()),
         limit: nonNull(intArg()),
       },
-      resolve: async (_parent, { status, page, limit }, ctx: Context) => {
-        const where = status ? { status } : {}
+      resolve: async (_parent, { status, search, niche_id, category_id, product_type_id, page, limit }, ctx: Context) => {
+        const where: any = {
+          ...(status ? { status } : {}),
+          ...(category_id ? { category_id } : {}),
+          ...(product_type_id ? { product_type_id } : {}),
+          ...(niche_id ? { category: { niche_id } } : {}),
+          ...(search?.trim() ? {
+            OR: [
+              { name: { contains: search.trim(), mode: 'insensitive' } },
+              { name_ar: { contains: search.trim(), mode: 'insensitive' } },
+              { description: { contains: search.trim(), mode: 'insensitive' } },
+              { brand: { name: { contains: search.trim(), mode: 'insensitive' } } },
+            ],
+          } : {}),
+        }
         const [requests, totalRequests] = await Promise.all([
           ctx.prisma.productTemplateRequest.findMany({
             where,

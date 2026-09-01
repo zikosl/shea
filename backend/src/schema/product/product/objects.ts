@@ -57,8 +57,9 @@ const ProductTemplate = objectType({
         t.field('productType', {
             type: 'ProductType',
             resolve: async (parent, _args, ctx) => {
+                if (!parent.product_type_id) return null
                 return ctx.prisma.productType.findUnique({
-                    where: { id: parent.product_type_id ?? undefined },
+                    where: { id: parent.product_type_id },
                 })
             },
         })
@@ -200,10 +201,9 @@ const ProductView = objectType({
 
         t.field('productType', {
             type: 'ProductType',
-            resolve: async (parent, _args, ctx) =>
-                ctx.prisma.productType.findUnique({
-                    where: { id: parent.product_type_id ?? undefined },
-                }),
+            resolve: async (parent, _args, ctx) => parent.product_type_id
+                ? ctx.prisma.productType.findUnique({ where: { id: parent.product_type_id } })
+                : null,
         })
 
         t.field('brand', {
@@ -266,7 +266,7 @@ const ProductTemplatePartnerPreview = objectType({
         t.nonNull.string('name');
         t.nonNull.string('name_ar');
         t.nonNull.string('description');
-        t.nonNull.int('product_type_id');
+        t.nullable.int('product_type_id', { resolve: (parent) => parent.product_type_id ?? null });
         t.nonNull.int('category_id');
         t.int('brand_id');
 

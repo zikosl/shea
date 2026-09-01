@@ -19,9 +19,11 @@ export type ProductTemplateRequestItem = {
   } | null;
   brand?: { name?: string | null; image?: string | null } | null;
   productType?: { name?: string | null; category?: { name?: string | null } | null } | null;
+  category?: { id?: number; name?: string | null; niche_id?: number | null; niche?: { id?: number; name?: string | null } | null } | null;
   variants?: Array<{
     id: number;
     name?: string | null;
+    description?: string | null;
     sku?: string | null;
     image?: string | null;
     price?: number | null;
@@ -30,7 +32,7 @@ export type ProductTemplateRequestItem = {
   }>;
 };
 
-export async function getProductTemplateRequests() {
+export async function getProductTemplateRequests(filters: { search?: string; niche_id?: number; category_id?: number; product_type_id?: number } = {}) {
   const response = await requestServerGraphQL<{
     findManyProductTemplateRequests: {
       totalRequests: number;
@@ -38,6 +40,7 @@ export async function getProductTemplateRequests() {
     };
   }>(FIND_MANY_PRODUCT_TEMPLATE_REQUESTS, {
     status: "PENDING",
+    ...filters,
     page: 1,
     limit: 50,
   });

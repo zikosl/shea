@@ -65,7 +65,7 @@ type ProductTemplate = {
     id: string;
     name: string;
     description: string;
-    product_type_id: string;
+    product_type_id?: string;
     brand_id: string;
     category_id?: string;
     niche_id?: string;
@@ -79,6 +79,7 @@ type ProductTemplate = {
 type ProductVariant = {
     id: string;
     name?: string | null;
+    description?: string | null;
     sku?: string | null;
     productId: string;
     tags: Array<{ id: string; value: string }>;

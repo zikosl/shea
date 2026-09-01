@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { resolvePublicAssetUrl } from "@/constant";
+import { getCatalogFilterOptions } from "@/lib/catalog-filter-options";
 
 import { approveRequest, getProductTemplateRequests, rejectRequest } from "./actions";
 
@@ -14,8 +15,21 @@ export const metadata = {
   description: "Review partner-submitted product templates.",
 };
 
-export default async function ProductRequestsPage() {
-  const { requests, totalRequests } = await getProductTemplateRequests();
+type SearchParams = { search?: string; niche_id?: string; category_id?: string; product_type_id?: string };
+
+export default async function ProductRequestsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const params = await searchParams;
+  const numberParam = (value?: string) => value && Number.isInteger(Number(value)) ? Number(value) : undefined;
+  const [result, options] = await Promise.all([
+    getProductTemplateRequests({
+      search: params.search?.trim() || undefined,
+      niche_id: numberParam(params.niche_id),
+      category_id: numberParam(params.category_id),
+      product_type_id: numberParam(params.product_type_id),
+    }),
+    getCatalogFilterOptions(),
+  ]);
+  const { requests, totalRequests } = result;
 
   return (
     <ResourcePage
@@ -23,6 +37,19 @@ export default async function ProductRequestsPage() {
       description="Review partner-submitted templates before they enter the global catalog."
     >
       <div className="space-y-5">
+        <form className="grid gap-3 rounded-xl border bg-card p-4 md:grid-cols-4 xl:grid-cols-5">
+          <input name="search" defaultValue={params.search} placeholder="Search request, brand..." className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+          <select name="niche_id" defaultValue={params.niche_id ?? ""} className="h-10 rounded-md border bg-background px-3 text-sm">
+            <option value="">All niches</option>{options.niches.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+          </select>
+          <select name="category_id" defaultValue={params.category_id ?? ""} className="h-10 rounded-md border bg-background px-3 text-sm">
+            <option value="">All categories</option>{options.categories.filter((item) => !params.niche_id || String(item.niche_id) === params.niche_id).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+          </select>
+          <select name="product_type_id" defaultValue={params.product_type_id ?? ""} className="h-10 rounded-md border bg-background px-3 text-sm">
+            <option value="">All product types</option>{options.productTypes.filter((item) => !params.category_id || String(item.category_id || item.category?.id) === params.category_id).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+          </select>
+          <Button type="submit">Apply filters</Button>
+        </form>
         <div className="grid gap-3 md:grid-cols-3">
           <Card>
             <CardContent className="flex items-center gap-3 p-4">
@@ -109,7 +136,7 @@ export default async function ProductRequestsPage() {
                       </div>
                       <div>
                         <span className="text-muted-foreground">Category</span>
-                        <p className="font-medium">{request.productType?.category?.name ?? "No category"}</p>
+                        <p className="font-medium">{request.category?.name ?? request.productType?.category?.name ?? "No category"}</p>
                       </div>
                     </div>
                     {request.description ? (

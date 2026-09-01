@@ -125,7 +125,8 @@ const ProductTemplateMutation = extendType({
                 name: nonNull(stringArg()),
                 description: stringArg(),
                 images: arg({ type: ImagesList }),
-                product_type_id: nonNull(intArg()),
+                category_id: nonNull(intArg()),
+                product_type_id: intArg(),
                 brand_id: nonNull(intArg())
             },
             resolve: async (_parent: any, data: any, ctx: Context) => {
@@ -142,8 +143,9 @@ const ProductTemplateMutation = extendType({
                 id: nonNull(intArg()),
                 name: stringArg(),
                 description: stringArg(),
-                // product_type_id: intArg(),
-                // brand_id: intArg()
+                category_id: intArg(),
+                product_type_id: intArg(),
+                brand_id: intArg(),
             },
             resolve: async (_parent, data: any, ctx: Context) => {
                 return updateProductTemplate(ctx.prisma, data)

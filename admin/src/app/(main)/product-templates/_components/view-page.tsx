@@ -9,8 +9,10 @@ import Form from './form';
 export const instant = false;
 
 type References = {
-  productTypes: Array<{ id: string; name: string }>;
-  brands: Array<{ id: string; name: string }>;
+  niches: Array<{ id: string; name: string }>;
+  categories: Array<{ id: string; name: string; niche_id?: string | number | null }>;
+  productTypes: Array<{ id: string; name: string; category?: { id?: string | number; niche_id?: string | number | null } | null }>;
+  brands: Array<{ id: string; name: string; niche_id?: string | number | null }>;
 };
 
 type ViewPageProps = {

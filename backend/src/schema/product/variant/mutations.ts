@@ -8,7 +8,9 @@ const UpdateVariantInput = inputObjectType({
     name: "UpdateVariantInput",
     definition(t) {
         t.string("name")
+        t.string("description")
         t.string("sku") // optional manual SKU override
+        t.list.string("tags")
         t.list.nonNull.string("images") // URLs of new images
     },
 })
@@ -18,6 +20,9 @@ const UpdateVariantInput = inputObjectType({
 const ProductVariantInput = inputObjectType({
     name: "ProductVariantInput",
     definition(t) {
+        t.string("name")
+        t.string("description")
+        t.string("sku")
         t.list.string("tags")
     },
 })
@@ -31,19 +36,22 @@ export const VariantMutation = extendType({
                 productId: nonNull(intArg()),
                 data: nonNull(list(nonNull("ProductVariantInput"))),
             },
-            resolve: async (_parent, { productId, data }: { productId: number, data: Array<{ tags?: Array<string | null> | null }> }, ctx: Context) => {
+            resolve: async (_parent, { productId, data }: { productId: number, data: Array<{ name?: string | null; description?: string | null; sku?: string | null; tags?: Array<string | null> | null }> }, ctx: Context) => {
                 const product = await ctx.prisma.productTemplate.findUnique({
                     where: { id: productId },
                 });
                 if (!product) throw new GraphQLError("Product template not found");
 
                 const variants = data.map((variant) => {
+                    const providedName = variant.name?.trim() || null;
                     const tags = Array.from(new Set(
                         (variant.tags ?? [])
                             .filter((tag): tag is string => Boolean(tag?.trim()))
                             .map((tag) => tag.trim()),
                     ));
-                    if (!tags.length) throw new GraphQLError("Every variant needs at least one value");
+                    if (!providedName && !tags.length) {
+                        throw new GraphQLError("Every variant needs a name or at least one tag");
+                    }
 
                     const suffix = tags
                         .map((tag) => tag.toUpperCase().replace(/[^A-Z0-9]+/g, "-").replace(/^-|-$/g, ""))
@@ -54,9 +62,12 @@ export const VariantMutation = extendType({
                         .replace(/[^A-Z0-9]+/g, "-")
                         .replace(/^-|-$/g, "") || `PRODUCT-${productId}`;
 
+                    const name = providedName ?? tags.join(" / ");
+                    const generatedSuffix = suffix || name.toUpperCase().replace(/[^A-Z0-9]+/g, "-").replace(/^-|-$/g, "") || "VARIANT";
                     return {
-                        name: `${product.name} ${tags.join(" / ")}`,
-                        sku: `${productSlug}-${suffix}`.substring(0, 50),
+                        name,
+                        description: variant.description?.trim() || null,
+                        sku: variant.sku?.trim() || `${productSlug}-${generatedSuffix}`.substring(0, 50),
                         tags,
                     };
                 });
@@ -76,6 +87,7 @@ export const VariantMutation = extendType({
                     variants.map((variant) => ctx.prisma.variant.create({
                         data: {
                             name: variant.name,
+                            description: variant.description,
                             sku: variant.sku,
                             productId,
                             tags: {
@@ -92,37 +104,44 @@ export const VariantMutation = extendType({
                 id: nonNull(intArg()),
                 data: nonNull(arg({ type: "UpdateVariantInput" })),
             },
-            resolve: async (_parent, { id, data }, ctx: Context) => {
+            resolve: async (_parent, { id, data }: { id: number; data: { name?: string | null; description?: string | null; sku?: string | null; tags?: string[] | null; images?: string[] | null } }, ctx: Context) => {
                 // Step 1: Fetch variant
                 const variant = await ctx.prisma.variant.findUnique({
                     where: { id },
+                    include: { tags: true },
                 });
                 if (!variant) throw new Error("Variant not found");
 
-                // Step 2: Determine new SKU
-                let sku = data.sku ?? variant.sku;
+                const tags: string[] = data.tags === undefined
+                    ? variant.tags.map((tag) => tag.value)
+                    : Array.from(new Set((data.tags ?? []).map((tag: string) => tag.trim()).filter(Boolean)));
+                const name = data.name === undefined ? variant.name : data.name?.trim() || null;
+                if (!name && !tags.length) {
+                    throw new GraphQLError("Every variant needs a name or at least one tag");
+                }
+                const sku = data.sku === undefined ? variant.sku : data.sku?.trim() || null;
 
                 // Step 3: Update variant basic info
-                await ctx.prisma.variant.update({
-                    where: { id },
-                    data: {
-                        name: data.name ?? variant.name,
-                        sku,
-                    },
-                });
-
-
-                // Step 5: Attach new images if provided
-                if (data.images) {
-                    await ctx.prisma.productImage.deleteMany({
-                        where: { variantId: id },
+                await ctx.prisma.$transaction(async (tx) => {
+                    await tx.variant.update({
+                        where: { id },
+                        data: {
+                            name,
+                            description: data.description === undefined ? variant.description : data.description?.trim() || null,
+                            sku,
+                        },
                     });
-                    if (data.images.length > 0) {
-                        await ctx.prisma.productImage.createMany({
-                            data: data.images.map((url: string) => ({ url, variantId: id })),
-                        });
+                    if (data.tags !== undefined) {
+                        await tx.tag.deleteMany({ where: { variantId: id } });
+                        if (tags.length) await tx.tag.createMany({ data: tags.map((value) => ({ value, variantId: id })) });
                     }
-                }
+                    if (data.images) {
+                        await tx.productImage.deleteMany({ where: { variantId: id } });
+                        if (data.images.length) {
+                            await tx.productImage.createMany({ data: data.images.map((url: string) => ({ url, variantId: id })) });
+                        }
+                    }
+                });
 
                 // Step 6: Return updated variant
                 return ctx.prisma.variant.findUnique({
@@ -143,6 +162,10 @@ export const VariantMutation = extendType({
                 if (!variant) throw new GraphQLError("Variant not found");
                 if (variant._count.products > 0) {
                     throw new GraphQLError("This variant is used by partner products and cannot be deleted");
+                }
+                const variantCount = await ctx.prisma.variant.count({ where: { productId: variant.productId } });
+                if (variantCount <= 1) {
+                    throw new GraphQLError("A product template must keep at least one variant");
                 }
 
                 return ctx.prisma.$transaction(async (tx) => {

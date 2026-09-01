@@ -2,7 +2,7 @@ import { Suspense } from "react";
 
 import FormCardSkeleton from "@/components/form-card-skeleton";
 import { requestServerGraphQL } from "@/lib/server-request";
-import { GET_ALL_BRANDS, GET_ALL_PRODUCT_TYPES } from "@/api/queries";
+import { GET_ALL_BRANDS, GET_ALL_CATEGORIES, GET_ALL_NICHES, GET_ALL_PRODUCT_TYPES } from "@/api/queries";
 
 import ViewPage from "../_components/view-page";
 import { name_singular } from "../_constant";
@@ -21,7 +21,9 @@ interface PageProps {
 
 async function getReferences() {
   try {
-    const [productTypesRes, brandsRes] = await Promise.all([
+    const [nichesRes, categoriesRes, productTypesRes, brandsRes] = await Promise.all([
+      requestServerGraphQL<any>(GET_ALL_NICHES),
+      requestServerGraphQL<any>(GET_ALL_CATEGORIES),
       requestServerGraphQL<any>(GET_ALL_PRODUCT_TYPES, {
         page: 1,
         limit: 1000,
@@ -31,11 +33,15 @@ async function getReferences() {
     ]);
 
     return {
+      niches: nichesRes.getAllNiches,
+      categories: categoriesRes.getAllCategories,
       productTypes: productTypesRes.findManyProductTypes.productTypes,
       brands: brandsRes.getAllBrands,
     };
   } catch (_error) {
     return {
+      niches: [],
+      categories: [],
       productTypes: [],
       brands: [],
     };

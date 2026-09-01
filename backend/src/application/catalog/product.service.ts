@@ -208,20 +208,48 @@ export async function createProductTemplate(
     name: string
     description?: string | null
     images?: string[] | null
-    product_type_id: number
+    category_id: number
+    product_type_id?: number | null
     brand_id: number
   },
 ) {
   const images = input.images ?? []
 
+  const category = await prisma.category.findUnique({
+    where: { id: input.category_id },
+    select: { niche_id: true },
+  })
+  if (!category) throw createBadRequestError('Category not found')
+
+  if (input.product_type_id) {
+    const productType = await prisma.productType.findFirst({
+      where: { id: input.product_type_id, category_id: input.category_id },
+      select: { id: true },
+    })
+    if (!productType) throw createBadRequestError('Product type does not belong to the selected category')
+  }
+
+  const brand = await prisma.brand.findUnique({
+    where: { id: input.brand_id },
+    select: { niche_id: true },
+  })
+  if (!brand) throw createBadRequestError('Brand not found')
+  if (brand.niche_id && category.niche_id && brand.niche_id !== category.niche_id) {
+    throw createBadRequestError('Brand does not belong to the selected niche')
+  }
+
   const productTemplate = await prisma.productTemplate.create({
     data: {
       name: input.name,
-      product_type_id: input.product_type_id,
+      category_id: input.category_id,
+      product_type_id: input.product_type_id ?? null,
       brand_id: input.brand_id,
       description: input.description ?? '',
       images: {
         create: images.map((url) => ({ url })),
+      },
+      variants: {
+        create: [{ name: 'Default', description: '' }],
       },
     },
   })
@@ -241,13 +269,48 @@ export async function createProductTemplate(
 
 export async function updateProductTemplate(
   prisma: PrismaClient,
-  input: { id: number; name?: string | null; description?: string | null },
+  input: {
+    id: number
+    name?: string | null
+    description?: string | null
+    category_id?: number | null
+    product_type_id?: number | null
+    brand_id?: number | null
+  },
 ) {
+  const current = await prisma.productTemplate.findUnique({ where: { id: input.id } })
+  if (!current) throw createNotFoundError('Product template not found')
+
+  const categoryId = input.category_id ?? current.category_id
+  const category = await prisma.category.findUnique({ where: { id: categoryId }, select: { niche_id: true } })
+  if (!category) throw createBadRequestError('Category not found')
+
+  const productTypeId = input.product_type_id === undefined ? current.product_type_id : input.product_type_id
+  if (productTypeId) {
+    const productType = await prisma.productType.findFirst({
+      where: { id: productTypeId, category_id: categoryId },
+      select: { id: true },
+    })
+    if (!productType) throw createBadRequestError('Product type does not belong to the selected category')
+  }
+
+  const brandId = input.brand_id ?? current.brand_id
+  if (brandId) {
+    const brand = await prisma.brand.findUnique({ where: { id: brandId }, select: { niche_id: true } })
+    if (!brand) throw createBadRequestError('Brand not found')
+    if (brand.niche_id && category.niche_id && brand.niche_id !== category.niche_id) {
+      throw createBadRequestError('Brand does not belong to the selected niche')
+    }
+  }
+
   return prisma.productTemplate.update({
     where: { id: input.id },
     data: {
       name: input.name ?? undefined,
       description: input.description ?? undefined,
+      category_id: input.category_id ?? undefined,
+      product_type_id: input.product_type_id === null ? null : input.product_type_id ?? undefined,
+      brand_id: input.brand_id ?? undefined,
     },
   })
 }

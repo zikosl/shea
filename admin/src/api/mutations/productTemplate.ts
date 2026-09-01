@@ -5,13 +5,15 @@ const CREATE_PRODUCT_TEMPLATE = gql`
     $name: String!
     $description: String
     $images: ImagesList
-    $product_type_id: Int!
+    $category_id: Int!
+    $product_type_id: Int
     $brand_id: Int!
   ) {
     createProductTemplate(
       name: $name
       description: $description
       images: $images
+      category_id: $category_id
       product_type_id: $product_type_id
       brand_id: $brand_id
     ) {
@@ -19,18 +21,20 @@ const CREATE_PRODUCT_TEMPLATE = gql`
       name
       description
       product_type_id
+      category_id
       brand_id
     }
   }
 `;
 
 const UPDATE_PRODUCT_TEMPLATE = gql`
-  mutation updateProductTemplate($id: Int!, $name: String, $description: String) {
-    updateProductTemplate(id: $id, name: $name, description: $description) {
+  mutation updateProductTemplate($id: Int!, $name: String, $description: String, $category_id: Int, $product_type_id: Int, $brand_id: Int) {
+    updateProductTemplate(id: $id, name: $name, description: $description, category_id: $category_id, product_type_id: $product_type_id, brand_id: $brand_id) {
       id
       name
       description
       product_type_id
+      category_id
       brand_id
     }
   }

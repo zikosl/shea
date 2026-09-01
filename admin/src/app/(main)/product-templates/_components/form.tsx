@@ -43,16 +43,18 @@ const formSchema = z.object({
     message: "name must be at least 2 characters.",
   }),
   description: z.string().optional(),
-  product_type_id: z.string({
-    required_error: "Product type is required",
-  }),
+  niche_id: z.string().min(1, "Niche is required"),
+  category_id: z.string().min(1, "Category is required"),
+  product_type_id: z.string().optional(),
   brand_id: z.string({
     required_error: "Brand is required",
   }),
 });
 
 type References = {
-  productTypes: Array<{ id: string; name: string; category?: { niche_id?: string | number | null } | null }>;
+  niches: Array<{ id: string; name: string }>;
+  categories: Array<{ id: string; name: string; niche_id?: string | number | null }>;
+  productTypes: Array<{ id: string; name: string; category?: { id?: string | number; niche_id?: string | number | null } | null }>;
   brands: Array<{ id: string; name: string; niche_id?: string | number | null }>;
 };
 
@@ -75,6 +77,8 @@ export default function ItemForm({
     defaultValues: {
       name: initialData?.name ?? "",
       description: initialData?.description ?? "",
+      niche_id: initialData?.niche_id ?? initialData?.category?.niche_id?.toString() ?? "",
+      category_id: initialData?.category_id ?? "",
       product_type_id: initialData?.product_type_id ?? "",
       brand_id: initialData?.brand_id ?? "",
     },
@@ -82,13 +86,22 @@ export default function ItemForm({
   const watchedName = form.watch("name");
   const watchedDescription = form.watch("description");
   const watchedBrandId = form.watch("brand_id");
+  const watchedNicheId = form.watch("niche_id");
+  const watchedCategoryId = form.watch("category_id");
   const watchedProductTypeId = form.watch("product_type_id");
+  const filteredCategories = useMemo(
+    () => references.categories.filter((category) => String(category.niche_id) === String(watchedNicheId)),
+    [references.categories, watchedNicheId],
+  );
+  const filteredProductTypes = useMemo(
+    () => references.productTypes.filter((productType) => String(productType.category?.id) === String(watchedCategoryId)),
+    [references.productTypes, watchedCategoryId],
+  );
   const selectedProductType = references.productTypes.find((productType) => String(productType.id) === String(watchedProductTypeId));
-  const selectedNicheId = selectedProductType?.category?.niche_id ? String(selectedProductType.category.niche_id) : undefined;
   const filteredBrands = useMemo(() => {
-    if (!selectedNicheId) return references.brands;
-    return references.brands.filter((brand) => !brand.niche_id || String(brand.niche_id) === selectedNicheId);
-  }, [references.brands, selectedNicheId]);
+    if (!watchedNicheId) return [];
+    return references.brands.filter((brand) => !brand.niche_id || String(brand.niche_id) === String(watchedNicheId));
+  }, [references.brands, watchedNicheId]);
   const selectedBrand = references.brands.find((brand) => String(brand.id) === String(watchedBrandId));
 
   async function handleUpload(files: File[]) {
@@ -105,12 +118,25 @@ export default function ItemForm({
   );
 
   useEffect(() => {
-    if (!watchedBrandId || !selectedNicheId) return;
+    if (!watchedBrandId || !watchedNicheId) return;
     const stillValid = filteredBrands.some((brand) => String(brand.id) === String(watchedBrandId));
     if (!stillValid) {
       form.setValue("brand_id", "");
     }
-  }, [filteredBrands, form, selectedNicheId, watchedBrandId]);
+  }, [filteredBrands, form, watchedNicheId, watchedBrandId]);
+
+  useEffect(() => {
+    if (watchedCategoryId && !filteredCategories.some((category) => String(category.id) === String(watchedCategoryId))) {
+      form.setValue("category_id", "");
+      form.setValue("product_type_id", "");
+    }
+  }, [filteredCategories, form, watchedCategoryId]);
+
+  useEffect(() => {
+    if (watchedProductTypeId && !filteredProductTypes.some((productType) => String(productType.id) === String(watchedProductTypeId))) {
+      form.setValue("product_type_id", "");
+    }
+  }, [filteredProductTypes, form, watchedProductTypeId]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
@@ -119,6 +145,7 @@ export default function ItemForm({
       const payload = {
         name: values.name,
         description: values.description,
+        category_id: values.category_id,
         product_type_id: values.product_type_id,
         brand_id: values.brand_id,
         images: imageUrls,
@@ -174,11 +201,43 @@ export default function ItemForm({
 
               <FormField
                 control={form.control}
+                name="niche_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Niche</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl><SelectTrigger><SelectValue placeholder="Select a niche" /></SelectTrigger></FormControl>
+                      <SelectContent>{references.niches.map((niche) => <SelectItem key={niche.id} value={String(niche.id)}>{niche.name}</SelectItem>)}</SelectContent>
+                    </Select>
+                    <FormDescription>Choose the market first to narrow the catalog choices.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="category_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange} disabled={!watchedNicheId}>
+                      <FormControl><SelectTrigger><SelectValue placeholder={watchedNicheId ? "Select a category" : "Select a niche first"} /></SelectTrigger></FormControl>
+                      <SelectContent>{filteredCategories.map((category) => <SelectItem key={category.id} value={String(category.id)}>{category.name}</SelectItem>)}</SelectContent>
+                    </Select>
+                    <FormDescription>Category is required and remains stable even without a product type.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="brand_id"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Brand</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={!watchedNicheId}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a brand" />
@@ -205,15 +264,16 @@ export default function ItemForm({
                 name="product_type_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Product Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormLabel>Product Type <span className="font-normal text-muted-foreground">(optional)</span></FormLabel>
+                    <Select onValueChange={(value) => field.onChange(value === "none" ? "" : value)} value={field.value || "none"} disabled={!watchedCategoryId}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a product type" />
+                          <SelectValue placeholder="No product type" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {references.productTypes.map((productType) => (
+                        <SelectItem value="none">No product type</SelectItem>
+                        {filteredProductTypes.map((productType) => (
                           <SelectItem key={productType.id} value={productType.id.toString()}>
                             {productType.name}
                           </SelectItem>
@@ -221,7 +281,7 @@ export default function ItemForm({
                       </SelectContent>
                     </Select>
                     <FormDescription>
-                      This groups the template within the product catalog.
+                      Add a more specific classification when one applies.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
