@@ -180,6 +180,16 @@ const SyncEvent = objectType({
   },
 })
 
+const PosBootstrap = objectType({
+  name: 'PosBootstrap',
+  definition(t) {
+    t.nonNull.string('cursor')
+    t.nonNull.field('generatedAt', { type: 'DateTime' })
+    t.nonNull.field('offlineUntil', { type: 'DateTime' })
+    t.nonNull.string('payload')
+  },
+})
+
 const SalePaymentInput = inputObjectType({
   name: 'SalePaymentInput',
   definition(t) {
@@ -229,6 +239,7 @@ export default {
   StockMovement,
   CashSession,
   SyncEvent,
+  PosBootstrap,
   SalePaymentInput,
   PosSaleItemInput,
   CreateSaleInput,

@@ -40,6 +40,18 @@ enum ProductTemplateRequestStatus {
   MERGED
 }
 
+enum CatalogProposalEntityType {
+  CATEGORY
+  PRODUCT_TYPE
+}
+
+enum CatalogProposalStatus {
+  PENDING
+  APPROVED
+  MERGED
+  REJECTED
+}
+
 enum StockMovementType {
   SALE
   RETURN
@@ -215,6 +227,7 @@ model Partner {
   auditLogs      AuditLog[]
   partnerNiches  Partner_Niche[]
   templateRequests ProductTemplateRequest[]
+  catalogProposals CatalogProposal[]
 }
 
 model Driver {
@@ -252,6 +265,7 @@ model Niche {
   categories Category[]
   brands     Brand[]
   partners   Partner_Niche[]
+  catalogProposals CatalogProposal[]
 }
 
 model Category {
@@ -262,6 +276,8 @@ model Category {
   productTypes ProductType[]
   productTemplates ProductTemplate[]
   templateRequests ProductTemplateRequest[]
+  catalogProposalCategories CatalogProposal[] @relation("CatalogProposalCategory")
+  resolvedCatalogProposals CatalogProposal[] @relation("CatalogProposalResolvedCategory")
   niche        Niche?        @relation(fields: [niche_id], references: [id])
   niche_id     Int?
 }
@@ -274,6 +290,7 @@ model ProductType {
   category    Category          @relation(fields: [category_id], references: [id])
   products    ProductTemplate[]
   templateRequests ProductTemplateRequest[]
+  resolvedCatalogProposals CatalogProposal[] @relation("CatalogProposalResolvedProductType")
 
   @@index([category_id])
 }
@@ -297,6 +314,7 @@ model Product {
   discount          Float    @default(0)
   available         Boolean  @default(true)
   stock             Int      @default(0)
+  trackInventory    Boolean  @default(true)
   reorderThreshold  Int      @default(0)
   isVisibleInPos    Boolean  @default(true)
   onlineVisible     Boolean  @default(false)
@@ -342,6 +360,7 @@ model Device {
   sales        Sale[]
   cashSessions CashSession[]
   syncEvents   SyncEvent[]
+  catalogProposals CatalogProposal[]
 
   @@index([partnerId])
   @@index([platform])
@@ -535,8 +554,10 @@ model ProductTemplateRequest {
   name_ar            String                       @default("")
   description        String                       @default("")
   images             String[]                     @default([])
-  category_id        Int
+  category_id        Int?
   product_type_id    Int?
+  categoryProposalId String?
+  productTypeProposalId String?
   brand_id           Int?
   partnerId          Int
   status             ProductTemplateRequestStatus @default(PENDING)
@@ -549,16 +570,57 @@ model ProductTemplateRequest {
   updatedAt          DateTime                     @updatedAt
 
   partner          Partner          @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
-  category         Category         @relation(fields: [category_id], references: [id])
+  category         Category?        @relation(fields: [category_id], references: [id])
   productType      ProductType?     @relation(fields: [product_type_id], references: [id])
   brand            Brand?           @relation(fields: [brand_id], references: [id])
   approvedTemplate ProductTemplate? @relation("ApprovedTemplateRequests", fields: [approvedTemplateId], references: [id])
   variants         ProductTemplateRequestVariant[]
+  categoryProposal CatalogProposal? @relation("RequestCategoryProposal", fields: [categoryProposalId], references: [id], onDelete: SetNull)
+  productTypeProposal CatalogProposal? @relation("RequestProductTypeProposal", fields: [productTypeProposalId], references: [id], onDelete: SetNull)
 
   @@index([partnerId, status])
   @@index([category_id])
   @@index([product_type_id])
   @@index([brand_id])
+}
+
+model CatalogProposal {
+  id                    String                    @id @default(uuid())
+  partnerId             Int
+  deviceId              String?
+  localId               String
+  entityType            CatalogProposalEntityType
+  status                CatalogProposalStatus    @default(PENDING)
+  name                  String
+  name_ar               String                   @default("")
+  description           String                   @default("")
+  image                 String?
+  nicheId               Int
+  categoryId            Int?
+  parentProposalId      String?
+  resolvedCategoryId    Int?
+  resolvedProductTypeId Int?
+  rejectionReason       String?
+  adminNote             String?
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+  reviewedAt            DateTime?
+
+  partner Partner @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
+  device  Device? @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  niche Niche @relation(fields: [nicheId], references: [id])
+  category Category? @relation("CatalogProposalCategory", fields: [categoryId], references: [id])
+  parentProposal CatalogProposal? @relation("CatalogProposalParent", fields: [parentProposalId], references: [id], onDelete: SetNull)
+  childProposals CatalogProposal[] @relation("CatalogProposalParent")
+  resolvedCategory Category? @relation("CatalogProposalResolvedCategory", fields: [resolvedCategoryId], references: [id])
+  resolvedProductType ProductType? @relation("CatalogProposalResolvedProductType", fields: [resolvedProductTypeId], references: [id])
+  categoryRequests ProductTemplateRequest[] @relation("RequestCategoryProposal")
+  productTypeRequests ProductTemplateRequest[] @relation("RequestProductTypeProposal")
+
+  @@unique([partnerId, localId])
+  @@index([partnerId, status, createdAt])
+  @@index([entityType, status, createdAt])
+  @@index([parentProposalId])
 }
 
 model ProductTemplateRequestVariant {

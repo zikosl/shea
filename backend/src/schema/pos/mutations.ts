@@ -29,6 +29,14 @@ const Mutation = extendType({
         const partnerId = getUserId(ctx)
         await assertPartner(ctx, partnerId)
 
+        const existingDevice = await ctx.prisma.device.findUnique({ where: { deviceKey: args.deviceKey } })
+        if (existingDevice && existingDevice.partnerId !== partnerId) {
+          throw new GraphQLError('DEVICE_ALREADY_REGISTERED_TO_ANOTHER_PARTNER')
+        }
+        if (existingDevice?.revokedAt) {
+          throw new GraphQLError('POS_DEVICE_REVOKED')
+        }
+
         return ctx.prisma.device.upsert({
           where: { deviceKey: args.deviceKey },
           create: {
@@ -40,12 +48,10 @@ const Mutation = extendType({
             lastSyncAt: new Date(),
           },
           update: {
-            partnerId,
             platform: args.platform,
             name: args.name ?? undefined,
             appVersion: args.appVersion ?? undefined,
             lastSyncAt: new Date(),
-            revokedAt: null,
           },
         })
       },
@@ -79,7 +85,7 @@ const Mutation = extendType({
             if (!product) throw new GraphQLError('PRODUCT_NOT_FOUND')
             if (!product.available) throw new GraphQLError('PRODUCT_UNAVAILABLE')
             if (!Number.isInteger(item.quantity) || item.quantity <= 0) throw new GraphQLError('INVALID_QUANTITY')
-            if (product.stock < item.quantity) throw new GraphQLError('INSUFFICIENT_STOCK')
+            if (product.trackInventory && product.stock < item.quantity) throw new GraphQLError('INSUFFICIENT_STOCK')
 
             const unitPrice = item.unitPrice ?? product.price
             return sum + unitPrice * item.quantity - (item.discount ?? 0) + (item.tax ?? 0)
@@ -138,26 +144,13 @@ const Mutation = extendType({
             const product = products.find((entry) => entry.id === item.productId)
             if (!product) throw new GraphQLError('PRODUCT_NOT_FOUND')
 
-            const stockAfter = product.stock - item.quantity
-            await tx.product.update({
-              where: { id: product.id },
-              data: { stock: { decrement: item.quantity } },
-            })
-
-            await tx.stockMovement.create({
-              data: {
-                productId: product.id,
-                partnerId,
-                userId: partnerId,
-                saleId: sale.id,
-                type: 'SALE',
-                quantityDelta: -item.quantity,
-                stockBefore: product.stock,
-                stockAfter,
-                reason: `POS sale ${sale.saleNumber}`,
-                reference: sale.saleNumber,
-              },
-            })
+            if (product.trackInventory) {
+              const stockAfter = product.stock - item.quantity
+              await tx.product.update({ where: { id: product.id }, data: { stock: { decrement: item.quantity } } })
+              await tx.stockMovement.create({
+                data: { productId: product.id, partnerId, userId: partnerId, saleId: sale.id, type: 'SALE', quantityDelta: -item.quantity, stockBefore: product.stock, stockAfter, reason: `POS sale ${sale.saleNumber}`, reference: sale.saleNumber },
+              })
+            }
           }
 
           if ((data.payment?.method ?? 'CASH') === 'CASH') {

@@ -1,0 +1,48 @@
+name: Shea POS Windows
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "shea-pos-v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: shea-pos
+    env:
+      CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: shea-pos/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run test:integration
+      - run: npm run dist:win
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shea-pos-windows
+          path: shea-pos/release/*.exe
+          if-no-files-found: error
+*** Add File: /Users/zakaria/Desktop/cosmetica/shea/shea-pos/RELEASE.md
+# Release checklist
+
+1. Deploy the backend migration with `yarn prisma migrate deploy` from `backend`.
+2. Deploy the backend and admin together. Confirm `/health`, partner sign-in, `/catalog-requests`, and one POS bootstrap request.
+3. Add GitHub repository secrets `WINDOWS_CSC_LINK` and `WINDOWS_CSC_KEY_PASSWORD` for the Windows code-signing certificate.
+4. Run the `Shea POS Windows` workflow manually for a candidate build.
+5. Activate a test partner register, complete a tracked and unlimited-stock sale, disconnect networking, print a receipt, reconnect, and verify the sale and stock movement on the server.
+6. Revoke the test device server-side and confirm it cannot synchronize or renew its offline lease.
+7. Tag the approved commit as `shea-pos-v0.1.0`; the workflow produces the signed NSIS installer artifact.
+
+Do not distribute an unsigned installer to production registers. Windows reputation and update integrity depend on a stable code-signing identity.

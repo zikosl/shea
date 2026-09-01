@@ -12,6 +12,7 @@ const Product = objectType({
         t.float('discount')
         t.boolean('available')
         t.int('stock')
+        t.boolean('trackInventory')
         t.int('reorderThreshold')
         t.boolean('isVisibleInPos')
         t.boolean('onlineVisible')
@@ -148,6 +149,7 @@ const ProductView = objectType({
         t.float('costPrice')
         t.float('discount')
         t.int('stock')
+        t.boolean('trackInventory')
         t.int('reorderThreshold')
         t.boolean('available')
         t.boolean('isVisibleInPos')
@@ -282,6 +284,7 @@ const ProductTemplatePartnerPreview = objectType({
         t.nonNull.float('discount');
         t.nonNull.boolean('available');
         t.nonNull.int('stock');
+        t.nonNull.boolean('trackInventory');
         t.nonNull.int('reorderThreshold');
         t.nonNull.boolean('isVisibleInPos');
         t.nonNull.boolean('onlineVisible');

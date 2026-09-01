@@ -30,6 +30,7 @@ const ProductMutation = extendType({
                 discount: floatArg(),
                 available: booleanArg(),
                 stock: intArg(),
+                trackInventory: booleanArg(),
                 reorderThreshold: intArg(),
                 isVisibleInPos: booleanArg(),
                 onlineVisible: booleanArg(),
@@ -68,6 +69,7 @@ const ProductMutation = extendType({
                 discount: floatArg(),
                 available: booleanArg(),
                 stock: intArg(),
+                trackInventory: booleanArg(),
                 reorderThreshold: intArg(),
                 isVisibleInPos: booleanArg(),
                 onlineVisible: booleanArg(),
@@ -184,6 +186,7 @@ const InputProductVariant = inputObjectType({
         t.nonNull.int("variantId")
         t.nonNull.float("price")
         t.int("stock")
+        t.boolean("trackInventory")
         t.boolean("available")
         t.float("discount")
         t.int("reorderThreshold")

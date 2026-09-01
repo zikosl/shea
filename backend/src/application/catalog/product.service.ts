@@ -12,6 +12,7 @@ export async function createProduct(
     discount?: number | null
     available?: boolean | null
     stock?: number | null
+    trackInventory?: boolean | null
     reorderThreshold?: number | null
     isVisibleInPos?: boolean | null
     onlineVisible?: boolean | null
@@ -33,6 +34,7 @@ export async function createProduct(
       discount: input.discount ?? undefined,
       available: input.available ?? undefined,
       stock: input.stock ?? undefined,
+      trackInventory: input.trackInventory ?? undefined,
       reorderThreshold: input.reorderThreshold ?? undefined,
       isVisibleInPos: input.isVisibleInPos ?? undefined,
       onlineVisible: input.onlineVisible ?? undefined,
@@ -46,7 +48,7 @@ export async function createProduct(
     },
   })
 
-  if ((input.stock ?? 0) !== 0) {
+  if ((input.trackInventory ?? true) && (input.stock ?? 0) !== 0) {
     await prisma.stockMovement.create({
       data: {
         productId: product.id,
@@ -82,6 +84,7 @@ export async function createManyProducts(
     price: number
     variantId: number
     stock?: number | null
+    trackInventory?: boolean | null
     available?: boolean | null
     discount?: number | null
     reorderThreshold?: number | null
@@ -100,6 +103,7 @@ export async function createManyProducts(
       variantId: product.variantId,
       partnerId: userId,
       stock: product.stock ?? 0,
+      trackInventory: product.trackInventory ?? true,
       available: product.available ?? true,
       discount: product.discount ?? 0,
       reorderThreshold: product.reorderThreshold ?? 0,
@@ -134,6 +138,7 @@ export async function updateProduct(
     discount?: number | null
     available?: boolean | null
     stock?: number | null
+    trackInventory?: boolean | null
     reorderThreshold?: number | null
     isVisibleInPos?: boolean | null
     onlineVisible?: boolean | null
@@ -148,7 +153,7 @@ export async function updateProduct(
 ) {
   const product = await prisma.product.findUnique({
     where: { id: input.id },
-    select: { partnerId: true, stock: true },
+    select: { partnerId: true, stock: true, trackInventory: true },
   })
 
   if (!product) {
@@ -168,6 +173,7 @@ export async function updateProduct(
         discount: input.discount ?? undefined,
         available: input.available ?? undefined,
         stock: input.stock ?? undefined,
+        trackInventory: input.trackInventory ?? undefined,
         reorderThreshold: input.reorderThreshold ?? undefined,
         isVisibleInPos: input.isVisibleInPos ?? undefined,
         onlineVisible: input.onlineVisible ?? undefined,
@@ -181,7 +187,8 @@ export async function updateProduct(
       },
     })
 
-    if (input.stock !== undefined && input.stock !== null && input.stock !== product.stock) {
+    const effectiveTrackInventory = input.trackInventory ?? product.trackInventory
+    if (effectiveTrackInventory && input.stock !== undefined && input.stock !== null && input.stock !== product.stock) {
       await tx.stockMovement.create({
         data: {
           productId: input.id,

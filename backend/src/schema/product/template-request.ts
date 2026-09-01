@@ -46,6 +46,8 @@ export const ProductTemplateRequest = objectType({
     t.list.string('images')
     t.int('product_type_id')
     t.int('category_id')
+    t.string('categoryProposalId')
+    t.string('productTypeProposalId')
     t.int('brand_id')
     t.int('partnerId')
     t.field('status', { type: 'ProductTemplateRequestStatus' })
@@ -68,7 +70,9 @@ export const ProductTemplateRequest = objectType({
     })
     t.field('category', {
       type: 'Category',
-      resolve: (parent, _args, ctx) => ctx.prisma.category.findUnique({ where: { id: parent.category_id } }),
+      resolve: (parent, _args, ctx) => parent.category_id
+        ? ctx.prisma.category.findUnique({ where: { id: parent.category_id } })
+        : null,
     })
     t.field('brand', {
       type: 'Brand',
@@ -99,31 +103,55 @@ export const ProductTemplateRequestMutation = extendType({
         name_ar: stringArg(),
         description: stringArg(),
         images: arg({ type: 'ImagesList' }),
-        category_id: nonNull(intArg()),
+        category_id: intArg(),
+        categoryProposalId: stringArg(),
         product_type_id: intArg(),
+        productTypeProposalId: stringArg(),
         brand_id: intArg(),
         variants: list(arg({ type: 'ProductTemplateRequestVariantInput' })),
       },
       resolve: async (_parent, data, ctx: Context) => {
         const partnerId = getUserId(ctx)
-        const category = await ctx.prisma.category.findUnique({
-          where: { id: data.category_id },
-          select: { niche_id: true },
-        })
-        if (!category) throw new Error('CATEGORY_NOT_FOUND')
+        if (!data.category_id && !data.categoryProposalId) throw new Error('CATEGORY_OR_PROPOSAL_REQUIRED')
+        if (data.category_id && data.categoryProposalId) throw new Error('CHOOSE_CATEGORY_OR_PROPOSAL')
+        if (data.product_type_id && data.productTypeProposalId) throw new Error('CHOOSE_PRODUCT_TYPE_OR_PROPOSAL')
+        const category = data.category_id ? await ctx.prisma.category.findUnique({
+          where: { id: data.category_id }, select: { niche_id: true },
+        }) : null
+        if (data.category_id && !category) throw new Error('CATEGORY_NOT_FOUND')
+
+        const categoryProposal = data.categoryProposalId ? await ctx.prisma.catalogProposal.findFirst({
+          where: { id: data.categoryProposalId, partnerId, entityType: 'CATEGORY', status: { in: ['PENDING', 'APPROVED', 'MERGED'] } },
+        }) : null
+        if (data.categoryProposalId && !categoryProposal) throw new Error('CATEGORY_PROPOSAL_NOT_FOUND')
+
+        const resolvedCategoryId = category ? data.category_id : categoryProposal?.resolvedCategoryId ?? null
+        const nicheId = category?.niche_id ?? categoryProposal?.nicheId
 
         if (data.product_type_id) {
           const productType = await ctx.prisma.productType.findFirst({
-            where: { id: data.product_type_id, category_id: data.category_id },
+            where: { id: data.product_type_id, category_id: resolvedCategoryId ?? -1 },
             select: { id: true },
           })
           if (!productType) throw new Error('PRODUCT_TYPE_DOES_NOT_BELONG_TO_CATEGORY')
         }
 
+        const productTypeProposal = data.productTypeProposalId ? await ctx.prisma.catalogProposal.findFirst({
+          where: { id: data.productTypeProposalId, partnerId, entityType: 'PRODUCT_TYPE', status: { in: ['PENDING', 'APPROVED', 'MERGED'] } },
+        }) : null
+        if (data.productTypeProposalId && !productTypeProposal) throw new Error('PRODUCT_TYPE_PROPOSAL_NOT_FOUND')
+        if (productTypeProposal && productTypeProposal.nicheId !== nicheId) throw new Error('PRODUCT_TYPE_PROPOSAL_NOT_IN_NICHE')
+        if (productTypeProposal && resolvedCategoryId && productTypeProposal.categoryId !== resolvedCategoryId) {
+          throw new Error('PRODUCT_TYPE_PROPOSAL_DOES_NOT_BELONG_TO_CATEGORY')
+        }
+        if (productTypeProposal && categoryProposal && productTypeProposal.parentProposalId !== categoryProposal.id && productTypeProposal.categoryId !== categoryProposal.resolvedCategoryId) {
+          throw new Error('PRODUCT_TYPE_PROPOSAL_DOES_NOT_BELONG_TO_CATEGORY_PROPOSAL')
+        }
+
         if (data.brand_id) {
           const brand = await ctx.prisma.brand.findUnique({ where: { id: data.brand_id }, select: { niche_id: true } })
           if (!brand) throw new Error('BRAND_NOT_FOUND')
-          if (brand.niche_id && category.niche_id && brand.niche_id !== category.niche_id) {
+          if (brand.niche_id && nicheId && brand.niche_id !== nicheId) {
             throw new Error('BRAND_DOES_NOT_BELONG_TO_NICHE')
           }
         }
@@ -149,8 +177,10 @@ export const ProductTemplateRequestMutation = extendType({
             name_ar: data.name_ar?.trim() ?? '',
             description: data.description?.trim() ?? '',
             images: data.images?.images ?? [],
-            category_id: data.category_id,
-            product_type_id: data.product_type_id ?? null,
+            category_id: resolvedCategoryId,
+            categoryProposalId: data.categoryProposalId ?? null,
+            product_type_id: data.product_type_id ?? productTypeProposal?.resolvedProductTypeId ?? null,
+            productTypeProposalId: data.productTypeProposalId ?? null,
             brand_id: data.brand_id ?? null,
             partnerId,
             variants: {
@@ -174,6 +204,8 @@ export const ProductTemplateRequestMutation = extendType({
         })
         if (!request) throw new Error('Product request not found')
         if (request.status !== 'PENDING') throw new Error('Product request already reviewed')
+        if (!request.category_id) throw new Error('CATEGORY_PROPOSAL_MUST_BE_RESOLVED_FIRST')
+        if (request.productTypeProposalId && !request.product_type_id) throw new Error('PRODUCT_TYPE_PROPOSAL_MUST_BE_RESOLVED_FIRST')
 
         const template = await ctx.prisma.productTemplate.create({
           data: {

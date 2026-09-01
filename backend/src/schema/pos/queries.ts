@@ -13,6 +13,86 @@ async function assertPartner(ctx: Context, userId: number) {
 const Query = extendType({
   type: 'Query',
   definition(t) {
+    t.nonNull.field('posBootstrap', {
+      type: 'PosBootstrap',
+      args: { deviceKey: nonNull(stringArg()) },
+      resolve: async (_parent, { deviceKey }, ctx: Context) => {
+        const partnerId = getUserId(ctx)
+        const partner = await ctx.prisma.partner.findUnique({
+          where: { userId: partnerId },
+          include: { partnerNiches: true },
+        })
+        if (!partner) throw new GraphQLError('PARTNER_REQUIRED')
+
+        const device = await ctx.prisma.device.findFirst({ where: { deviceKey, partnerId } })
+        if (!device) throw new GraphQLError('POS_DEVICE_NOT_REGISTERED')
+        if (device.revokedAt) throw new GraphQLError('POS_DEVICE_REVOKED')
+
+        const nicheIds = partner.partnerNiches
+          .map((entry) => entry.niche_id)
+          .filter((id): id is number => typeof id === 'number')
+        const catalogScope = nicheIds.length ? { niche_id: { in: nicheIds } } : { id: { equals: -1 } }
+
+        const [niches, categories, productTypes, brands, templates, products, proposals, orders, openCashSession] = await Promise.all([
+          ctx.prisma.niche.findMany({ where: { id: { in: nicheIds } }, orderBy: { name: 'asc' } }),
+          ctx.prisma.category.findMany({ where: catalogScope, orderBy: { name: 'asc' } }),
+          ctx.prisma.productType.findMany({ where: { category: catalogScope }, orderBy: { name: 'asc' } }),
+          ctx.prisma.brand.findMany({ where: { niche_id: { in: nicheIds } }, orderBy: { name: 'asc' } }),
+          ctx.prisma.productTemplate.findMany({
+            where: { category: catalogScope },
+            include: {
+              category: true,
+              productType: true,
+              Brand: true,
+              images: true,
+              variants: { include: { tags: true, images: true } },
+            },
+            orderBy: { name: 'asc' },
+          }),
+          ctx.prisma.product.findMany({
+            where: { partnerId },
+            include: { variant: { include: { tags: true, images: true, product: { include: { images: true } } } } },
+            orderBy: { id: 'asc' },
+          }),
+          ctx.prisma.catalogProposal.findMany({ where: { partnerId }, orderBy: { createdAt: 'desc' } }),
+          ctx.prisma.order.findMany({
+            where: { partnerId },
+            include: { items: true, delivery: true, address: true },
+            orderBy: { createdAt: 'desc' },
+            take: 100,
+          }),
+          ctx.prisma.cashSession.findFirst({ where: { partnerId, deviceId: device.id, status: 'OPEN' }, orderBy: { openedAt: 'desc' } }),
+        ])
+
+        const generatedAt = new Date()
+        const offlineUntil = new Date(generatedAt.getTime() + 7 * 24 * 60 * 60 * 1000)
+        await ctx.prisma.device.update({ where: { id: device.id }, data: { lastSyncAt: generatedAt } })
+
+        return {
+          cursor: generatedAt.toISOString(),
+          generatedAt,
+          offlineUntil,
+          payload: JSON.stringify({
+            schemaVersion: 1,
+            partner: {
+              userId: partner.userId,
+              companyName: partner.companyName,
+              avatar: partner.avatar,
+              feeType: partner.feeType,
+              feeRate: partner.feeRate,
+              fixedFee: partner.fixedFee,
+            },
+            device: { id: device.id, deviceKey: device.deviceKey, name: device.name },
+            catalog: { niches, categories, productTypes, brands, templates },
+            products,
+            proposals,
+            orders,
+            openCashSession,
+          }),
+        }
+      },
+    })
+
     t.nonNull.list.nonNull.field('listDevices', {
       type: 'Device',
       resolve: async (_parent, _args, ctx: Context) => {

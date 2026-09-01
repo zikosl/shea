@@ -1,4 +1,4 @@
-import { Users, LayoutPanelTop, UserCog, GalleryVerticalEnd, PackageSearch, BadgeHelp, Truck, Boxes, Sparkles, ClipboardCheck, SlidersHorizontal } from "lucide-react";
+import { Users, LayoutPanelTop, UserCog, GalleryVerticalEnd, PackageSearch, PackagePlus, BadgeHelp, Truck, Boxes, Sparkles, ClipboardCheck, SlidersHorizontal } from "lucide-react";
 
 
 type Submenu = {
@@ -91,6 +91,13 @@ export function getMenuList(pathname: string): Group[] {
           label: "Product Requests",
           active: pathname.includes("/product-requests"),
           icon: ClipboardCheck,
+          submenus: []
+        },
+        {
+          href: "/catalog-requests",
+          label: "Catalog Requests",
+          active: pathname.includes("/catalog-requests"),
+          icon: PackagePlus,
           submenus: []
         },
         {
