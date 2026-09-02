@@ -64,7 +64,7 @@ const Mutation = extendType({
       },
       resolve: async (_parent, { data }: any, ctx: Context) => {
         const partnerId = getUserId(ctx)
-        await assertPartner(ctx, partnerId)
+        const partner = await assertPartner(ctx, partnerId)
 
         if (!data.items?.length) throw new GraphQLError('SALE_ITEMS_REQUIRED')
 
@@ -94,6 +94,15 @@ const Mutation = extendType({
           const discountTotal = data.discountTotal ?? 0
           const taxTotal = data.taxTotal ?? 0
           const total = Math.max(0, subtotal - discountTotal + taxTotal)
+          const costTotal = data.items.reduce((sum: number, item: any) => {
+            const product = products.find((entry) => entry.id === item.productId)
+            return sum + (product?.costPrice ?? 0) * item.quantity
+          }, 0)
+          const grossProfit = total - taxTotal - costTotal
+          const percentageFee = partner.feeType === 'PERCENTAGE' || partner.feeType === 'MIXED' ? total * (partner.feeRate / 100) : 0
+          const fixedFee = partner.feeType === 'FIXED' || partner.feeType === 'MIXED' ? partner.fixedFee : 0
+          const partnerFee = percentageFee + fixedFee
+          const netProfit = grossProfit - partnerFee
           const paymentAmount = data.payment?.amount ?? total
 
           const sale = await tx.sale.create({
@@ -108,6 +117,10 @@ const Mutation = extendType({
               discountTotal,
               taxTotal,
               total,
+              costTotal,
+              grossProfit,
+              partnerFee,
+              netProfit,
               completedAt: new Date(),
               items: {
                 create: data.items.map((item: any) => {
@@ -125,6 +138,8 @@ const Mutation = extendType({
                     discount,
                     tax,
                     total: unitPrice * item.quantity - discount + tax,
+                    costPrice: product.costPrice ?? 0,
+                    profit: unitPrice * item.quantity - discount - (product.costPrice ?? 0) * item.quantity,
                     productName: product.customName ?? product.variant.product.name,
                     variantName: product.variant.name,
                   }

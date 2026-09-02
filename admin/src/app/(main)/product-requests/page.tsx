@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { resolvePublicAssetUrl } from "@/constant";
 import { getCatalogFilterOptions } from "@/lib/catalog-filter-options";
 
-import { approveRequest, getProductTemplateRequests, rejectRequest } from "./actions";
+import { approveRequest, getProductTemplateRequests, mergeRequest, rejectRequest } from "./actions";
 
 export const metadata = {
   title: "Dashboard: Product Requests",
@@ -164,6 +164,11 @@ export default async function ProductRequestsPage({ searchParams }: { searchPara
                         <XCircle className="h-4 w-4" />
                         Reject
                       </Button>
+                    </form>
+                    <form action={mergeRequest} className="flex gap-2">
+                      <input type="hidden" name="id" value={request.id} />
+                      <input name="targetTemplateId" type="number" min="1" required placeholder="Template ID" className="h-10 min-w-0 flex-1 rounded-md border bg-background px-3 text-sm" />
+                      <Button variant="outline" type="submit">Merge</Button>
                     </form>
                   </div>
                 </CardContent>

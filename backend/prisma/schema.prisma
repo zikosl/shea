@@ -380,6 +380,10 @@ model Sale {
   discountTotal Float      @default(0)
   taxTotal      Float      @default(0)
   total         Float      @default(0)
+  costTotal     Float      @default(0)
+  grossProfit   Float      @default(0)
+  partnerFee    Float      @default(0)
+  netProfit     Float      @default(0)
   completedAt   DateTime?
   voidReason    String?
   createdAt     DateTime   @default(now())
@@ -408,6 +412,8 @@ model SaleItem {
   discount    Float    @default(0)
   tax         Float    @default(0)
   total       Float
+  costPrice   Float    @default(0)
+  profit      Float    @default(0)
   productName String
   variantName String?
   createdAt   DateTime @default(now())
@@ -566,6 +572,8 @@ model ProductTemplateRequest {
   approvedTemplateId Int?
   mergedIntoTemplateId Int?
   hasOrder           Boolean                      @default(false)
+  posLocalId         String?
+  posDeviceId        String?
   createdAt          DateTime                     @default(now())
   updatedAt          DateTime                     @updatedAt
 
@@ -582,6 +590,7 @@ model ProductTemplateRequest {
   @@index([category_id])
   @@index([product_type_id])
   @@index([brand_id])
+  @@unique([partnerId, posLocalId])
 }
 
 model CatalogProposal {
@@ -632,7 +641,12 @@ model ProductTemplateRequestVariant {
   image     String?
   tags      String[]               @default([])
   price     Float?
+  costPrice Float?
   stock     Int?
+  reorderThreshold Int?
+  trackInventory Boolean @default(true)
+  localId   String?
+  resolvedVariantId Int?
 
   request ProductTemplateRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
 }

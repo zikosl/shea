@@ -33,7 +33,7 @@ const Query = extendType({
           .filter((id): id is number => typeof id === 'number')
         const catalogScope = nicheIds.length ? { niche_id: { in: nicheIds } } : { id: { equals: -1 } }
 
-        const [niches, categories, productTypes, brands, templates, products, proposals, orders, openCashSession] = await Promise.all([
+        const [niches, categories, productTypes, brands, templates, products, proposals, productRequests, orders, openCashSession] = await Promise.all([
           ctx.prisma.niche.findMany({ where: { id: { in: nicheIds } }, orderBy: { name: 'asc' } }),
           ctx.prisma.category.findMany({ where: catalogScope, orderBy: { name: 'asc' } }),
           ctx.prisma.productType.findMany({ where: { category: catalogScope }, orderBy: { name: 'asc' } }),
@@ -55,6 +55,11 @@ const Query = extendType({
             orderBy: { id: 'asc' },
           }),
           ctx.prisma.catalogProposal.findMany({ where: { partnerId }, orderBy: { createdAt: 'desc' } }),
+          ctx.prisma.productTemplateRequest.findMany({
+            where: { partnerId, posLocalId: { not: null } },
+            include: { variants: true },
+            orderBy: { createdAt: 'desc' },
+          }),
           ctx.prisma.order.findMany({
             where: { partnerId },
             include: { items: true, delivery: true, address: true },
@@ -86,6 +91,7 @@ const Query = extendType({
             catalog: { niches, categories, productTypes, brands, templates },
             products,
             proposals,
+            productRequests,
             orders,
             openCashSession,
           }),

@@ -17,7 +17,11 @@ export const ProductTemplateRequestVariantInput = inputObjectType({
     t.string('image')
     t.list.string('tags')
     t.float('price')
+    t.float('costPrice')
     t.int('stock')
+    t.int('reorderThreshold')
+    t.boolean('trackInventory')
+    t.string('localId')
   },
 })
 
@@ -32,7 +36,12 @@ export const ProductTemplateRequestVariant = objectType({
     t.string('image')
     t.list.string('tags')
     t.float('price')
+    t.float('costPrice')
     t.int('stock')
+    t.int('reorderThreshold')
+    t.boolean('trackInventory')
+    t.string('localId')
+    t.int('resolvedVariantId')
   },
 })
 
@@ -56,6 +65,8 @@ export const ProductTemplateRequest = objectType({
     t.int('approvedTemplateId')
     t.int('mergedIntoTemplateId')
     t.boolean('hasOrder')
+    t.string('posLocalId')
+    t.string('posDeviceId')
     t.field('createdAt', { type: 'DateTime' })
     t.field('updatedAt', { type: 'DateTime' })
     t.field('partner', {
@@ -109,9 +120,17 @@ export const ProductTemplateRequestMutation = extendType({
         productTypeProposalId: stringArg(),
         brand_id: intArg(),
         variants: list(arg({ type: 'ProductTemplateRequestVariantInput' })),
+        posLocalId: stringArg(),
+        posDeviceId: stringArg(),
       },
       resolve: async (_parent, data, ctx: Context) => {
         const partnerId = getUserId(ctx)
+        if (data.posLocalId) {
+          const existing = await ctx.prisma.productTemplateRequest.findUnique({
+            where: { partnerId_posLocalId: { partnerId, posLocalId: data.posLocalId } },
+          })
+          if (existing) return existing
+        }
         if (!data.category_id && !data.categoryProposalId) throw new Error('CATEGORY_OR_PROPOSAL_REQUIRED')
         if (data.category_id && data.categoryProposalId) throw new Error('CHOOSE_CATEGORY_OR_PROPOSAL')
         if (data.product_type_id && data.productTypeProposalId) throw new Error('CHOOSE_PRODUCT_TYPE_OR_PROPOSAL')
@@ -168,7 +187,11 @@ export const ProductTemplateRequestMutation = extendType({
             image: variant?.image?.trim() || null,
             tags,
             price: variant?.price ?? null,
+            costPrice: variant?.costPrice ?? null,
             stock: variant?.stock ?? null,
+            reorderThreshold: variant?.reorderThreshold ?? null,
+            trackInventory: variant?.trackInventory !== false,
+            localId: variant?.localId?.trim() || null,
           }
         })
         return ctx.prisma.productTemplateRequest.create({
@@ -183,6 +206,8 @@ export const ProductTemplateRequestMutation = extendType({
             productTypeProposalId: data.productTypeProposalId ?? null,
             brand_id: data.brand_id ?? null,
             partnerId,
+            posLocalId: data.posLocalId ?? null,
+            posDeviceId: data.posDeviceId ?? null,
             variants: {
               create: variants,
             },
@@ -230,6 +255,35 @@ export const ProductTemplateRequestMutation = extendType({
           },
         })
 
+        const createdVariants = await ctx.prisma.variant.findMany({
+          where: { productId: template.id },
+          orderBy: { id: 'asc' },
+        })
+        for (const [index, requestVariant] of request.variants.entries()) {
+          const variant = createdVariants[index]
+          if (!variant) continue
+          await ctx.prisma.productTemplateRequestVariant.update({
+            where: { id: requestVariant.id },
+            data: { resolvedVariantId: variant.id },
+          })
+          await ctx.prisma.product.upsert({
+            where: { partnerId_variantId: { partnerId: request.partnerId, variantId: variant.id } },
+            create: {
+              partnerId: request.partnerId,
+              variantId: variant.id,
+              price: requestVariant.price ?? 0,
+              costPrice: requestVariant.costPrice ?? 0,
+              stock: requestVariant.stock ?? 0,
+              reorderThreshold: requestVariant.reorderThreshold ?? 0,
+              trackInventory: requestVariant.trackInventory,
+              isVisibleInPos: true,
+              available: true,
+              isActive: true,
+            },
+            update: {},
+          })
+        }
+
         return ctx.prisma.productTemplateRequest.update({
           where: { id },
           data: {
@@ -270,7 +324,7 @@ export const ProductTemplateRequestMutation = extendType({
       resolve: async (_parent, { id, targetTemplateId, adminNote }, ctx: Context) => {
         const request = await ctx.prisma.productTemplateRequest.findUnique({
           where: { id },
-          select: { partnerId: true, status: true },
+          include: { variants: true },
         })
 
         if (!request) {
@@ -279,19 +333,40 @@ export const ProductTemplateRequestMutation = extendType({
 
         const targetTemplate = await ctx.prisma.productTemplate.findUnique({
           where: { id: targetTemplateId },
-          select: { id: true },
+          include: { variants: true },
         })
 
         if (!targetTemplate) {
           throw new Error('TARGET_PRODUCT_TEMPLATE_NOT_FOUND')
         }
 
-        const completedOrders = await ctx.prisma.order.count({
-          where: { partnerId: request.partnerId },
-        })
-
-        if (completedOrders < 1) {
-          throw new Error('MERGE_REQUIRES_AT_LEAST_ONE_ORDER')
+        for (const requestVariant of request.variants) {
+          const normalized = requestVariant.name?.trim().toLowerCase()
+          const targetVariant = targetTemplate.variants.find((variant: any) =>
+            (requestVariant.sku && variant.sku === requestVariant.sku) ||
+            (normalized && variant.name?.trim().toLowerCase() === normalized),
+          ) ?? (targetTemplate.variants.length === 1 ? targetTemplate.variants[0] : null)
+          if (!targetVariant) throw new Error('VARIANT_MAPPING_REQUIRED')
+          await ctx.prisma.productTemplateRequestVariant.update({
+            where: { id: requestVariant.id },
+            data: { resolvedVariantId: targetVariant.id },
+          })
+          await ctx.prisma.product.upsert({
+            where: { partnerId_variantId: { partnerId: request.partnerId, variantId: targetVariant.id } },
+            create: {
+              partnerId: request.partnerId,
+              variantId: targetVariant.id,
+              price: requestVariant.price ?? 0,
+              costPrice: requestVariant.costPrice ?? 0,
+              stock: requestVariant.stock ?? 0,
+              reorderThreshold: requestVariant.reorderThreshold ?? 0,
+              trackInventory: requestVariant.trackInventory,
+              isVisibleInPos: true,
+              available: true,
+              isActive: true,
+            },
+            update: {},
+          })
         }
 
         return ctx.prisma.productTemplateRequest.update({

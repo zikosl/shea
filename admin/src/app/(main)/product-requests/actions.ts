@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { APPROVE_PRODUCT_TEMPLATE_REQUEST, REJECT_PRODUCT_TEMPLATE_REQUEST } from "@/api/mutations/product-template-request";
+import { APPROVE_PRODUCT_TEMPLATE_REQUEST, MERGE_PRODUCT_TEMPLATE_REQUEST, REJECT_PRODUCT_TEMPLATE_REQUEST } from "@/api/mutations/product-template-request";
 import { FIND_MANY_PRODUCT_TEMPLATE_REQUESTS } from "@/api/queries/product-template-request";
 import { requestServerGraphQL } from "@/lib/server-request";
 
@@ -60,5 +60,13 @@ export async function rejectRequest(formData: FormData) {
     id,
     rejectionReason: "Rejected from admin review",
   });
+  revalidatePath("/product-requests");
+}
+
+export async function mergeRequest(formData: FormData) {
+  const id = Number(formData.get("id"));
+  const targetTemplateId = Number(formData.get("targetTemplateId"));
+  if (!Number.isInteger(targetTemplateId) || targetTemplateId < 1) throw new Error("Choose a valid target template");
+  await requestServerGraphQL(MERGE_PRODUCT_TEMPLATE_REQUEST, { id, targetTemplateId });
   revalidatePath("/product-requests");
 }

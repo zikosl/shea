@@ -17,3 +17,9 @@ export const REJECT_PRODUCT_TEMPLATE_REQUEST = gql`
     }
   }
 `;
+
+export const MERGE_PRODUCT_TEMPLATE_REQUEST = gql`
+  mutation mergeProductTemplateRequest($id: Int!, $targetTemplateId: Int!, $adminNote: String) {
+    mergeProductTemplateRequest(id: $id, targetTemplateId: $targetTemplateId, adminNote: $adminNote) { id status mergedIntoTemplateId }
+  }
+`;
