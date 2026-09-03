@@ -6,9 +6,9 @@ import { requireCapability } from '../../modules/capabilities/service'
 import { giftOrderInclude } from '../../modules/gift-store/service'
 
 async function partnerIdForUser(ctx: any, userId: number) {
-  const partner = await ctx.prisma.partner.findUnique({ where: { userId }, select: { id: true } })
+  const partner = await ctx.prisma.partner.findUnique({ where: { userId }, select: { userId: true } })
   if (!partner) throw new Error('PARTNER_REQUIRED')
-  return partner.id
+  return partner.userId
 }
 
 export default extendType({ type:'Query', definition(t){

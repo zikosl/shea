@@ -34,13 +34,6 @@ function documentNumber(prefix: string) {
   return `${prefix}-${new Date().toISOString().slice(0, 10).replaceAll('-', '')}-${randomUUID().slice(0, 6).toUpperCase()}`
 }
 
-/** Partner-facing GraphQL calls authenticate as a User; commerce records use Partner.id. */
-async function resolvePartnerId(prisma: PrismaClient, partnerUserId: number) {
-  const partner = await prisma.partner.findUnique({ where: { userId: partnerUserId }, select: { id: true } })
-  if (!partner) throw new GraphQLError('PARTNER_REQUIRED')
-  return partner.id
-}
-
 async function validateGiftLines(prisma: PrismaClient, partnerId: number, input: any) {
   if (!input.customerName?.trim()) throw new GraphQLError('CUSTOMER_NAME_REQUIRED')
   if (!input.lines?.length) throw new GraphQLError('CUSTOM_ORDER_LINES_REQUIRED')
@@ -64,7 +57,9 @@ async function validateGiftLines(prisma: PrismaClient, partnerId: number, input:
     : []
   if (products.length !== new Set(productIds).size) throw new GraphQLError('PRODUCT_NOT_FOUND')
   if (input.nicheId) {
-    const assignment = await prisma.partner_Niche.findFirst({ where: { partnerId, niche_id: input.nicheId } })
+    const partner = await prisma.partner.findUnique({ where: { userId: partnerId }, select: { id: true } })
+    if (!partner) throw new GraphQLError('PARTNER_REQUIRED')
+    const assignment = await prisma.partner_Niche.findFirst({ where: { partnerId: partner.id, niche_id: input.nicheId } })
     if (!assignment) throw new GraphQLError('NICHE_NOT_AVAILABLE')
     if (products.some((product) => product.variant.product.category.niche_id !== input.nicheId))
       throw new GraphQLError('GIFT_ITEMS_MUST_SHARE_NICHE')
@@ -100,7 +95,7 @@ async function createGiftOrderForPartner(prisma: PrismaClient, partnerId: number
 
 export async function createGiftOrder(prisma: PrismaClient, partnerUserId: number, input: any) {
   await requireCapability(prisma, partnerUserId, CapabilityCode.GIFT_BUILDER)
-  return createGiftOrderForPartner(prisma, await resolvePartnerId(prisma, partnerUserId), input)
+  return createGiftOrderForPartner(prisma, partnerUserId, input)
 }
 
 /** Client requests must be bound to an account and a single storefront. */
@@ -132,7 +127,7 @@ export async function createClientGiftOrder(prisma: PrismaClient, clientId: numb
 
 export async function transitionGiftOrder(prisma: PrismaClient, partnerUserId: number, id: string, next: CustomOrderStatus, expectedVersion: number) {
   await requireCapability(prisma, partnerUserId, CapabilityCode.CUSTOM_ORDERS)
-  const partnerId = await resolvePartnerId(prisma, partnerUserId)
+  const partnerId = partnerUserId
   if (!Number.isInteger(expectedVersion) || expectedVersion < 1) throw new GraphQLError('INVALID_EXPECTED_VERSION')
   return prisma.$transaction(async (tx) => {
     const order = await tx.customOrder.findFirst({ where: { id, partnerId } })
@@ -148,7 +143,7 @@ export async function transitionGiftOrder(prisma: PrismaClient, partnerUserId: n
 
 export async function createGiftQuotation(prisma: PrismaClient, partnerUserId: number, customOrderId: string, validUntil?: Date | null, note?: string | null) {
   await requireCapability(prisma, partnerUserId, CapabilityCode.QUOTATIONS)
-  const partnerId = await resolvePartnerId(prisma, partnerUserId)
+  const partnerId = partnerUserId
   return prisma.$transaction(async (tx) => {
     const order = await tx.customOrder.findFirst({ where: { id: customOrderId, partnerId }, include: { lines: { orderBy: { sortOrder: 'asc' } } } })
     if (!order) throw new GraphQLError('CUSTOM_ORDER_NOT_FOUND')
@@ -210,7 +205,7 @@ export async function respondToGiftQuotation(prisma: PrismaClient, clientId: num
 
 export async function reserveGiftMaterials(prisma: PrismaClient, partnerUserId: number, customOrderId: string) {
   await requireCapability(prisma, partnerUserId, CapabilityCode.PRODUCTION)
-  const partnerId = await resolvePartnerId(prisma, partnerUserId)
+  const partnerId = partnerUserId
   return prisma.$transaction(async (tx) => {
     const order = await tx.customOrder.findFirst({ where: { id: customOrderId, partnerId }, include: { lines: true } })
     if (!order) throw new GraphQLError('CUSTOM_ORDER_NOT_FOUND')
