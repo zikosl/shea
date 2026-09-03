@@ -3,6 +3,9 @@ import { arg, booleanArg, extendType, intArg, nonNull, stringArg } from 'nexus'
 import { GraphQLError } from 'graphql'
 import { Context } from '../../context'
 import { getUserId } from '../../utils'
+import { CapabilityCode } from '@prisma/client'
+import { effectiveCapabilities } from '../../modules/capabilities/service'
+import { giftOrderInclude } from '../../modules/gift-store/service'
 
 async function assertPartner(ctx: Context, userId: number) {
   const partner = await ctx.prisma.partner.findUnique({ where: { userId } })
@@ -33,7 +36,11 @@ const Query = extendType({
           .filter((id): id is number => typeof id === 'number')
         const catalogScope = nicheIds.length ? { niche_id: { in: nicheIds } } : { id: { equals: -1 } }
 
-        const [niches, categories, productTypes, brands, templates, products, proposals, productRequests, orders, openCashSession] = await Promise.all([
+        const capabilities = await effectiveCapabilities(ctx.prisma, partnerId)
+        const enabledCapabilities = capabilities.filter((entry) => entry.enabled).map((entry) => entry.code)
+        const hasCapability = (code: CapabilityCode) => enabledCapabilities.includes(code)
+
+        const [niches, categories, productTypes, brands, templates, products, proposals, productRequests, orders, openCashSession, customOrders, giftTemplates] = await Promise.all([
           ctx.prisma.niche.findMany({ where: { id: { in: nicheIds } }, orderBy: { name: 'asc' } }),
           ctx.prisma.category.findMany({ where: catalogScope, orderBy: { name: 'asc' } }),
           ctx.prisma.productType.findMany({ where: { category: catalogScope }, orderBy: { name: 'asc' } }),
@@ -67,6 +74,20 @@ const Query = extendType({
             take: 100,
           }),
           ctx.prisma.cashSession.findFirst({ where: { partnerId, deviceId: device.id, status: 'OPEN' }, orderBy: { openedAt: 'desc' } }),
+          hasCapability(CapabilityCode.CUSTOM_ORDERS)
+            ? ctx.prisma.customOrder.findMany({
+                where: { partnerId, status: { notIn: ['FULFILLED', 'CANCELLED'] } },
+                include: giftOrderInclude,
+                orderBy: { updatedAt: 'desc' },
+              })
+            : [],
+          hasCapability(CapabilityCode.GIFT_TEMPLATES)
+            ? ctx.prisma.giftTemplate.findMany({
+                where: { partnerId, active: true },
+                include: { items: { orderBy: { sortOrder: 'asc' } } },
+                orderBy: { name: 'asc' },
+              })
+            : [],
         ])
 
         const generatedAt = new Date()
@@ -78,7 +99,7 @@ const Query = extendType({
           generatedAt,
           offlineUntil,
           payload: JSON.stringify({
-            schemaVersion: 1,
+            schemaVersion: 2,
             partner: {
               userId: partner.userId,
               companyName: partner.companyName,
@@ -86,6 +107,7 @@ const Query = extendType({
               feeType: partner.feeType,
               feeRate: partner.feeRate,
               fixedFee: partner.fixedFee,
+              capabilities: enabledCapabilities,
             },
             device: { id: device.id, deviceKey: device.deviceKey, name: device.name },
             catalog: { niches, categories, productTypes, brands, templates },
@@ -94,6 +116,11 @@ const Query = extendType({
             productRequests,
             orders,
             openCashSession,
+            extensions: {
+              giftStore: hasCapability(CapabilityCode.CUSTOM_ORDERS)
+                ? { orders: customOrders, templates: giftTemplates }
+                : null,
+            },
           }),
         }
       },

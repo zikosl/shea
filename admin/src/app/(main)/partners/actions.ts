@@ -12,6 +12,7 @@ import {
   UPDATE_ITEM
 } from "./_constant/request";
 import { FIND_MANY_NICHES } from "@/api/queries";
+import { gql } from "graphql-request";
 
 type PartnerResponse = {
   id: string;
@@ -78,4 +79,65 @@ export async function getPartnerFormNiches() {
   });
 
   return response.findManyNiches.niches;
+}
+
+const PARTNER_CAPABILITIES = gql`
+  query PartnerCapabilities($partnerId: Int!) {
+    capabilityCatalog
+    effectiveCapabilities(partnerId: $partnerId) {
+      code
+      enabled
+      source
+    }
+    partnerCapabilityOverrides(partnerId: $partnerId) {
+      capability
+      effect
+    }
+  }
+`;
+
+const SET_PARTNER_CAPABILITY_OVERRIDE = gql`
+  mutation SetPartnerCapabilityOverride(
+    $partnerId: Int!
+    $capability: CapabilityCode!
+    $effect: CapabilityOverrideEffect
+  ) {
+    setPartnerCapabilityOverride(
+      partnerId: $partnerId
+      capability: $capability
+      effect: $effect
+    ) {
+      capability
+      effect
+    }
+  }
+`;
+
+export async function getPartnerCapabilities(partnerId: string): Promise<PartnerCapabilityConfig> {
+  const response = await requestServerGraphQL<{
+    capabilityCatalog: CapabilityCode[];
+    effectiveCapabilities: PartnerCapabilityConfig["effective"];
+    partnerCapabilityOverrides: PartnerCapabilityConfig["overrides"];
+  }>(PARTNER_CAPABILITIES, { partnerId: Number(partnerId) });
+
+  return {
+    catalog: response.capabilityCatalog,
+    effective: response.effectiveCapabilities,
+    overrides: response.partnerCapabilityOverrides,
+  };
+}
+
+export async function savePartnerCapabilities(
+  partnerId: string,
+  overrides: Record<CapabilityCode, CapabilityOverrideEffect | null>,
+) {
+  await Promise.all(
+    Object.entries(overrides).map(([capability, effect]) =>
+      requestServerGraphQL(SET_PARTNER_CAPABILITY_OVERRIDE, {
+        partnerId: Number(partnerId),
+        capability,
+        effect,
+      }),
+    ),
+  );
 }

@@ -8,6 +8,16 @@ type Partner = {
     fixedFee?: number;
     niches?: number[];
     partnerNiches?: PartnerNiche[];
+    capabilityOverrides?: Record<CapabilityCode, CapabilityOverrideEffect | null>;
+}
+
+type CapabilityCode = "CUSTOM_ORDERS" | "QUOTATIONS" | "GIFT_BUILDER" | "GIFT_TEMPLATES" | "PRODUCTION" | "PRODUCTION_TASKS" | "DELIVERY_PICKUP" | "GIFT_GALLERY" | "GIFT_REPORTS";
+type CapabilityOverrideEffect = "ENABLE" | "DISABLE";
+
+type PartnerCapabilityConfig = {
+    catalog: CapabilityCode[];
+    effective: Array<{ code: CapabilityCode; enabled: boolean; source: "NICHE_DEFAULT" | "PARTNER_OVERRIDE" }>;
+    overrides: Array<{ capability: CapabilityCode; effect: CapabilityOverrideEffect }>;
 }
 
 type PartnerNiche = {

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -25,7 +25,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { FileUploader } from "@/components/ui/file-upload";
 
-import { createItem, updateItem } from "../actions";
+import { createItem, saveNicheCapabilities, updateItem } from "../actions";
 import { Item, name_plural, title_singular } from "../_constant";
 
 const formSchema = z.object({
@@ -42,14 +42,17 @@ const formSchema = z.object({
 
 export default function ItemForm({
   initialData,
+  capabilityConfig,
   pageTitle,
 }: {
   initialData: Item | null;
+  capabilityConfig: { catalog: CapabilityCode[]; enabled: CapabilityCode[] } | null;
   pageTitle: string;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState(() => resolvePublicAssetUrl(initialData?.image));
+  const [enabledCapabilities, setEnabledCapabilities] = useState<CapabilityCode[]>(capabilityConfig?.enabled ?? []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -81,8 +84,12 @@ export default function ItemForm({
     try {
       if (initialData) {
         await updateItem(initialData.id, values);
+        await saveNicheCapabilities(initialData.id, enabledCapabilities);
       } else {
-        await createItem(values);
+        const niche = await createItem(values);
+        if (niche?.id && enabledCapabilities.length) {
+          await saveNicheCapabilities(niche.id, enabledCapabilities);
+        }
         form.reset();
       }
 
@@ -134,6 +141,36 @@ export default function ItemForm({
                 </FormItem>
               )}
             />
+            {capabilityConfig?.catalog.length ? (
+              <section className="space-y-3 rounded-2xl border bg-muted/20 p-4">
+                <div>
+                  <FormLabel>Default capabilities</FormLabel>
+                  <FormDescription>
+                    Partners assigned to this niche inherit these modules unless explicitly overridden.
+                  </FormDescription>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {capabilityConfig.catalog.map((code) => {
+                    const selected = enabledCapabilities.includes(code);
+                    return (
+                      <button
+                        key={code}
+                        type="button"
+                        onClick={() => setEnabledCapabilities((current) => selected
+                          ? current.filter((item) => item !== code)
+                          : [...current, code])}
+                        className="flex items-center justify-between rounded-xl border bg-background px-3 py-2 text-left text-sm transition-colors hover:bg-muted"
+                      >
+                        <span className="capitalize">{code.replaceAll("_", " ").toLowerCase()}</span>
+                        <span className={`flex h-5 w-5 items-center justify-center rounded border ${selected ? "border-foreground bg-foreground text-background" : "text-transparent"}`}>
+                          <Check className="h-3 w-3" />
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            ) : null}
             <FormField
               control={form.control}
               name="name_ar"

@@ -20,6 +20,8 @@ import Address from './schema/address'
 import Log from './schema/log-events'
 import Pos from './schema/pos'
 import CatalogProposal from './schema/catalog-proposal'
+import Capability from './schema/capability'
+import GiftStore from './schema/gift-store'
 
 import { DateTimeResolver } from 'graphql-scalars'
 import { permissions } from './security/shield'
@@ -44,6 +46,8 @@ const schemaWithoutPermissions = makeSchema({
     Log,
     Pos,
     CatalogProposal,
+    Capability,
+    GiftStore,
     Driver,
     Address
   ],

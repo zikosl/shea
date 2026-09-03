@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { getItemById } from "../actions";
+import { getItemById, getNicheCapabilities } from "../actions";
 import { title_singular } from "../_constant";
 import Form from "./form";
 
@@ -15,6 +15,7 @@ type ItemViewPageProps = {
 export default async function ItemViewPage({ itemId }: ItemViewPageProps) {
   let item = null;
   let pageTitle = `Create New ${title_singular}`;
+  let capabilityConfig: { catalog: CapabilityCode[]; enabled: CapabilityCode[] } | null = null;
 
   if (itemId !== "new") {
     item = await getItemById(itemId);
@@ -22,7 +23,8 @@ export default async function ItemViewPage({ itemId }: ItemViewPageProps) {
       notFound();
     }
     pageTitle = `Edit ${title_singular}`;
+    capabilityConfig = await getNicheCapabilities(itemId);
   }
 
-  return <Form initialData={item} pageTitle={pageTitle} />;
+  return <Form initialData={item} capabilityConfig={capabilityConfig} pageTitle={pageTitle} />;
 }

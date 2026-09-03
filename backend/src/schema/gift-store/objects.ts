@@ -1,0 +1,21 @@
+// @ts-nocheck
+import { enumType, inputObjectType, objectType } from 'nexus'
+
+const CustomOrderStatus = enumType({ name: 'CustomOrderStatus', members: ['DRAFT','REQUESTED','QUOTED','AWAITING_CUSTOMER_APPROVAL','CONFIRMED','MATERIALS_RESERVED','IN_PREPARATION','READY','FULFILLED','CANCELLED'] })
+const QuotationStatus = enumType({ name: 'QuotationStatus', members: ['DRAFT','SENT','ACCEPTED','REJECTED','EXPIRED'] })
+const FulfillmentMode = enumType({ name: 'FulfillmentMode', members: ['PICKUP','DELIVERY'] })
+const ProductionTaskStatus = enumType({ name: 'ProductionTaskStatus', members: ['TODO','IN_PROGRESS','BLOCKED','DONE'] })
+const GiftOrderLineInput = inputObjectType({ name: 'GiftOrderLineInput', definition(t) { t.int('productId'); t.nonNull.string('name'); t.string('description'); t.nonNull.float('quantity'); t.nonNull.float('unitPrice'); t.float('unitCost') } })
+const CreateGiftOrderInput = inputObjectType({ name: 'CreateGiftOrderInput', definition(t) {
+  t.string('orderNumber'); t.nonNull.string('customerName'); t.string('customerPhone'); t.field('requiredAt',{type:'DateTime'}); t.nonNull.field('fulfillmentMode',{type:'FulfillmentMode'}); t.string('deliveryAddress'); t.string('note'); t.float('discount');
+  t.string('occasion'); t.string('recipientName'); t.string('cardMessage'); t.string('style'); t.string('wrappingNote'); t.list.nonNull.field('lines',{type:'GiftOrderLineInput'}); t.list.nonNull.string('tasks')
+} })
+const GiftSpecification = objectType({ name:'GiftSpecification', definition(t){ t.nonNull.string('id'); t.nonNull.string('customOrderId'); t.string('occasion'); t.string('recipientName'); t.string('cardMessage'); t.string('style'); t.string('wrappingNote') } })
+const CustomOrderLine = objectType({ name:'CustomOrderLine', definition(t){ t.nonNull.string('id'); t.nonNull.string('customOrderId'); t.int('productId'); t.nonNull.string('name'); t.string('description'); t.nonNull.float('quantity'); t.nonNull.float('unitPrice'); t.nonNull.float('unitCost'); t.nonNull.float('total'); t.nonNull.int('sortOrder') } })
+const ProductionTask = objectType({ name:'ProductionTask', definition(t){ t.nonNull.string('id'); t.nonNull.string('customOrderId'); t.nonNull.string('title'); t.string('description'); t.nonNull.field('status',{type:'ProductionTaskStatus'}); t.field('dueAt',{type:'DateTime'}); t.nonNull.int('sortOrder') } })
+const GiftQuotationLine = objectType({ name:'GiftQuotationLine', definition(t){ t.nonNull.string('id'); t.nonNull.string('name'); t.string('description'); t.nonNull.float('quantity'); t.nonNull.float('unitPrice'); t.nonNull.float('total') } })
+const GiftQuotation = objectType({ name:'GiftQuotation', definition(t){ t.nonNull.string('id'); t.nonNull.string('quoteNumber'); t.nonNull.string('customOrderId'); t.nonNull.field('status',{type:'QuotationStatus'}); t.nonNull.float('subtotal'); t.nonNull.float('discount'); t.nonNull.float('total'); t.field('validUntil',{type:'DateTime'}); t.string('note'); t.nonNull.int('version'); t.nonNull.list.nonNull.field('lines',{type:'GiftQuotationLine'}) } })
+const CustomOrder = objectType({ name:'CustomOrder', definition(t){
+  t.nonNull.string('id'); t.nonNull.string('orderNumber'); t.nonNull.int('partnerId'); t.nonNull.string('customerName'); t.string('customerPhone'); t.nonNull.field('status',{type:'CustomOrderStatus'}); t.field('requiredAt',{type:'DateTime'}); t.nonNull.field('fulfillmentMode',{type:'FulfillmentMode'}); t.string('deliveryAddress'); t.string('note'); t.nonNull.float('subtotal'); t.nonNull.float('discount'); t.nonNull.float('total'); t.nonNull.int('version'); t.nonNull.field('createdAt',{type:'DateTime'}); t.nonNull.field('updatedAt',{type:'DateTime'}); t.field('gift',{type:'GiftSpecification'}); t.nonNull.list.nonNull.field('lines',{type:'CustomOrderLine'}); t.nonNull.list.nonNull.field('quotations',{type:'GiftQuotation'}); t.nonNull.list.nonNull.field('tasks',{type:'ProductionTask'})
+} })
+export default { CustomOrderStatus, QuotationStatus, FulfillmentMode, ProductionTaskStatus, GiftOrderLineInput, CreateGiftOrderInput, GiftSpecification, CustomOrderLine, ProductionTask, GiftQuotationLine, GiftQuotation, CustomOrder }

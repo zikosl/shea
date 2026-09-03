@@ -21,7 +21,7 @@ import * as z from 'zod';
 import { useState } from 'react';
 import { Check, Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
-import { createItem, updateItem } from '../actions';
+import { createItem, savePartnerCapabilities, updateItem } from '../actions';
 import { Item, name_plural, title_singular } from '../_constant';
 import { useRouter } from 'next/navigation';
 
@@ -42,14 +42,24 @@ const formSchema = z.object({
 export default function ItemForm({
   initialData,
   niches,
+  capabilities,
   pageTitle
 }: {
   initialData: Item | null;
   niches: Niche[];
+  capabilities: PartnerCapabilityConfig | null;
   pageTitle: string;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const inherited = new Map(capabilities?.effective.map((item) => [item.code, item.enabled]) ?? []);
+  const initialOverrides = Object.fromEntries(
+    (capabilities?.catalog ?? []).map((code) => [
+      code,
+      capabilities?.overrides.find((item) => item.capability === code)?.effect ?? null,
+    ]),
+  ) as Record<CapabilityCode, CapabilityOverrideEffect | null>;
+  const [capabilityOverrides, setCapabilityOverrides] = useState(initialOverrides);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -68,9 +78,13 @@ export default function ItemForm({
     try {
       if (initialData) {
         await updateItem(initialData.id, values)
+        await savePartnerCapabilities(initialData.id, capabilityOverrides)
       }
       else {
-        await createItem(values)
+        const partner = await createItem(values)
+        if (partner?.id && Object.keys(capabilityOverrides).length) {
+          await savePartnerCapabilities(partner.id, capabilityOverrides)
+        }
         form.reset()
       }
       router.replace(`/${name_plural}`)
@@ -268,6 +282,56 @@ export default function ItemForm({
                 );
               }}
             />
+
+            {capabilities?.catalog.length ? (
+              <section className="space-y-4 rounded-2xl border bg-muted/20 p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <FormLabel>Business capabilities</FormLabel>
+                    <FormDescription>
+                      Inherit niche defaults or override individual modules for this partner.
+                    </FormDescription>
+                  </div>
+                  <Badge variant="secondary" className="rounded-full">
+                    {capabilities.catalog.filter((code) => {
+                      const override = capabilityOverrides[code];
+                      return override ? override === "ENABLE" : inherited.get(code);
+                    }).length} enabled
+                  </Badge>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  {capabilities.catalog.map((code) => {
+                    const override = capabilityOverrides[code];
+                    const isEnabled = override ? override === "ENABLE" : Boolean(inherited.get(code));
+                    return (
+                      <div key={code} className="flex items-center justify-between gap-4 rounded-xl border bg-background p-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium">{code.replaceAll("_", " ").toLowerCase()}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {override ? `Forced ${override.toLowerCase()}` : `Inherited ${isEnabled ? "on" : "off"}`}
+                          </p>
+                        </div>
+                        <select
+                          aria-label={`${code} capability`}
+                          value={override ?? "INHERIT"}
+                          onChange={(event) => setCapabilityOverrides((current) => ({
+                            ...current,
+                            [code]: event.target.value === "INHERIT"
+                              ? null
+                              : event.target.value as CapabilityOverrideEffect,
+                          }))}
+                          className="h-9 rounded-md border border-input bg-background px-2 text-xs capitalize"
+                        >
+                          <option value="INHERIT">Inherit</option>
+                          <option value="ENABLE">Enabled</option>
+                          <option value="DISABLE">Disabled</option>
+                        </select>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            ) : null}
           </CardContent>
           <CardFooter className="flex justify-between">
             <Button disabled={loading} type="submit">

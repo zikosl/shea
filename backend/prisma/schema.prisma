@@ -21,6 +21,56 @@ enum ThemePreference {
   DARK
 }
 
+enum CapabilityCode {
+  CUSTOM_ORDERS
+  QUOTATIONS
+  GIFT_BUILDER
+  GIFT_TEMPLATES
+  PRODUCTION
+  PRODUCTION_TASKS
+  DELIVERY_PICKUP
+  GIFT_GALLERY
+  GIFT_REPORTS
+}
+
+enum CapabilityOverrideEffect {
+  ENABLE
+  DISABLE
+}
+
+enum CustomOrderStatus {
+  DRAFT
+  REQUESTED
+  QUOTED
+  AWAITING_CUSTOMER_APPROVAL
+  CONFIRMED
+  MATERIALS_RESERVED
+  IN_PREPARATION
+  READY
+  FULFILLED
+  CANCELLED
+}
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum FulfillmentMode {
+  PICKUP
+  DELIVERY
+}
+
+enum ProductionTaskStatus {
+  TODO
+  IN_PROGRESS
+  BLOCKED
+  DONE
+}
+
 enum OrderSource {
   ONLINE
   POS
@@ -179,17 +229,17 @@ model Token {
 }
 
 model Client {
-  id        Int     @id @default(autoincrement())
-  user      User    @relation(fields: [userId], references: [id])
-  firstname String  @default("")
-  lastname  String  @default("")
-  avatar    String  @default("")
-  language  String  @default("en")
+  id              Int             @id @default(autoincrement())
+  user            User            @relation(fields: [userId], references: [id])
+  firstname       String          @default("")
+  lastname        String          @default("")
+  avatar          String          @default("")
+  language        String          @default("en")
   theme           Boolean         @default(false) // Legacy: 0 DARK, 1 LIGHT
   themePreference ThemePreference @default(SYSTEM)
   userId          Int             @unique
   // add any client-only fields here
-  Order     Order[]
+  Order           Order[]
 }
 
 model Partner_Niche {
@@ -204,30 +254,33 @@ model Partner_Niche {
 }
 
 model Partner {
-  id             Int             @id @default(autoincrement())
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         Int             @unique
+  id                  Int                         @id @default(autoincrement())
+  user                User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId              Int                         @unique
   // partner-only fields
-  companyName    String
-  online         Boolean         @default(false)
-  avatar         String?
-  latitude       Float           @default(0)
-  longitude      Float           @default(0)
-  address        String?
-  feeType        PartnerFeeType @default(NONE)
-  feeRate        Float          @default(0)
-  fixedFee       Float          @default(0)
-  Product        Product[]
-  Order          Order[]
-  devices        Device[]
-  sales          Sale[]
-  cashSessions   CashSession[]
-  syncEvents     SyncEvent[]
-  stockMovements StockMovement[]
-  auditLogs      AuditLog[]
-  partnerNiches  Partner_Niche[]
-  templateRequests ProductTemplateRequest[]
-  catalogProposals CatalogProposal[]
+  companyName         String
+  online              Boolean                     @default(false)
+  avatar              String?
+  latitude            Float                       @default(0)
+  longitude           Float                       @default(0)
+  address             String?
+  feeType             PartnerFeeType              @default(NONE)
+  feeRate             Float                       @default(0)
+  fixedFee            Float                       @default(0)
+  Product             Product[]
+  Order               Order[]
+  devices             Device[]
+  sales               Sale[]
+  cashSessions        CashSession[]
+  syncEvents          SyncEvent[]
+  stockMovements      StockMovement[]
+  auditLogs           AuditLog[]
+  partnerNiches       Partner_Niche[]
+  templateRequests    ProductTemplateRequest[]
+  catalogProposals    CatalogProposal[]
+  capabilityOverrides PartnerCapabilityOverride[]
+  customOrders        CustomOrder[]
+  giftTemplates       GiftTemplate[]
 }
 
 model Driver {
@@ -258,48 +311,49 @@ model Admin {
 }
 
 model Niche {
-  id         Int             @id @default(autoincrement())
-  name       String
-  name_ar    String
-  image      String
-  categories Category[]
-  brands     Brand[]
-  partners   Partner_Niche[]
+  id               Int               @id @default(autoincrement())
+  name             String
+  name_ar          String
+  image            String
+  categories       Category[]
+  brands           Brand[]
+  partners         Partner_Niche[]
   catalogProposals CatalogProposal[]
+  capabilities     NicheCapability[]
 }
 
 model Category {
-  id           Int           @id @default(autoincrement())
-  name         String
-  name_ar      String
-  image        String
-  productTypes ProductType[]
-  productTemplates ProductTemplate[]
-  templateRequests ProductTemplateRequest[]
-  catalogProposalCategories CatalogProposal[] @relation("CatalogProposalCategory")
-  resolvedCatalogProposals CatalogProposal[] @relation("CatalogProposalResolvedCategory")
-  niche        Niche?        @relation(fields: [niche_id], references: [id])
-  niche_id     Int?
+  id                        Int                      @id @default(autoincrement())
+  name                      String
+  name_ar                   String
+  image                     String
+  productTypes              ProductType[]
+  productTemplates          ProductTemplate[]
+  templateRequests          ProductTemplateRequest[]
+  catalogProposalCategories CatalogProposal[]        @relation("CatalogProposalCategory")
+  resolvedCatalogProposals  CatalogProposal[]        @relation("CatalogProposalResolvedCategory")
+  niche                     Niche?                   @relation(fields: [niche_id], references: [id])
+  niche_id                  Int?
 }
 
 model ProductType {
-  id          Int               @id @default(autoincrement())
-  name        String
-  name_ar     String
-  category_id Int
-  category    Category          @relation(fields: [category_id], references: [id])
-  products    ProductTemplate[]
-  templateRequests ProductTemplateRequest[]
-  resolvedCatalogProposals CatalogProposal[] @relation("CatalogProposalResolvedProductType")
+  id                       Int                      @id @default(autoincrement())
+  name                     String
+  name_ar                  String
+  category_id              Int
+  category                 Category                 @relation(fields: [category_id], references: [id])
+  products                 ProductTemplate[]
+  templateRequests         ProductTemplateRequest[]
+  resolvedCatalogProposals CatalogProposal[]        @relation("CatalogProposalResolvedProductType")
 
   @@index([category_id])
 }
 
 model Brand {
-  id               Int               @id @default(autoincrement())
+  id               Int                      @id @default(autoincrement())
   name             String
   image            String
-  niche            Niche?            @relation(fields: [niche_id], references: [id])
+  niche            Niche?                   @relation(fields: [niche_id], references: [id])
   niche_id         Int?
   productTemplates ProductTemplate[]
   templateRequests ProductTemplateRequest[]
@@ -334,14 +388,191 @@ model Product {
   partner Partner @relation(fields: [partnerId], references: [userId])
   variant Variant @relation(fields: [variantId], references: [id])
 
-  OrderItem      OrderItem[]
-  saleItems      SaleItem[]
-  stockMovements StockMovement[]
+  OrderItem         OrderItem[]
+  saleItems         SaleItem[]
+  stockMovements    StockMovement[]
+  customOrderLines  CustomOrderLine[]
+  giftTemplateItems GiftTemplateItem[]
+  stockReservations StockReservation[]
 
   @@unique([partnerId, variantId])
   @@index([partnerId, isActive, isVisibleInPos])
   @@index([vendorBarcode])
   @@index([vendorSku])
+}
+
+model NicheCapability {
+  id               Int            @id @default(autoincrement())
+  nicheId          Int
+  capability       CapabilityCode
+  enabledByDefault Boolean        @default(true)
+  niche            Niche          @relation(fields: [nicheId], references: [id], onDelete: Cascade)
+
+  @@unique([nicheId, capability])
+  @@index([capability])
+}
+
+model PartnerCapabilityOverride {
+  id         Int                      @id @default(autoincrement())
+  partnerId  Int
+  capability CapabilityCode
+  effect     CapabilityOverrideEffect
+  createdAt  DateTime                 @default(now())
+  updatedAt  DateTime                 @updatedAt
+  partner    Partner                  @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
+
+  @@unique([partnerId, capability])
+  @@index([capability, effect])
+}
+
+model CustomOrder {
+  id              String             @id @default(uuid())
+  orderNumber     String             @unique
+  partnerId       Int
+  customerName    String
+  customerPhone   String?
+  status          CustomOrderStatus  @default(DRAFT)
+  requiredAt      DateTime?
+  fulfillmentMode FulfillmentMode    @default(PICKUP)
+  deliveryAddress String?
+  note            String?
+  subtotal        Float              @default(0)
+  discount        Float              @default(0)
+  total           Float              @default(0)
+  version         Int                @default(1)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  partner         Partner            @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
+  gift            GiftSpecification?
+  lines           CustomOrderLine[]
+  quotations      GiftQuotation[]
+  tasks           ProductionTask[]
+  reservations    StockReservation[]
+
+  @@index([partnerId, status, requiredAt])
+  @@index([partnerId, updatedAt])
+}
+
+model GiftSpecification {
+  id            String      @id @default(uuid())
+  customOrderId String      @unique
+  occasion      String?
+  recipientName String?
+  cardMessage   String?
+  style         String?
+  wrappingNote  String?
+  customOrder   CustomOrder @relation(fields: [customOrderId], references: [id], onDelete: Cascade)
+}
+
+model CustomOrderLine {
+  id            String      @id @default(uuid())
+  customOrderId String
+  productId     Int?
+  name          String
+  description   String?
+  quantity      Float
+  unitPrice     Float       @default(0)
+  unitCost      Float       @default(0)
+  total         Float       @default(0)
+  sortOrder     Int         @default(0)
+  customOrder   CustomOrder @relation(fields: [customOrderId], references: [id], onDelete: Cascade)
+  product       Product?    @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([customOrderId, sortOrder])
+  @@index([productId])
+}
+
+model GiftQuotation {
+  id            String              @id @default(uuid())
+  quoteNumber   String              @unique
+  customOrderId String
+  status        QuotationStatus     @default(DRAFT)
+  subtotal      Float
+  discount      Float               @default(0)
+  total         Float
+  validUntil    DateTime?
+  note          String?
+  version       Int                 @default(1)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  customOrder   CustomOrder         @relation(fields: [customOrderId], references: [id], onDelete: Cascade)
+  lines         GiftQuotationLine[]
+
+  @@index([customOrderId, createdAt])
+}
+
+model GiftQuotationLine {
+  id          String        @id @default(uuid())
+  quotationId String
+  name        String
+  description String?
+  quantity    Float
+  unitPrice   Float
+  total       Float
+  sortOrder   Int           @default(0)
+  quotation   GiftQuotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  @@index([quotationId, sortOrder])
+}
+
+model ProductionTask {
+  id            String               @id @default(uuid())
+  customOrderId String
+  title         String
+  description   String?
+  status        ProductionTaskStatus @default(TODO)
+  dueAt         DateTime?
+  sortOrder     Int                  @default(0)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  customOrder   CustomOrder          @relation(fields: [customOrderId], references: [id], onDelete: Cascade)
+
+  @@index([customOrderId, status, sortOrder])
+}
+
+model GiftTemplate {
+  id          String             @id @default(uuid())
+  partnerId   Int
+  name        String
+  description String?
+  occasion    String?
+  image       String?
+  active      Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  partner     Partner            @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
+  items       GiftTemplateItem[]
+
+  @@index([partnerId, active, name])
+}
+
+model GiftTemplateItem {
+  id         String       @id @default(uuid())
+  templateId String
+  productId  Int?
+  name       String
+  quantity   Float
+  unitPrice  Float        @default(0)
+  sortOrder  Int          @default(0)
+  template   GiftTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  product    Product?     @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([templateId, sortOrder])
+}
+
+model StockReservation {
+  id            String      @id @default(uuid())
+  customOrderId String
+  productId     Int
+  quantity      Float
+  releasedAt    DateTime?
+  consumedAt    DateTime?
+  createdAt     DateTime    @default(now())
+  customOrder   CustomOrder @relation(fields: [customOrderId], references: [id], onDelete: Cascade)
+  product       Product     @relation(fields: [productId], references: [id])
+
+  @@unique([customOrderId, productId])
+  @@index([productId, releasedAt, consumedAt])
 }
 
 model Device {
@@ -356,10 +587,10 @@ model Device {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
-  partner      Partner       @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
-  sales        Sale[]
-  cashSessions CashSession[]
-  syncEvents   SyncEvent[]
+  partner          Partner           @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
+  sales            Sale[]
+  cashSessions     CashSession[]
+  syncEvents       SyncEvent[]
   catalogProposals CatalogProposal[]
 
   @@index([partnerId])
@@ -540,7 +771,7 @@ model ProductTemplate {
   description String @default("")
 
   category_id     Int
-  category        Category @relation(fields: [category_id], references: [id])
+  category        Category     @relation(fields: [category_id], references: [id])
   product_type_id Int?
   productType     ProductType? @relation(fields: [product_type_id], references: [id])
 
@@ -555,42 +786,42 @@ model ProductTemplate {
 }
 
 model ProductTemplateRequest {
-  id                 Int                          @id @default(autoincrement())
-  name               String
-  name_ar            String                       @default("")
-  description        String                       @default("")
-  images             String[]                     @default([])
-  category_id        Int?
-  product_type_id    Int?
-  categoryProposalId String?
+  id                    Int                          @id @default(autoincrement())
+  name                  String
+  name_ar               String                       @default("")
+  description           String                       @default("")
+  images                String[]                     @default([])
+  category_id           Int?
+  product_type_id       Int?
+  categoryProposalId    String?
   productTypeProposalId String?
-  brand_id           Int?
-  partnerId          Int
-  status             ProductTemplateRequestStatus @default(PENDING)
-  rejectionReason    String?
-  adminNote          String?
-  approvedTemplateId Int?
-  mergedIntoTemplateId Int?
-  hasOrder           Boolean                      @default(false)
-  posLocalId         String?
-  posDeviceId        String?
-  createdAt          DateTime                     @default(now())
-  updatedAt          DateTime                     @updatedAt
+  brand_id              Int?
+  partnerId             Int
+  status                ProductTemplateRequestStatus @default(PENDING)
+  rejectionReason       String?
+  adminNote             String?
+  approvedTemplateId    Int?
+  mergedIntoTemplateId  Int?
+  hasOrder              Boolean                      @default(false)
+  posLocalId            String?
+  posDeviceId           String?
+  createdAt             DateTime                     @default(now())
+  updatedAt             DateTime                     @updatedAt
 
-  partner          Partner          @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
-  category         Category?        @relation(fields: [category_id], references: [id])
-  productType      ProductType?     @relation(fields: [product_type_id], references: [id])
-  brand            Brand?           @relation(fields: [brand_id], references: [id])
-  approvedTemplate ProductTemplate? @relation("ApprovedTemplateRequests", fields: [approvedTemplateId], references: [id])
-  variants         ProductTemplateRequestVariant[]
-  categoryProposal CatalogProposal? @relation("RequestCategoryProposal", fields: [categoryProposalId], references: [id], onDelete: SetNull)
-  productTypeProposal CatalogProposal? @relation("RequestProductTypeProposal", fields: [productTypeProposalId], references: [id], onDelete: SetNull)
+  partner             Partner                         @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
+  category            Category?                       @relation(fields: [category_id], references: [id])
+  productType         ProductType?                    @relation(fields: [product_type_id], references: [id])
+  brand               Brand?                          @relation(fields: [brand_id], references: [id])
+  approvedTemplate    ProductTemplate?                @relation("ApprovedTemplateRequests", fields: [approvedTemplateId], references: [id])
+  variants            ProductTemplateRequestVariant[]
+  categoryProposal    CatalogProposal?                @relation("RequestCategoryProposal", fields: [categoryProposalId], references: [id], onDelete: SetNull)
+  productTypeProposal CatalogProposal?                @relation("RequestProductTypeProposal", fields: [productTypeProposalId], references: [id], onDelete: SetNull)
 
+  @@unique([partnerId, posLocalId])
   @@index([partnerId, status])
   @@index([category_id])
   @@index([product_type_id])
   @@index([brand_id])
-  @@unique([partnerId, posLocalId])
 }
 
 model CatalogProposal {
@@ -599,10 +830,10 @@ model CatalogProposal {
   deviceId              String?
   localId               String
   entityType            CatalogProposalEntityType
-  status                CatalogProposalStatus    @default(PENDING)
+  status                CatalogProposalStatus     @default(PENDING)
   name                  String
-  name_ar               String                   @default("")
-  description           String                   @default("")
+  name_ar               String                    @default("")
+  description           String                    @default("")
   image                 String?
   nicheId               Int
   categoryId            Int?
@@ -615,15 +846,15 @@ model CatalogProposal {
   updatedAt             DateTime                  @updatedAt
   reviewedAt            DateTime?
 
-  partner Partner @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
-  device  Device? @relation(fields: [deviceId], references: [id], onDelete: SetNull)
-  niche Niche @relation(fields: [nicheId], references: [id])
-  category Category? @relation("CatalogProposalCategory", fields: [categoryId], references: [id])
-  parentProposal CatalogProposal? @relation("CatalogProposalParent", fields: [parentProposalId], references: [id], onDelete: SetNull)
-  childProposals CatalogProposal[] @relation("CatalogProposalParent")
-  resolvedCategory Category? @relation("CatalogProposalResolvedCategory", fields: [resolvedCategoryId], references: [id])
-  resolvedProductType ProductType? @relation("CatalogProposalResolvedProductType", fields: [resolvedProductTypeId], references: [id])
-  categoryRequests ProductTemplateRequest[] @relation("RequestCategoryProposal")
+  partner             Partner                  @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
+  device              Device?                  @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  niche               Niche                    @relation(fields: [nicheId], references: [id])
+  category            Category?                @relation("CatalogProposalCategory", fields: [categoryId], references: [id])
+  parentProposal      CatalogProposal?         @relation("CatalogProposalParent", fields: [parentProposalId], references: [id], onDelete: SetNull)
+  childProposals      CatalogProposal[]        @relation("CatalogProposalParent")
+  resolvedCategory    Category?                @relation("CatalogProposalResolvedCategory", fields: [resolvedCategoryId], references: [id])
+  resolvedProductType ProductType?             @relation("CatalogProposalResolvedProductType", fields: [resolvedProductTypeId], references: [id])
+  categoryRequests    ProductTemplateRequest[] @relation("RequestCategoryProposal")
   productTypeRequests ProductTemplateRequest[] @relation("RequestProductTypeProposal")
 
   @@unique([partnerId, localId])
@@ -633,19 +864,19 @@ model CatalogProposal {
 }
 
 model ProductTemplateRequestVariant {
-  id        Int                    @id @default(autoincrement())
-  requestId Int
-  name      String?
-  description String?
-  sku       String?
-  image     String?
-  tags      String[]               @default([])
-  price     Float?
-  costPrice Float?
-  stock     Int?
-  reorderThreshold Int?
-  trackInventory Boolean @default(true)
-  localId   String?
+  id                Int      @id @default(autoincrement())
+  requestId         Int
+  name              String?
+  description       String?
+  sku               String?
+  image             String?
+  tags              String[] @default([])
+  price             Float?
+  costPrice         Float?
+  stock             Int?
+  reorderThreshold  Int?
+  trackInventory    Boolean  @default(true)
+  localId           String?
   resolvedVariantId Int?
 
   request ProductTemplateRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
@@ -653,10 +884,10 @@ model ProductTemplateRequestVariant {
 
 // ---------- VARIANTS ----------
 model Variant {
-  id   Int     @id @default(autoincrement())
-  name String? // e.g. "Banana flavor", "Red color"
+  id          Int     @id @default(autoincrement())
+  name        String? // e.g. "Banana flavor", "Red color"
   description String?
-  sku  String? @unique
+  sku         String? @unique
 
   productId Int
   product   ProductTemplate @relation(fields: [productId], references: [id])
@@ -689,17 +920,17 @@ model Order {
   id   Int      @id @default(autoincrement())
   date DateTime @default(now())
 
-  deliveryTax Int   @default(0)
-  appTax      Int   @default(0)
-  storeTax    Int   @default(0)
-  discount    Float @default(0)
-  subtotal    Float @default(0)
-  partnerGross Float @default(0)
-  partnerFee   Float @default(0)
-  partnerNet   Float @default(0)
-  partnerFeeType PartnerFeeType @default(NONE)
-  partnerFeeRate Float @default(0)
-  partnerFixedFee Float @default(0)
+  deliveryTax     Int            @default(0)
+  appTax          Int            @default(0)
+  storeTax        Int            @default(0)
+  discount        Float          @default(0)
+  subtotal        Float          @default(0)
+  partnerGross    Float          @default(0)
+  partnerFee      Float          @default(0)
+  partnerNet      Float          @default(0)
+  partnerFeeType  PartnerFeeType @default(NONE)
+  partnerFeeRate  Float          @default(0)
+  partnerFixedFee Float          @default(0)
 
   source             OrderSource @default(ONLINE)
   walkInCustomerName String?
