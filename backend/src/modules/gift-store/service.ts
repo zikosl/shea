@@ -30,7 +30,19 @@ function documentNumber(prefix: string) {
 
 export async function createGiftOrder(prisma: PrismaClient, partnerId: number, input: any) {
   await requireCapability(prisma, partnerId, CapabilityCode.GIFT_BUILDER)
+  if (!input.customerName?.trim()) throw new GraphQLError('CUSTOMER_NAME_REQUIRED')
   if (!input.lines?.length) throw new GraphQLError('CUSTOM_ORDER_LINES_REQUIRED')
+  if (input.fulfillmentMode === 'DELIVERY' && !input.deliveryAddress?.trim())
+    throw new GraphQLError('DELIVERY_ADDRESS_REQUIRED')
+  if (input.discount != null && (!Number.isFinite(input.discount) || input.discount < 0))
+    throw new GraphQLError('INVALID_DISCOUNT')
+  for (const line of input.lines) {
+    if (!line.name?.trim()) throw new GraphQLError('CUSTOM_ORDER_LINE_NAME_REQUIRED')
+    if (!Number.isFinite(line.quantity) || line.quantity <= 0) throw new GraphQLError('INVALID_LINE_QUANTITY')
+    if (!Number.isFinite(line.unitPrice) || line.unitPrice < 0) throw new GraphQLError('INVALID_LINE_PRICE')
+    if (line.unitCost != null && (!Number.isFinite(line.unitCost) || line.unitCost < 0))
+      throw new GraphQLError('INVALID_LINE_COST')
+  }
   const productIds = input.lines.map((line: any) => line.productId).filter(Boolean)
   const products = productIds.length ? await prisma.product.findMany({ where: { id: { in: productIds }, partnerId, isActive: true } }) : []
   if (products.length !== new Set(productIds).size) throw new GraphQLError('PRODUCT_NOT_FOUND')
@@ -60,6 +72,7 @@ export async function createGiftOrder(prisma: PrismaClient, partnerId: number, i
 
 export async function transitionGiftOrder(prisma: PrismaClient, partnerId: number, id: string, next: CustomOrderStatus, expectedVersion: number) {
   await requireCapability(prisma, partnerId, CapabilityCode.CUSTOM_ORDERS)
+  if (!Number.isInteger(expectedVersion) || expectedVersion < 1) throw new GraphQLError('INVALID_EXPECTED_VERSION')
   return prisma.$transaction(async (tx) => {
     const order = await tx.customOrder.findFirst({ where: { id, partnerId } })
     if (!order) throw new GraphQLError('CUSTOM_ORDER_NOT_FOUND')
