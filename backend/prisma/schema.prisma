@@ -323,6 +323,7 @@ model Niche {
   partners         Partner_Niche[]
   catalogProposals CatalogProposal[]
   capabilities     NicheCapability[]
+  customOrders     CustomOrder[]
 }
 
 model Category {
@@ -433,6 +434,7 @@ model CustomOrder {
   id              String             @id @default(uuid())
   orderNumber     String             @unique
   partnerId       Int
+  nicheId         Int?
   clientId        Int?
   addressId       Int?
   confirmedOrderId Int?           @unique
@@ -450,6 +452,7 @@ model CustomOrder {
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
   partner         Partner            @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
+  niche           Niche?             @relation(fields: [nicheId], references: [id], onDelete: SetNull)
   client          Client?            @relation("ClientGiftOrders", fields: [clientId], references: [userId], onDelete: SetNull)
   address         Address?           @relation(fields: [addressId], references: [id], onDelete: SetNull)
   confirmedOrder  Order?             @relation("GiftConfirmation", fields: [confirmedOrderId], references: [id], onDelete: SetNull)
@@ -462,6 +465,7 @@ model CustomOrder {
   @@index([partnerId, status, requiredAt])
   @@index([partnerId, updatedAt])
   @@index([clientId, updatedAt])
+  @@index([partnerId, nicheId, requiredAt])
 }
 
 model GiftSpecification {

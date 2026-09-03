@@ -19,6 +19,7 @@ const transitions: Record<CustomOrderStatus, CustomOrderStatus[]> = {
 }
 
 export const giftOrderInclude = {
+  niche: true,
   client: { include: { user: { select: { email: true, phone: true } } } },
   address: true,
   confirmedOrder: true,
@@ -48,8 +49,19 @@ async function validateGiftLines(prisma: PrismaClient, partnerId: number, input:
       throw new GraphQLError('INVALID_LINE_COST')
   }
   const productIds = input.lines.map((line: any) => line.productId).filter(Boolean)
-  const products = productIds.length ? await prisma.product.findMany({ where: { id: { in: productIds }, partnerId, isActive: true } }) : []
+  const products = productIds.length
+    ? await prisma.product.findMany({
+        where: { id: { in: productIds }, partnerId, isActive: true },
+        include: { variant: { include: { product: { include: { category: true } } } } },
+      })
+    : []
   if (products.length !== new Set(productIds).size) throw new GraphQLError('PRODUCT_NOT_FOUND')
+  if (input.nicheId) {
+    const assignment = await prisma.partner_Niche.findFirst({ where: { partnerId, niche_id: input.nicheId } })
+    if (!assignment) throw new GraphQLError('NICHE_NOT_AVAILABLE')
+    if (products.some((product) => product.variant.product.category.niche_id !== input.nicheId))
+      throw new GraphQLError('GIFT_ITEMS_MUST_SHARE_NICHE')
+  }
 }
 
 async function createGiftOrderForPartner(prisma: PrismaClient, partnerId: number, input: any, clientId?: number) {
@@ -58,7 +70,7 @@ async function createGiftOrderForPartner(prisma: PrismaClient, partnerId: number
   const discount = Math.min(Math.max(input.discount ?? 0, 0), subtotal)
   return prisma.customOrder.create({
     data: {
-      orderNumber: input.orderNumber || documentNumber('GFT'), partnerId, clientId: clientId ?? null,
+      orderNumber: input.orderNumber || documentNumber('GFT'), partnerId, nicheId: input.nicheId ?? null, clientId: clientId ?? null,
       addressId: input.addressId ?? null,
       customerName: input.customerName.trim(), customerPhone: input.customerPhone?.trim() || null,
       requiredAt: input.requiredAt ?? null, fulfillmentMode: input.fulfillmentMode,
