@@ -74,6 +74,7 @@ enum ProductionTaskStatus {
 enum OrderSource {
   ONLINE
   POS
+  GIFT
 }
 
 enum PartnerFeeType {
@@ -216,6 +217,7 @@ model Address {
   user       User       @relation(fields: [userId], references: [id])
   deliveries Delivery[]
   orders     Order[]
+  giftOrders CustomOrder[]
 }
 
 model Token {
@@ -240,6 +242,7 @@ model Client {
   userId          Int             @unique
   // add any client-only fields here
   Order           Order[]
+  giftOrders      CustomOrder[] @relation("ClientGiftOrders")
 }
 
 model Partner_Niche {
@@ -394,6 +397,7 @@ model Product {
   customOrderLines  CustomOrderLine[]
   giftTemplateItems GiftTemplateItem[]
   stockReservations StockReservation[]
+  giftQuotationLines GiftQuotationLine[]
 
   @@unique([partnerId, variantId])
   @@index([partnerId, isActive, isVisibleInPos])
@@ -429,6 +433,9 @@ model CustomOrder {
   id              String             @id @default(uuid())
   orderNumber     String             @unique
   partnerId       Int
+  clientId        Int?
+  addressId       Int?
+  confirmedOrderId Int?           @unique
   customerName    String
   customerPhone   String?
   status          CustomOrderStatus  @default(DRAFT)
@@ -443,6 +450,9 @@ model CustomOrder {
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
   partner         Partner            @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
+  client          Client?            @relation("ClientGiftOrders", fields: [clientId], references: [userId], onDelete: SetNull)
+  address         Address?           @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  confirmedOrder  Order?             @relation("GiftConfirmation", fields: [confirmedOrderId], references: [id], onDelete: SetNull)
   gift            GiftSpecification?
   lines           CustomOrderLine[]
   quotations      GiftQuotation[]
@@ -451,6 +461,7 @@ model CustomOrder {
 
   @@index([partnerId, status, requiredAt])
   @@index([partnerId, updatedAt])
+  @@index([clientId, updatedAt])
 }
 
 model GiftSpecification {
@@ -504,6 +515,7 @@ model GiftQuotation {
 model GiftQuotationLine {
   id          String        @id @default(uuid())
   quotationId String
+  productId   Int?
   name        String
   description String?
   quantity    Float
@@ -511,8 +523,10 @@ model GiftQuotationLine {
   total       Float
   sortOrder   Int           @default(0)
   quotation   GiftQuotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  product     Product?      @relation(fields: [productId], references: [id], onDelete: SetNull)
 
   @@index([quotationId, sortOrder])
+  @@index([productId])
 }
 
 model ProductionTask {
@@ -950,6 +964,7 @@ model Order {
   orderDispatchs OrderDispatch[]
   delivery       Delivery?
   sales          Sale[]
+  giftRequest    CustomOrder? @relation("GiftConfirmation")
 }
 
 model Delivery {

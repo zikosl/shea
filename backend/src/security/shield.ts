@@ -46,6 +46,8 @@ export const permissions = shield(
       partnerCapabilityOverrides: isAdmin,
       listGiftOrders: isPartner,
       getGiftOrder: isPartner,
+      listMyGiftOrders: isClient,
+      getMyGiftOrder: isClient,
       '*': isAuthenticated,
     },
     Mutation: {
@@ -105,6 +107,8 @@ export const permissions = shield(
       setNicheCapability: isAdmin,
       setPartnerCapabilityOverride: isAdmin,
       createGiftOrder: isPartner,
+      createClientGiftOrder: isClient,
+      respondToGiftQuotation: isClient,
       transitionGiftOrder: isPartner,
       createGiftQuotation: isPartner,
       reserveGiftMaterials: isPartner,
