@@ -34,6 +34,13 @@ function documentNumber(prefix: string) {
   return `${prefix}-${new Date().toISOString().slice(0, 10).replaceAll('-', '')}-${randomUUID().slice(0, 6).toUpperCase()}`
 }
 
+/** Partner-facing GraphQL calls authenticate as a User; commerce records use Partner.id. */
+async function resolvePartnerId(prisma: PrismaClient, partnerUserId: number) {
+  const partner = await prisma.partner.findUnique({ where: { userId: partnerUserId }, select: { id: true } })
+  if (!partner) throw new GraphQLError('PARTNER_REQUIRED')
+  return partner.id
+}
+
 async function validateGiftLines(prisma: PrismaClient, partnerId: number, input: any) {
   if (!input.customerName?.trim()) throw new GraphQLError('CUSTOMER_NAME_REQUIRED')
   if (!input.lines?.length) throw new GraphQLError('CUSTOM_ORDER_LINES_REQUIRED')
@@ -91,9 +98,9 @@ async function createGiftOrderForPartner(prisma: PrismaClient, partnerId: number
   })
 }
 
-export async function createGiftOrder(prisma: PrismaClient, partnerId: number, input: any) {
-  await requireCapability(prisma, partnerId, CapabilityCode.GIFT_BUILDER)
-  return createGiftOrderForPartner(prisma, partnerId, input)
+export async function createGiftOrder(prisma: PrismaClient, partnerUserId: number, input: any) {
+  await requireCapability(prisma, partnerUserId, CapabilityCode.GIFT_BUILDER)
+  return createGiftOrderForPartner(prisma, await resolvePartnerId(prisma, partnerUserId), input)
 }
 
 /** Client requests must be bound to an account and a single storefront. */
@@ -110,21 +117,22 @@ export async function createClientGiftOrder(prisma: PrismaClient, clientId: numb
     if (!address) throw new GraphQLError('ADDRESS_NOT_FOUND')
   }
   const customerName = `${client.firstname} ${client.lastname}`.trim() || 'Shea client'
-  const created = await createGiftOrderForPartner(prisma, input.partnerId, {
+  const created = await createGiftOrderForPartner(prisma, partner.id, {
     ...input,
     customerName,
     customerPhone: client.user.phone ?? input.customerPhone,
   }, clientId)
   await prisma.log.create({ data: {
-    userId: input.partnerId, type: LogSatus.ORDER_UPDATE,
+    userId: partner.userId, type: LogSatus.ORDER_UPDATE,
     title: `New gift request ${created.orderNumber}`, body: 'A customer requested a custom gift or gift bundle.',
     title_ar: `طلب هدية جديد ${created.orderNumber}`, body_ar: 'قام عميل بإرسال طلب هدية أو باقة مخصصة.',
   } })
   return created
 }
 
-export async function transitionGiftOrder(prisma: PrismaClient, partnerId: number, id: string, next: CustomOrderStatus, expectedVersion: number) {
-  await requireCapability(prisma, partnerId, CapabilityCode.CUSTOM_ORDERS)
+export async function transitionGiftOrder(prisma: PrismaClient, partnerUserId: number, id: string, next: CustomOrderStatus, expectedVersion: number) {
+  await requireCapability(prisma, partnerUserId, CapabilityCode.CUSTOM_ORDERS)
+  const partnerId = await resolvePartnerId(prisma, partnerUserId)
   if (!Number.isInteger(expectedVersion) || expectedVersion < 1) throw new GraphQLError('INVALID_EXPECTED_VERSION')
   return prisma.$transaction(async (tx) => {
     const order = await tx.customOrder.findFirst({ where: { id, partnerId } })
@@ -138,8 +146,9 @@ export async function transitionGiftOrder(prisma: PrismaClient, partnerId: numbe
   })
 }
 
-export async function createGiftQuotation(prisma: PrismaClient, partnerId: number, customOrderId: string, validUntil?: Date | null, note?: string | null) {
-  await requireCapability(prisma, partnerId, CapabilityCode.QUOTATIONS)
+export async function createGiftQuotation(prisma: PrismaClient, partnerUserId: number, customOrderId: string, validUntil?: Date | null, note?: string | null) {
+  await requireCapability(prisma, partnerUserId, CapabilityCode.QUOTATIONS)
+  const partnerId = await resolvePartnerId(prisma, partnerUserId)
   return prisma.$transaction(async (tx) => {
     const order = await tx.customOrder.findFirst({ where: { id: customOrderId, partnerId }, include: { lines: { orderBy: { sortOrder: 'asc' } } } })
     if (!order) throw new GraphQLError('CUSTOM_ORDER_NOT_FOUND')
@@ -199,8 +208,9 @@ export async function respondToGiftQuotation(prisma: PrismaClient, clientId: num
   })
 }
 
-export async function reserveGiftMaterials(prisma: PrismaClient, partnerId: number, customOrderId: string) {
-  await requireCapability(prisma, partnerId, CapabilityCode.PRODUCTION)
+export async function reserveGiftMaterials(prisma: PrismaClient, partnerUserId: number, customOrderId: string) {
+  await requireCapability(prisma, partnerUserId, CapabilityCode.PRODUCTION)
+  const partnerId = await resolvePartnerId(prisma, partnerUserId)
   return prisma.$transaction(async (tx) => {
     const order = await tx.customOrder.findFirst({ where: { id: customOrderId, partnerId }, include: { lines: true } })
     if (!order) throw new GraphQLError('CUSTOM_ORDER_NOT_FOUND')
