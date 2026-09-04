@@ -1,7 +1,7 @@
 # Shea POS releases
 
 The POS uses Electron Builder's signed NSIS installer and Electron's generic update provider.
-
+0772306023
 ## Release checklist
 
 1. Bump `shea-pos/package.json` to a new semantic version.
