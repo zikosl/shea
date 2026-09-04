@@ -12,7 +12,7 @@ import styles from "./landing-system.module.css";
 
 const links = [
   { href: "#features", key: "features" },
-  { href: "#workspace", key: "workspace" },
+  { href: "#workspace", key: "download" },
   { href: "/privacy", key: "privacy" },
 ] as const;
 

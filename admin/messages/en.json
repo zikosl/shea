@@ -198,12 +198,14 @@
         "client": { "title": "Shea Client", "description": "Discover, shop and track every order." },
         "partner": { "title": "Shea Partner", "description": "Manage products, orders, stock and earnings." },
         "rider": { "title": "Shea Rider", "description": "Accept, navigate and complete deliveries." },
-        "admin": { "title": "Shea Admin", "description": "Control catalog, network and platform health." }
+        "admin": { "title": "Shea Admin", "description": "Control catalog, network and platform health." },
+        "pos": { "title": "Shea POS for Windows", "description": "Sell offline, manage stock and sync safely.", "download": "Download" }
       },
       "cta": {
         "eyebrow": "Your operations, finally in rhythm",
         "title": "Build a beauty network that scales without losing control.",
-        "button": "Open Shea Admin"
+        "button": "Open Shea Admin",
+        "download": "Download Windows POS"
       },
       "benefits": {
         "guided": {

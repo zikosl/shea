@@ -964,6 +964,29 @@
 .appCard:nth-child(3) { transform: translateX(0.75rem); }
 .appCard:hover { transform: translateX(0.5rem); background: rgb(255 255 255 / 11%); }
 
+.appCardFeatured {
+  border-color: color-mix(in srgb, var(--lp-accent) 55%, transparent);
+  background: color-mix(in srgb, var(--lp-accent) 12%, transparent);
+  box-shadow: 0 14px 35px color-mix(in srgb, var(--lp-accent) 13%, transparent);
+}
+
+.appCardFeatured .appIcon {
+  color: #fff;
+  background: var(--lp-accent-deep);
+}
+
+.appDownloadLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+  color: var(--lp-accent-deep);
+  font-size: 0.67rem;
+  font-weight: 800;
+}
+
+.appDownloadLink:hover { text-decoration: underline; }
+
 .appIcon {
   display: grid;
   place-items: center;

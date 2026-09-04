@@ -1,14 +1,15 @@
 import Link from "next/link";
-import { ArrowRight, Bike, ShieldCheck, ShoppingBag, Store } from "lucide-react";
+import { ArrowRight, Bike, Download, MonitorDown, ShieldCheck, ShoppingBag, Store } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import styles from "./landing-system.module.css";
 
 const apps = [
-  { key: "client", icon: ShoppingBag },
-  { key: "partner", icon: Store },
-  { key: "rider", icon: Bike },
-  { key: "admin", icon: ShieldCheck },
+  { key: "client", icon: ShoppingBag, download: false },
+  { key: "partner", icon: Store, download: false },
+  { key: "rider", icon: Bike, download: false },
+  { key: "admin", icon: ShieldCheck, download: false },
+  { key: "pos", icon: MonitorDown, download: true },
 ] as const;
 
 export default async function AppDownload() {
@@ -38,17 +39,23 @@ export default async function AppDownload() {
               </div>
 
               <div className={styles.appStack}>
-                {apps.map(({ key, icon: Icon }) => (
-                  <article className={styles.appCard} key={key}>
+                {apps.map(({ key, icon: Icon, download: isDownload }) => (
+                  <article className={`${styles.appCard} ${isDownload ? styles.appCardFeatured : ""}`} key={key}>
                     <span className={styles.appIcon}><Icon size={19} /></span>
                     <div>
                       <h3 className={styles.appName}>{t(`apps.${key}.title`)}</h3>
                       <p className={styles.appDescription}>{t(`apps.${key}.description`)}</p>
                     </div>
-                    <span className={styles.appState}>
-                      <span className={styles.trustDot} />
-                      {t("connected")}
-                    </span>
+                    {isDownload ? (
+                      <Link href="/api/pos/download" className={styles.appDownloadLink} aria-label={t("apps.pos.download")}>
+                        <Download size={15} /> {t("apps.pos.download")}
+                      </Link>
+                    ) : (
+                      <span className={styles.appState}>
+                        <span className={styles.trustDot} />
+                        {t("connected")}
+                      </span>
+                    )}
                   </article>
                 ))}
               </div>
@@ -65,10 +72,14 @@ export default async function AppDownload() {
               <h2 className={styles.ctaTitle}>{t("cta.title")}</h2>
             </div>
             <div className={styles.ctaAction}>
-              <Link href="/login" className={styles.primaryButton}>
-                {t("cta.button")}
-                <ArrowRight size={16} />
-              </Link>
+              <div className={styles.workflowActions}>
+                <Link href="/api/pos/download" className={styles.primaryButton}>
+                  <Download size={16} /> {t("cta.download")}
+                </Link>
+                <Link href="/login" className={styles.secondaryButton}>
+                  {t("cta.button")} <ArrowRight size={16} />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
