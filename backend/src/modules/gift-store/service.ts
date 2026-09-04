@@ -95,7 +95,18 @@ async function createGiftOrderForPartner(prisma: PrismaClient, partnerId: number
 
 export async function createGiftOrder(prisma: PrismaClient, partnerUserId: number, input: any) {
   await requireCapability(prisma, partnerUserId, CapabilityCode.GIFT_BUILDER)
-  return createGiftOrderForPartner(prisma, partnerUserId, input)
+  try {
+    return await createGiftOrderForPartner(prisma, partnerUserId, input)
+  } catch (error) {
+    // POS can retain a catalog snapshot after a product was removed or
+    // replaced online. Keep the captured line as a custom item instead of
+    // rejecting the complete order.
+    if (!(error instanceof GraphQLError) || error.message !== 'PRODUCT_NOT_FOUND') throw error
+    return createGiftOrderForPartner(prisma, partnerUserId, {
+      ...input,
+      lines: input.lines.map(({ productId, ...line }: any) => line),
+    })
+  }
 }
 
 /** Client requests must be bound to an account and a single storefront. */
