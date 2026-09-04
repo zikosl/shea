@@ -2,6 +2,7 @@
 import { arg, intArg, nonNull, inputObjectType, list, extendType, stringArg, floatArg, booleanArg } from "nexus"
 import { getUserId } from "../../../utils"
 import { Context } from "../../../context"
+import { publishStoreProducts } from "../../../modules/store-network/service"
 import {
     createManyProducts,
     createProduct,
@@ -83,10 +84,16 @@ const ProductMutation = extendType({
             },
             resolve: async (_parent, data, ctx: Context) => {
                 const userId = getUserId(ctx)
-                return updateProduct(ctx.prisma, userId, {
+                const updated = await updateProduct(ctx.prisma, userId, {
                     ...data,
                     customImages: data.customImages?.images,
                 })
+                const stores = await ctx.prisma.store.findMany({
+                    where: { partnerId: userId, cloudSyncEnabled: true, status: 'ACTIVE' },
+                    select: { id: true },
+                })
+                await Promise.all(stores.map((store) => publishStoreProducts(ctx.prisma, store.id)))
+                return updated
             },
         })
 

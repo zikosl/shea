@@ -155,6 +155,21 @@ enum SyncEventAction {
   ARCHIVE
 }
 
+enum StoreDeploymentMode {
+  SOLO
+  MULTI_POS
+}
+
+enum StoreStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum StoreTerminalStatus {
+  ACTIVE
+  REVOKED
+}
+
 model PartnerDeliverySchedule {
   id Int @id @default(autoincrement())
 
@@ -284,6 +299,7 @@ model Partner {
   capabilityOverrides PartnerCapabilityOverride[]
   customOrders        CustomOrder[]
   giftTemplates       GiftTemplate[]
+  stores              Store[]
 }
 
 model Driver {
@@ -611,9 +627,50 @@ model Device {
   cashSessions     CashSession[]
   syncEvents       SyncEvent[]
   catalogProposals CatalogProposal[]
+  storeTerminal    StoreTerminal?
 
   @@index([partnerId])
   @@index([platform])
+}
+
+model Store {
+  id                   String              @id @default(uuid())
+  partnerId            Int
+  code                 String
+  name                 String
+  timezone             String              @default("Africa/Algiers")
+  deploymentMode       StoreDeploymentMode @default(SOLO)
+  status               StoreStatus         @default(ACTIVE)
+  cloudSyncEnabled     Boolean             @default(false)
+  cloudGatewayUrl      String?
+  localGatewayUrl      String?
+  gatewayProvisionedAt DateTime?
+  gatewayLastSeenAt    DateTime?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  partner   Partner         @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
+  terminals StoreTerminal[]
+
+  @@unique([partnerId, code])
+  @@index([partnerId, status])
+}
+
+model StoreTerminal {
+  id          String              @id @default(uuid())
+  storeId     String
+  deviceId    String?             @unique
+  terminalKey String              @unique
+  name        String
+  status      StoreTerminalStatus @default(ACTIVE)
+  lastSeenAt  DateTime?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  store  Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  device Device? @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+
+  @@index([storeId, status])
 }
 
 model Sale {

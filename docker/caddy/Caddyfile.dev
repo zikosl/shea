@@ -10,6 +10,12 @@
 		reverse_proxy backend:3001
 	}
 
+	@store_sync path /api/pos-sync/*
+	handle @store_sync {
+		uri strip_prefix /api/pos-sync
+		reverse_proxy {$CLOUD_GATEWAY_UPSTREAM:host.docker.internal:3520}
+	}
+
 	handle /uploads/* {
 		root * /srv
 		file_server

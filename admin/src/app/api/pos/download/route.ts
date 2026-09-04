@@ -6,13 +6,13 @@ const releaseRoot = process.env.POS_RELEASES_DIR || path.join(process.cwd(), "re
 
 export async function GET() {
   try {
-    const manifest = await readFile(path.join(releaseRoot, "latest.yml"), "utf8");
+    const manifest = await readFile(/* turbopackIgnore: true */ path.join(releaseRoot, "latest.yml"), "utf8");
     const match = manifest.match(/^path:\s*(.+)$/m);
     const fileName = match?.[1]?.trim();
     if (!fileName || path.basename(fileName) !== fileName || !fileName.toLowerCase().endsWith(".exe"))
       return NextResponse.json({ error: "No valid Windows release is published" }, { status: 404 });
 
-    const installer = await readFile(path.join(releaseRoot, fileName));
+    const installer = await readFile(path.join(/* turbopackIgnore: true */ releaseRoot, fileName));
     return new NextResponse(installer, {
       headers: {
         "content-type": "application/vnd.microsoft.portable-executable",

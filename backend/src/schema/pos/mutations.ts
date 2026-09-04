@@ -3,6 +3,7 @@ import { arg, extendType, floatArg, nonNull, stringArg } from 'nexus'
 import { GraphQLError } from 'graphql'
 import { Context } from '../../context'
 import { getUserId } from '../../utils'
+import { attachDeviceToStore } from '../../modules/store-network/service'
 
 function buildSaleNumber(partnerId: number) {
   return `POS-${partnerId}-${Date.now()}`
@@ -24,6 +25,7 @@ const Mutation = extendType({
         platform: nonNull(arg({ type: 'Platform' })),
         name: stringArg(),
         appVersion: stringArg(),
+        storeId: stringArg(),
       },
       resolve: async (_parent, args: any, ctx: Context) => {
         const partnerId = getUserId(ctx)
@@ -37,7 +39,7 @@ const Mutation = extendType({
           throw new GraphQLError('POS_DEVICE_REVOKED')
         }
 
-        return ctx.prisma.device.upsert({
+        const device = await ctx.prisma.device.upsert({
           where: { deviceKey: args.deviceKey },
           create: {
             deviceKey: args.deviceKey,
@@ -54,6 +56,8 @@ const Mutation = extendType({
             lastSyncAt: new Date(),
           },
         })
+        await attachDeviceToStore(ctx.prisma, partnerId, device, args.storeId)
+        return device
       },
     })
 

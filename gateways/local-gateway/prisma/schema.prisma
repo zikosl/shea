@@ -1,0 +1,124 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model GatewayMeta {
+  key       String   @id
+  value     String
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("gateway_meta")
+}
+
+model Terminal {
+  id          String   @id @db.Uuid
+  terminalKey String   @unique @map("terminal_key")
+  name        String
+  tokenHash   String   @unique @map("token_hash")
+  status      String   @default("ACTIVE")
+  lastSeenAt  DateTime? @map("last_seen_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+  sales       Sale[]
+
+  @@map("terminals")
+}
+
+model Product {
+  cloudId          Int       @id @map("cloud_id")
+  name             String
+  nameAr           String?   @map("name_ar")
+  variantName      String?   @map("variant_name")
+  sku              String?
+  image            String?
+  price            Float     @default(0)
+  costPrice        Float     @default(0) @map("cost_price")
+  discount         Float     @default(0)
+  stock            Float     @default(0)
+  reorderThreshold Float     @default(0) @map("reorder_threshold")
+  trackInventory   Boolean   @default(true) @map("track_inventory")
+  available        Boolean   @default(true)
+  visibleInPos     Boolean   @default(true) @map("visible_in_pos")
+  cloudUpdatedAt   DateTime? @map("cloud_updated_at")
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at")
+  saleItems        SaleItem[]
+
+  @@map("products")
+}
+
+model Sale {
+  id            String     @id @db.Uuid
+  saleNumber    String     @unique @map("sale_number")
+  terminalId    String     @db.Uuid @map("terminal_id")
+  cashierId     String?    @map("cashier_id")
+  cashierName   String?    @map("cashier_name")
+  customerName  String?    @map("customer_name")
+  subtotal      Float
+  discountTotal Float      @default(0) @map("discount_total")
+  taxTotal      Float      @default(0) @map("tax_total")
+  total         Float
+  paymentMethod String     @map("payment_method")
+  createdAt     DateTime   @map("created_at")
+  syncedAt      DateTime?  @map("synced_at")
+  terminal      Terminal   @relation(fields: [terminalId], references: [id])
+  items         SaleItem[]
+
+  @@map("sales")
+}
+
+model SaleItem {
+  id          String  @id @db.Uuid
+  saleId      String  @db.Uuid @map("sale_id")
+  productId   Int     @map("product_id")
+  productName String  @map("product_name")
+  quantity    Float
+  unitPrice   Float   @map("unit_price")
+  discount    Float   @default(0)
+  tax         Float   @default(0)
+  total       Float
+  stockBefore Float   @map("stock_before")
+  stockAfter  Float   @map("stock_after")
+  sale        Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product     Product @relation(fields: [productId], references: [cloudId])
+
+  @@map("sale_items")
+}
+
+model SyncOutbox {
+  id             String    @id @db.Uuid
+  idempotencyKey String    @unique @map("idempotency_key")
+  entityType     String    @map("entity_type")
+  entityId       String    @map("entity_id")
+  operation      String
+  payload        Json
+  entityVersion  Int       @default(1) @map("entity_version")
+  occurredAt     DateTime  @map("occurred_at")
+  attempts       Int       @default(0)
+  nextAttemptAt  DateTime? @map("next_attempt_at")
+  lastError      String?   @map("last_error")
+  syncedAt       DateTime? @map("synced_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@index([syncedAt, nextAttemptAt, createdAt])
+  @@map("sync_outbox")
+}
+
+model SyncInbox {
+  sequence      Int      @id
+  eventId       String   @unique @db.Uuid @map("event_id")
+  entityType    String   @map("entity_type")
+  entityId      String   @map("entity_id")
+  operation     String
+  payload       Json
+  entityVersion Int      @map("entity_version")
+  occurredAt    DateTime @map("occurred_at")
+  receivedAt    DateTime @default(now()) @map("received_at")
+
+  @@map("sync_inbox")
+}

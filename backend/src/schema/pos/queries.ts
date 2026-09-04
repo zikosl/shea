@@ -6,6 +6,7 @@ import { getUserId } from '../../utils'
 import { CapabilityCode } from '@prisma/client'
 import { effectiveCapabilities } from '../../modules/capabilities/service'
 import { giftOrderInclude } from '../../modules/gift-store/service'
+import { attachDeviceToStore, ensureDefaultStore } from '../../modules/store-network/service'
 
 async function assertPartner(ctx: Context, userId: number) {
   const partner = await ctx.prisma.partner.findUnique({ where: { userId } })
@@ -30,6 +31,10 @@ const Query = extendType({
         const device = await ctx.prisma.device.findFirst({ where: { deviceKey, partnerId } })
         if (!device) throw new GraphQLError('POS_DEVICE_NOT_REGISTERED')
         if (device.revokedAt) throw new GraphQLError('POS_DEVICE_REVOKED')
+        const terminal = await ctx.prisma.storeTerminal.findUnique({ where: { deviceId: device.id } })
+          ?? await attachDeviceToStore(ctx.prisma, partnerId, device)
+        const store = await ctx.prisma.store.findUnique({ where: { id: terminal.storeId } })
+          ?? await ensureDefaultStore(ctx.prisma, partnerId)
 
         const nicheIds = partner.partnerNiches
           .map((entry) => entry.niche_id)
@@ -99,7 +104,7 @@ const Query = extendType({
           generatedAt,
           offlineUntil,
           payload: JSON.stringify({
-            schemaVersion: 2,
+            schemaVersion: 3,
             partner: {
               userId: partner.userId,
               companyName: partner.companyName,
@@ -110,6 +115,17 @@ const Query = extendType({
               capabilities: enabledCapabilities,
             },
             device: { id: device.id, deviceKey: device.deviceKey, name: device.name },
+            store: {
+              id: store.id,
+              code: store.code,
+              name: store.name,
+              timezone: store.timezone,
+              deploymentMode: store.deploymentMode,
+              terminalId: terminal.id,
+              cloudSyncEnabled: store.cloudSyncEnabled,
+              cloudGatewayUrl: store.cloudGatewayUrl,
+              localGatewayUrl: store.localGatewayUrl,
+            },
             catalog: { niches, categories, productTypes, brands, templates },
             products,
             proposals,

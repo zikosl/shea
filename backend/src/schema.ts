@@ -22,6 +22,7 @@ import Pos from './schema/pos'
 import CatalogProposal from './schema/catalog-proposal'
 import Capability from './schema/capability'
 import GiftStore from './schema/gift-store'
+import StoreNetwork from './schema/store-network'
 
 import { DateTimeResolver } from 'graphql-scalars'
 import { permissions } from './security/shield'
@@ -48,6 +49,7 @@ const schemaWithoutPermissions = makeSchema({
     CatalogProposal,
     Capability,
     GiftStore,
+    StoreNetwork,
     Driver,
     Address
   ],

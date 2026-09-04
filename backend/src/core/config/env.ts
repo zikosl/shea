@@ -31,6 +31,7 @@ export const env = {
   jwtAccessSecret: requiredProductionSecret('JWT_ACCESS_SECRET', 'change-me-access-secret'),
   jwtRefreshSecret: requiredProductionSecret('JWT_REFRESH_SECRET', 'change-me-refresh-secret'),
   smsProxyTarget: process.env.SMS_PROXY_TARGET,
+  cloudGatewayServiceToken: process.env.CLOUD_GATEWAY_SERVICE_TOKEN ?? '',
   firebaseServiceAccountPath:
     process.env.FIREBASE_SERVICE_ACCOUNT_PATH ??
     'shea-12-firebase-adminsdk-fbsvc-dfc06bc22c.json',
