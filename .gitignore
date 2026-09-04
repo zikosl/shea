@@ -41,6 +41,8 @@ partner-pwa/
 shea-client/
 shea-rider/
 shea-pos/
+gateways/
+packages/
 # Package manager files
 package-lock.json
 !shea-pos/package-lock.json
