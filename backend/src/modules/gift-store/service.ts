@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto'
 import { requireCapability } from '../capabilities/service'
 import { DeliveryStatus, DeliveryType, LogSatus } from '../../types'
 import { calculatePartnerFee } from '../../utils/partner-fees'
+import { dispatchQueue } from '../../servers'
 
 const transitions: Record<CustomOrderStatus, CustomOrderStatus[]> = {
   DRAFT: ['REQUESTED', 'CANCELLED'],
@@ -123,7 +124,7 @@ export async function createClientGiftOrder(prisma: PrismaClient, clientId: numb
     if (!address) throw new GraphQLError('ADDRESS_NOT_FOUND')
   }
   const customerName = `${client.firstname} ${client.lastname}`.trim() || 'Shea client'
-  const created = await createGiftOrderForPartner(prisma, partner.id, {
+  const created = await createGiftOrderForPartner(prisma, partner.userId, {
     ...input,
     customerName,
     customerPhone: client.user.phone ?? input.customerPhone,
@@ -140,7 +141,7 @@ export async function transitionGiftOrder(prisma: PrismaClient, partnerUserId: n
   await requireCapability(prisma, partnerUserId, CapabilityCode.CUSTOM_ORDERS)
   const partnerId = partnerUserId
   if (!Number.isInteger(expectedVersion) || expectedVersion < 1) throw new GraphQLError('INVALID_EXPECTED_VERSION')
-  return prisma.$transaction(async (tx) => {
+  const updatedOrder = await prisma.$transaction(async (tx) => {
     const order = await tx.customOrder.findFirst({ where: { id, partnerId } })
     if (!order) throw new GraphQLError('CUSTOM_ORDER_NOT_FOUND')
     if (order.version !== expectedVersion) throw new GraphQLError('CUSTOM_ORDER_VERSION_CONFLICT')
@@ -150,6 +151,14 @@ export async function transitionGiftOrder(prisma: PrismaClient, partnerUserId: n
     if (updated.count !== 1) throw new GraphQLError('CUSTOM_ORDER_VERSION_CONFLICT')
     return tx.customOrder.findUnique({ where: { id }, include: giftOrderInclude })
   })
+  if (next === 'READY' && updatedOrder?.confirmedOrderId) {
+    const delivery = await prisma.delivery.findUnique({ where: { orderId: updatedOrder.confirmedOrderId } })
+    if (delivery?.type === DeliveryType.NORMAL) {
+      await prisma.delivery.update({ where: { id: delivery.id }, data: { status: DeliveryStatus.READY } })
+      await dispatchQueue.add('dispatch-order', { orderId: delivery.orderId, attempt: 1 }, { jobId: `dispatch:${delivery.orderId}:1` })
+    }
+  }
+  return updatedOrder
 }
 
 export async function createGiftQuotation(prisma: PrismaClient, partnerUserId: number, customOrderId: string, validUntil?: Date | null, note?: string | null) {
@@ -193,10 +202,14 @@ export async function respondToGiftQuotation(prisma: PrismaClient, clientId: num
     }
     if (order.confirmedOrderId) return tx.customOrder.findUnique({ where: { id: order.id }, include: giftOrderInclude })
     if (order.lines.some((line) => !line.productId)) throw new GraphQLError('GIFT_CATALOG_ITEMS_MUST_BE_RESOLVED')
-    const resolvedAddressId = addressId ?? order.addressId ?? (await tx.address.findFirst({ where: { userId: clientId, isDefault: true }, select: { id: true } }))?.id
+    const resolvedAddressId = order.fulfillmentMode === 'PICKUP'
+      ? null
+      : addressId ?? order.addressId ?? (await tx.address.findFirst({ where: { userId: clientId, isDefault: true }, select: { id: true } }))?.id
     if (!resolvedAddressId) throw new GraphQLError('ADDRESS_REQUIRED')
-    const address = await tx.address.findFirst({ where: { id: resolvedAddressId, userId: clientId } })
-    if (!address) throw new GraphQLError('ADDRESS_NOT_FOUND')
+    if (resolvedAddressId) {
+      const address = await tx.address.findFirst({ where: { id: resolvedAddressId, userId: clientId } })
+      if (!address) throw new GraphQLError('ADDRESS_NOT_FOUND')
+    }
     const financials = calculatePartnerFee(order.total, order.partner)
     const fulfillmentOrder = await tx.order.create({ data: {
       clientId, partnerId: order.partnerId, addressId: resolvedAddressId, source: 'GIFT', note: order.note,
