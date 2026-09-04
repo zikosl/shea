@@ -1,4 +1,4 @@
-import { Users, LayoutPanelTop, UserCog, GalleryVerticalEnd, PackageSearch, PackagePlus, BadgeHelp, Truck, Boxes, Sparkles, ClipboardCheck, SlidersHorizontal } from "lucide-react";
+import { Users, LayoutPanelTop, UserCog, GalleryVerticalEnd, PackageSearch, PackagePlus, BadgeHelp, Truck, Boxes, Sparkles, ClipboardCheck, SlidersHorizontal, Download } from "lucide-react";
 
 
 type Submenu = {
@@ -37,6 +37,13 @@ export function getMenuList(pathname: string): Group[] {
           label: "Dashboard",
           active: pathname.includes("/dashboard"),
           icon: LayoutPanelTop,
+          submenus: []
+        },
+        {
+          href: "/pos-updates",
+          label: "POS Updates",
+          active: pathname.includes("/pos-updates"),
+          icon: Download,
           submenus: []
         }
       ]

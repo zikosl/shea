@@ -25,6 +25,11 @@
 		file_server
 	}
 
+	handle /downloads/pos/* {
+		root * /srv
+		file_server
+	}
+
 	@backend_health path /api/backend-health
 	handle @backend_health {
 		rewrite * /health

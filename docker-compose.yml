@@ -15,6 +15,19 @@ services:
     restart: "no"
     networks:
       - shea-network
+
+  releases-init:
+    image: alpine:3.20
+    container_name: shea-releases-init
+    command:
+      - sh
+      - -c
+      - mkdir -p /app/releases/pos && chown -R 1001:1001 /app/releases
+    volumes:
+      - ./releases:/app/releases
+    restart: "no"
+    networks:
+      - shea-network
   
   backend:
     build:
@@ -71,12 +84,17 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+      releases-init:
+        condition: service_completed_successfully
     env_file:
       - .env
     environment:
       NODE_ENV: production
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
       INTERNAL_API_URL: http://backend:3001
+      POS_RELEASES_DIR: /app/releases/pos
+    volumes:
+      - ./releases/pos:/app/releases/pos
     expose:
       - "3000"
     healthcheck:
@@ -107,6 +125,7 @@ services:
     volumes:
       - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - ./backend/uploads:/srv/uploads:ro
+      - ./releases/pos:/srv/downloads/pos:ro
       - caddy_data:/data
       - caddy_config:/config
     networks:
