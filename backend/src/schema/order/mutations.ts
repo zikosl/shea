@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { arg, intArg, nonNull, extendType } from "nexus"
+import { arg, booleanArg, intArg, nonNull, extendType, stringArg } from "nexus"
 import { Context } from "../../context"
 import { getUserId } from "../../utils"
 import { GraphQLError } from "graphql"
@@ -8,6 +8,7 @@ import { pickSchedule, todayAt } from "../../utils/order"
 import { sendNotification } from "../../servers/firebase"
 import { ensurePartnerPosIdentity } from "./pos"
 import { calculatePartnerFee } from "../../utils/partner-fees"
+import { ORDER_DELAY } from "../../constants"
 // import { DeliveryStatus } from "../../types"
 
 const Mutation = extendType({
@@ -137,22 +138,27 @@ const Mutation = extendType({
                 status: nonNull(arg({ type: "DispatchStatus" }))
             },
             resolve: async (_parent, { status, id }: OrderDispatch, ctx: Context) => {
+                const driverId = getUserId(ctx)
                 if (status !== DispatchStatus.SENT) {
-                    const dispatch = await ctx.prisma.orderDispatch.update({
-                        data: {
-                            status: status
-                        },
-                        where: {
-                            id
-                        }
+                    const existing = await ctx.prisma.orderDispatch.findFirst({
+                        where: { id, driverId, status: DispatchStatus.SENT, expiresAt: { gt: new Date() } },
                     })
+                    if (!existing) throw new GraphQLError('DISPATCH_NOT_AVAILABLE')
+                    let dispatch = existing
                     if (status === DispatchStatus.ACCEPTED) {
-                        const order = await ctx.prisma.delivery.update({
-                            where: { id: dispatch.deliveryId },
-                            data: {
-                                status: DeliveryStatus.ASSIGNED,
-                                driverId: dispatch.driverId
-                            }
+                        const order = await ctx.prisma.$transaction(async (tx) => {
+                            const claimed = await tx.delivery.updateMany({
+                                where: { id: dispatch.deliveryId, status: DeliveryStatus.READY, driverId: null },
+                                data: { status: DeliveryStatus.ASSIGNED, driverId },
+                            })
+                            if (claimed.count !== 1) throw new GraphQLError('DELIVERY_ALREADY_ASSIGNED')
+                            dispatch = await tx.orderDispatch.update({ data: { status }, where: { id } })
+                            await tx.orderDispatch.updateMany({
+                                where: { deliveryId: dispatch.deliveryId, id: { not: dispatch.id }, status: DispatchStatus.SENT },
+                                data: { status: DispatchStatus.EXPIRED },
+                            })
+                            await tx.driver.update({ where: { userId: driverId }, data: { isAvailable: false } })
+                            return tx.delivery.findUniqueOrThrow({ where: { id: dispatch.deliveryId } })
                         })
                         // Log assignment for both client and partner
                         await ctx.prisma.log.create({
@@ -165,7 +171,7 @@ const Mutation = extendType({
                                 userId: order.clientId
                             }
                         })
-                    }
+                    } else dispatch = await ctx.prisma.orderDispatch.update({ data: { status }, where: { id } })
                     return dispatch
                 }
                 return new GraphQLError("Invalid State")
@@ -289,6 +295,12 @@ const Mutation = extendType({
                                     status: DeliveryStatus.DELIVERED
                                 }
                             })
+                            const remainingDeliveries = await tx.delivery.count({
+                                where: { driverId: userId, id: { not: order.deliveryId }, status: { in: [DeliveryStatus.ASSIGNED, DeliveryStatus.PICKED] } },
+                            })
+                            if (remainingDeliveries === 0) {
+                                await tx.driver.update({ where: { userId }, data: { isAvailable: true } })
+                            }
                             await tx.log.create({
                                 data: {
                                     title: `Order #${order.orderId} has been Delivered`,
@@ -684,6 +696,136 @@ const Mutation = extendType({
                         }
                     })
                 })
+            },
+        })
+
+        t.field('adminOfferDelivery', {
+            type: 'OrderDispatch',
+            args: {
+                deliveryId: nonNull(intArg()),
+                driverId: nonNull(intArg()),
+            },
+            resolve: async (_parent, { deliveryId, driverId }, ctx: Context) => {
+                const actorId = getUserId(ctx)
+                const [delivery, driver] = await Promise.all([
+                    ctx.prisma.delivery.findUnique({ where: { id: deliveryId }, include: { order: true } }),
+                    ctx.prisma.driver.findUnique({
+                        where: { userId: driverId },
+                        include: { user: { include: { pushTokens: { orderBy: { createdAt: 'desc' }, take: 1 } } } },
+                    }),
+                ])
+                if (!delivery || delivery.type !== DeliveryType.NORMAL || delivery.status !== DeliveryStatus.READY) throw new GraphQLError('DELIVERY_NOT_READY')
+                if (!driver?.online || !driver.isAvailable) throw new GraphQLError('DRIVER_NOT_AVAILABLE')
+                if ((driver.latitude === 0 && driver.longitude === 0) || !Number.isFinite(driver.latitude) || !Number.isFinite(driver.longitude)) throw new GraphQLError('DRIVER_LOCATION_UNAVAILABLE')
+
+                const dispatch = await ctx.prisma.$transaction(async (tx) => {
+                    await tx.orderDispatch.updateMany({
+                        where: { deliveryId, driverId, status: DispatchStatus.SENT },
+                        data: { status: DispatchStatus.EXPIRED },
+                    })
+                    const created = await tx.orderDispatch.create({
+                        data: {
+                            deliveryId,
+                            orderId: delivery.orderId,
+                            driverId,
+                            status: DispatchStatus.SENT,
+                            sentAt: new Date(),
+                            expiresAt: new Date(Date.now() + ORDER_DELAY),
+                        },
+                    })
+                    await tx.auditLog.create({
+                        data: { actorId, partnerId: delivery.order.partnerId, action: 'OFFER_DELIVERY', entity: 'Delivery', entityId: String(deliveryId), after: { driverId, dispatchId: created.id } },
+                    })
+                    return created
+                })
+                await sendNotification({
+                    tokens: driver.user.pushTokens[0]?.token ?? '',
+                    title: 'Delivery offered to you',
+                    body: `Order #${delivery.orderId} is waiting for your response.`,
+                    androidChannelId: 'new_orders',
+                    data: { event: 'NEW_ORDER', orderId: String(delivery.orderId), dispatchId: String(dispatch.id) },
+                })
+                return dispatch
+            },
+        })
+
+        t.field('adminAssignDelivery', {
+            type: 'Delivery',
+            args: {
+                deliveryId: nonNull(intArg()),
+                driverId: nonNull(intArg()),
+                force: booleanArg({ default: false }),
+                reason: stringArg(),
+            },
+            resolve: async (_parent, { deliveryId, driverId, force, reason }, ctx: Context) => {
+                const actorId = getUserId(ctx)
+                const [delivery, driver] = await Promise.all([
+                    ctx.prisma.delivery.findUnique({ where: { id: deliveryId }, include: { order: true } }),
+                    ctx.prisma.driver.findUnique({
+                        where: { userId: driverId },
+                        include: {
+                            deliveries: { where: { status: { in: [DeliveryStatus.ASSIGNED, DeliveryStatus.PICKED] } }, select: { id: true } },
+                            user: { include: { pushTokens: { orderBy: { createdAt: 'desc' }, take: 1 } } },
+                        },
+                    }),
+                ])
+                if (!delivery || delivery.type !== DeliveryType.NORMAL || ![DeliveryStatus.READY, DeliveryStatus.ASSIGNED].includes(delivery.status)) throw new GraphQLError('DELIVERY_CANNOT_BE_ASSIGNED')
+                if (!driver?.online) throw new GraphQLError('DRIVER_OFFLINE')
+                if (!force && (!driver.isAvailable || driver.deliveries.some((entry) => entry.id !== deliveryId))) throw new GraphQLError('DRIVER_NOT_AVAILABLE')
+                if (force && !reason?.trim()) throw new GraphQLError('FORCE_ASSIGNMENT_REASON_REQUIRED')
+
+                const previousDriverId = delivery.driverId
+                const updated = await ctx.prisma.$transaction(async (tx) => {
+                    await tx.orderDispatch.updateMany({ where: { deliveryId, status: { in: [DispatchStatus.SENT, DispatchStatus.ACCEPTED] } }, data: { status: DispatchStatus.EXPIRED } })
+                    await tx.orderDispatch.create({
+                        data: { deliveryId, orderId: delivery.orderId, driverId, status: DispatchStatus.ACCEPTED, sentAt: new Date(), expiresAt: new Date(Date.now() + ORDER_DELAY) },
+                    })
+                    const result = await tx.delivery.update({ where: { id: deliveryId }, data: { driverId, status: DeliveryStatus.ASSIGNED } })
+                    await tx.driver.update({ where: { userId: driverId }, data: { isAvailable: false } })
+                    if (previousDriverId && previousDriverId !== driverId) {
+                        const remaining = await tx.delivery.count({ where: { driverId: previousDriverId, id: { not: deliveryId }, status: { in: [DeliveryStatus.ASSIGNED, DeliveryStatus.PICKED] } } })
+                        if (remaining === 0) await tx.driver.update({ where: { userId: previousDriverId }, data: { isAvailable: true } })
+                    }
+                    await tx.auditLog.create({
+                        data: { actorId, partnerId: delivery.order.partnerId, action: 'ASSIGN_DELIVERY', entity: 'Delivery', entityId: String(deliveryId), before: { driverId: previousDriverId, status: delivery.status }, after: { driverId, status: DeliveryStatus.ASSIGNED }, metadata: { forced: Boolean(force), reason: reason?.trim() || null } },
+                    })
+                    return result
+                })
+                await sendNotification({
+                    tokens: driver.user.pushTokens[0]?.token ?? '',
+                    title: 'Delivery assigned',
+                    body: `Dispatch assigned order #${delivery.orderId} to you.`,
+                    androidChannelId: 'new_orders',
+                    data: { event: 'ORDER_ASSIGNED', orderId: String(delivery.orderId) },
+                })
+                return updated
+            },
+        })
+
+        t.field('adminUnassignDelivery', {
+            type: 'Delivery',
+            args: {
+                deliveryId: nonNull(intArg()),
+                reason: nonNull(stringArg()),
+            },
+            resolve: async (_parent, { deliveryId, reason }, ctx: Context) => {
+                const actorId = getUserId(ctx)
+                if (!reason.trim()) throw new GraphQLError('UNASSIGNMENT_REASON_REQUIRED')
+                const delivery = await ctx.prisma.delivery.findUnique({ where: { id: deliveryId }, include: { order: true } })
+                if (!delivery || delivery.status !== DeliveryStatus.ASSIGNED || !delivery.driverId) throw new GraphQLError('DELIVERY_NOT_ASSIGNED')
+                const previousDriverId = delivery.driverId
+                const updated = await ctx.prisma.$transaction(async (tx) => {
+                    await tx.orderDispatch.updateMany({ where: { deliveryId, status: { in: [DispatchStatus.SENT, DispatchStatus.ACCEPTED] } }, data: { status: DispatchStatus.EXPIRED } })
+                    const result = await tx.delivery.update({ where: { id: deliveryId }, data: { driverId: null, status: DeliveryStatus.READY } })
+                    const remaining = await tx.delivery.count({ where: { driverId: previousDriverId, id: { not: deliveryId }, status: { in: [DeliveryStatus.ASSIGNED, DeliveryStatus.PICKED] } } })
+                    if (remaining === 0) await tx.driver.update({ where: { userId: previousDriverId }, data: { isAvailable: true } })
+                    await tx.auditLog.create({
+                        data: { actorId, partnerId: delivery.order.partnerId, action: 'UNASSIGN_DELIVERY', entity: 'Delivery', entityId: String(deliveryId), before: { driverId: previousDriverId, status: delivery.status }, after: { driverId: null, status: DeliveryStatus.READY }, metadata: { reason: reason.trim() } },
+                    })
+                    return result
+                })
+                await ctx.dispatchQueue.add('dispatch-order', { orderId: delivery.orderId, attempt: 1 }, { jobId: `dispatch:${delivery.orderId}:manual:${Date.now()}` })
+                return updated
             },
         })
     },

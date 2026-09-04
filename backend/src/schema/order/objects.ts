@@ -156,6 +156,70 @@ const DriverRoute = objectType({
     },
 })
 
+const AdminDispatchLine = objectType({
+    name: 'AdminDispatchLine',
+    definition(t) {
+        t.nonNull.int('id')
+        t.nonNull.string('name')
+        t.nonNull.int('quantity')
+        t.nonNull.float('price')
+    },
+})
+
+const AdminDispatchOrder = objectType({
+    name: 'AdminDispatchOrder',
+    definition(t) {
+        t.nonNull.int('orderId')
+        t.nonNull.int('deliveryId')
+        t.nonNull.field('status', { type: 'DeliveryStatus' })
+        t.nonNull.field('type', { type: 'DeliveryType' })
+        t.nonNull.field('createdAt', { type: 'DateTime' })
+        t.field('scheduledAt', { type: 'DateTime' })
+        t.nonNull.float('total')
+        t.nonNull.string('partnerName')
+        t.string('partnerAddress')
+        t.nonNull.float('partnerLatitude')
+        t.nonNull.float('partnerLongitude')
+        t.nonNull.string('clientName')
+        t.string('clientPhone')
+        t.string('destinationAddress')
+        t.float('destinationLatitude')
+        t.float('destinationLongitude')
+        t.int('assignedDriverId')
+        t.nonNull.int('dispatchCount')
+        t.nonNull.int('activeOfferCount')
+        t.field('lastDispatchAt', { type: 'DateTime' })
+        t.nonNull.boolean('needsAttention')
+        t.nonNull.list.nonNull.field('items', { type: 'AdminDispatchLine' })
+    },
+})
+
+const AdminDispatchDriver = objectType({
+    name: 'AdminDispatchDriver',
+    definition(t) {
+        t.nonNull.int('userId')
+        t.nonNull.string('name')
+        t.string('phone')
+        t.string('email')
+        t.nonNull.float('latitude')
+        t.nonNull.float('longitude')
+        t.nonNull.boolean('online')
+        t.nonNull.boolean('isAvailable')
+        t.field('locationUpdatedAt', { type: 'DateTime' })
+        t.nonNull.int('activeDeliveryCount')
+        t.nonNull.string('state')
+    },
+})
+
+const AdminDispatchBoard = objectType({
+    name: 'AdminDispatchBoard',
+    definition(t) {
+        t.nonNull.field('generatedAt', { type: 'DateTime' })
+        t.nonNull.list.nonNull.field('orders', { type: 'AdminDispatchOrder' })
+        t.nonNull.list.nonNull.field('drivers', { type: 'AdminDispatchDriver' })
+    },
+})
+
 
 
 const DeliveryStatus = enumType({
@@ -233,4 +297,4 @@ const OrderItemInput = inputObjectType({
         t.int('productId')
     }
 })
-export default { DriverRoute, DeliveryStatus, DeliveryType, Delivery, OrderDispatch, DispatchStatus, OrderItemInput, OrderInput, PartnerPosOrderInput, OrderResult, Order, OrderItem }
+export default { AdminDispatchBoard, AdminDispatchDriver, AdminDispatchLine, AdminDispatchOrder, DriverRoute, DeliveryStatus, DeliveryType, Delivery, OrderDispatch, DispatchStatus, OrderItemInput, OrderInput, PartnerPosOrderInput, OrderResult, Order, OrderItem }

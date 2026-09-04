@@ -164,7 +164,7 @@ export default async function DashboardPage() {
     { label: "Pending product requests", value: stats.pendingProductRequests, href: "/product-requests" },
     { label: "Low-stock products", value: stats.lowStockProducts, href: "/products" },
     { label: "Out of stock", value: stats.outOfStockProducts, href: "/products" },
-    { label: "Pending deliveries", value: stats.pendingDeliveries, href: "/drivers" },
+    { label: "Pending deliveries", value: stats.pendingDeliveries, href: "/dispatch" },
   ];
 
   return (

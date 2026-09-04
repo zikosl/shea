@@ -104,6 +104,7 @@ export const Driver = objectType({
         t.int('userId');
         t.float('latitude');
         t.float('longitude');
+        t.field('locationUpdatedAt', { type: 'DateTime' });
         t.field('user', {
             type: 'User',
             resolve: async (parent, _, ctx: Context) => {

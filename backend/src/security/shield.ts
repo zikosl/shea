@@ -34,6 +34,7 @@ export const permissions = shield(
   {
     Query: {
       adminDashboardStats: isAdmin,
+      adminDispatchBoard: isAdmin,
       getDriverRoute: isDriver,
       posBootstrap: isPartner,
       listDevices: isPartner,
@@ -83,6 +84,9 @@ export const permissions = shield(
       createDriver: isAdmin,
       updateDriver: isAdmin,
       deleteDriver: isAdmin,
+      adminOfferDelivery: isAdmin,
+      adminAssignDelivery: isAdmin,
+      adminUnassignDelivery: isAdmin,
       createPartner: isAdmin,
       updatePartner: isAdmin,
       deletePartner: isAdmin,
@@ -97,6 +101,7 @@ export const permissions = shield(
       submitProductTemplateRequest: isPartner,
       submitCatalogProposal: isPartner,
       updatePartnerProfile: isPartner,
+      updateDriverLocation: isDriver,
       partnerOrder: isPartner,
       createPartnerPosOrder: isPartner,
       registerDevice: isPartner,

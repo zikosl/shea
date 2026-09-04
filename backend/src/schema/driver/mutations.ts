@@ -1,4 +1,4 @@
-import { nonNull, extendType, stringArg, intArg, booleanArg } from 'nexus'
+import { nonNull, extendType, stringArg, intArg, booleanArg, floatArg } from 'nexus'
 import { Context } from '../../context'
 import { generateRandomPassword } from '../../utils/password'
 import bcrypt from 'bcryptjs'
@@ -112,6 +112,30 @@ export const DriverMutation = extendType({
                 catch (e) {
                     throw createBadRequestError("Something wrong")
                 }
+            },
+        })
+
+        t.field('updateDriverLocation', {
+            type: 'Driver',
+            args: {
+                latitude: nonNull(floatArg()),
+                longitude: nonNull(floatArg()),
+                isAvailable: booleanArg(),
+            },
+            resolve: async (_parent, { latitude, longitude, isAvailable }, context: Context) => {
+                const userId = getUserId(context)
+                if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || Math.abs(latitude) > 90 || Math.abs(longitude) > 180 || (latitude === 0 && longitude === 0)) {
+                    throw createBadRequestError('A valid driver location is required')
+                }
+                return context.prisma.driver.update({
+                    where: { userId },
+                    data: {
+                        latitude,
+                        longitude,
+                        locationUpdatedAt: new Date(),
+                        isAvailable: isAvailable ?? undefined,
+                    },
+                })
             },
         })
 

@@ -10,6 +10,104 @@ import { createBadRequestError, createNotFoundError } from "../../core/errors/ap
 export const Query = extendType({
     type: 'Query',
     definition(t) {
+        t.nonNull.field('adminDispatchBoard', {
+            type: 'AdminDispatchBoard',
+            resolve: async (_parent, _, ctx: Context) => {
+                const now = new Date()
+                const attentionBefore = new Date(now.getTime() - 10 * 60 * 1000)
+                const [deliveries, drivers] = await Promise.all([
+                    ctx.prisma.delivery.findMany({
+                        where: {
+                            type: DeliveryType.NORMAL,
+                            status: { in: [DeliveryStatus.READY, DeliveryStatus.ASSIGNED, DeliveryStatus.PICKED] },
+                        },
+                        include: {
+                            order: {
+                                include: {
+                                    partner: true,
+                                    client: { include: { user: true } },
+                                    address: true,
+                                    items: {
+                                        include: {
+                                            product: { include: { variant: { include: { product: true } } } },
+                                        },
+                                    },
+                                },
+                            },
+                            dispatches: { orderBy: { sentAt: 'desc' } },
+                        },
+                        orderBy: [{ status: 'asc' }, { createdAt: 'asc' }],
+                    }),
+                    ctx.prisma.driver.findMany({
+                        include: {
+                            user: true,
+                            deliveries: {
+                                where: { status: { in: [DeliveryStatus.ASSIGNED, DeliveryStatus.PICKED] } },
+                                select: { id: true },
+                            },
+                        },
+                        orderBy: [{ online: 'desc' }, { isAvailable: 'desc' }, { firstname: 'asc' }],
+                    }),
+                ])
+
+                return {
+                    generatedAt: now,
+                    orders: deliveries.map((delivery) => {
+                        const activeOffers = delivery.dispatches.filter((entry) => entry.status === DispatchStatus.SENT && entry.expiresAt > now)
+                        const lastDispatch = delivery.dispatches[0]
+                        const total = delivery.order.items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0)
+                        return {
+                            orderId: delivery.orderId,
+                            deliveryId: delivery.id,
+                            status: delivery.status,
+                            type: delivery.type,
+                            createdAt: delivery.createdAt,
+                            scheduledAt: delivery.scheduledAt,
+                            total,
+                            partnerName: delivery.order.partner.companyName,
+                            partnerAddress: delivery.order.partner.address,
+                            partnerLatitude: delivery.order.partner.latitude,
+                            partnerLongitude: delivery.order.partner.longitude,
+                            clientName: `${delivery.order.client.firstname} ${delivery.order.client.lastname}`.trim() || 'Customer',
+                            clientPhone: delivery.order.client.user.phone,
+                            destinationAddress: delivery.order.address.address || delivery.order.address.label,
+                            destinationLatitude: delivery.order.address.latitude,
+                            destinationLongitude: delivery.order.address.longitude,
+                            assignedDriverId: delivery.driverId,
+                            dispatchCount: delivery.dispatches.length,
+                            activeOfferCount: activeOffers.length,
+                            lastDispatchAt: lastDispatch?.sentAt,
+                            needsAttention: delivery.status === DeliveryStatus.READY && activeOffers.length === 0 && (!lastDispatch || lastDispatch.sentAt < attentionBefore),
+                            items: delivery.order.items.map((item) => ({
+                                id: item.id,
+                                name: item.product.customName || item.product.variant.name || item.product.variant.product.name,
+                                quantity: item.quantity,
+                                price: item.price,
+                            })),
+                        }
+                    }),
+                    drivers: drivers.map((driver) => {
+                        const hasLocation = Number.isFinite(driver.latitude) && Number.isFinite(driver.longitude) && !(driver.latitude === 0 && driver.longitude === 0)
+                        const stale = Boolean(driver.locationUpdatedAt && driver.locationUpdatedAt < new Date(now.getTime() - 5 * 60 * 1000))
+                        const activeDeliveryCount = driver.deliveries.length
+                        const state = !driver.online ? 'OFFLINE' : !hasLocation || stale ? 'STALE' : activeDeliveryCount > 0 ? 'IN_DELIVERY' : !driver.isAvailable ? 'UNAVAILABLE' : 'AVAILABLE'
+                        return {
+                            userId: driver.userId,
+                            name: `${driver.firstname} ${driver.lastname}`.trim(),
+                            phone: driver.user.phone,
+                            email: driver.user.email,
+                            latitude: driver.latitude,
+                            longitude: driver.longitude,
+                            online: driver.online,
+                            isAvailable: driver.isAvailable,
+                            locationUpdatedAt: driver.locationUpdatedAt,
+                            activeDeliveryCount,
+                            state,
+                        }
+                    }),
+                }
+            },
+        })
         t.nonNull.list.field('findManyOrders', {
             type: 'Order',
             resolve: async (_parent, _, ctx: Context) => {
