@@ -34,7 +34,7 @@ export default async function Hero() {
               <p className={styles.heroDescription}>{t("description")}</p>
 
               <div className={styles.heroActions}>
-                <Link href="/login" className={styles.primaryButton}>
+                <Link href="/api/pos/download" className={styles.primaryButton}>
                   {t("primaryCta")}
                   <ArrowRight size={16} />
                 </Link>
