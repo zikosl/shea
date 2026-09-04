@@ -15,12 +15,21 @@ const resolveAllowedOrigins = () => {
     .filter((origin): origin is string => Boolean(origin))
 }
 
+const nodeEnv = process.env.NODE_ENV ?? 'development'
+const requiredProductionSecret = (name: string, fallback: string) => {
+  const value = process.env[name]
+  if (nodeEnv === 'production' && (!value || value === fallback)) {
+    throw new Error(`${name} must be configured in production`)
+  }
+  return value ?? fallback
+}
+
 export const env = {
-  nodeEnv: process.env.NODE_ENV ?? 'development',
+  nodeEnv,
   host: process.env.HOST ?? '0.0.0.0',
   port: Number(process.env.PORT ?? 4000),
-  jwtAccessSecret: process.env.JWT_ACCESS_SECRET ?? 'change-me-access-secret',
-  jwtRefreshSecret: process.env.JWT_REFRESH_SECRET ?? 'change-me-refresh-secret',
+  jwtAccessSecret: requiredProductionSecret('JWT_ACCESS_SECRET', 'change-me-access-secret'),
+  jwtRefreshSecret: requiredProductionSecret('JWT_REFRESH_SECRET', 'change-me-refresh-secret'),
   smsProxyTarget: process.env.SMS_PROXY_TARGET,
   firebaseServiceAccountPath:
     process.env.FIREBASE_SERVICE_ACCOUNT_PATH ??
@@ -31,9 +40,10 @@ export const env = {
       ? process.env.OTP_BYPASS_CODE ?? '123456'
       : undefined,
   appReviewOtp: {
-    enabled: process.env.APP_REVIEW_OTP_ENABLED !== 'false',
-    phone: process.env.APP_REVIEW_OTP_PHONE ?? '554706953',
-    code: process.env.APP_REVIEW_OTP_CODE ?? '123456',
+    // This is a testing exception, never an implicit production login path.
+    enabled: process.env.APP_REVIEW_OTP_ENABLED === 'true',
+    phone: process.env.APP_REVIEW_OTP_PHONE ?? '',
+    code: process.env.APP_REVIEW_OTP_CODE ?? '',
   },
 }
 

@@ -12,6 +12,13 @@ import { schema } from './schema'
 import './jobs/queue'
 
 const app = express()
+app.disable('x-powered-by')
+app.use((_request, response, next) => {
+  response.setHeader('X-Content-Type-Options', 'nosniff')
+  response.setHeader('Referrer-Policy', 'no-referrer')
+  response.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'")
+  next()
+})
 const uploadsDirectory = path.resolve(__dirname, '..', 'uploads')
 const graphqlRequestMetadata = new WeakMap<Request, { startedAt: number; operationName: string }>()
 
