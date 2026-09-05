@@ -20,8 +20,15 @@ export async function sendOtpViaPhoneServer(
   const otp = Math.floor(100000 + Math.random() * 900000).toString()
   const message = `Your OTP is: ${otp}`
   const phoneServerUrl =
-    process.env.OTP_PHONE_SERVER_URL ??
-    `http://127.0.0.1:${process.env.PORT ?? '4000'}/send-sms`
+    process.env.OTP_PHONE_SERVER_URL?.trim() ||
+    process.env.PHONE_SERVER_URL?.trim() ||
+    (process.env.SMS_PROXY_TARGET?.trim()
+      ? `http://127.0.0.1:${process.env.PORT ?? '4000'}/send-sms`
+      : '')
+
+  if (!phoneServerUrl) {
+    return sendOtpWithTwilio(phoneNumber)
+  }
 
   try {
     const response = await axios.post(
@@ -47,7 +54,10 @@ export async function sendOtpViaPhoneServer(
   } catch (error: any) {
     let errorMsg = 'Failed to contact phone server'
     if (axios.isAxiosError(error)) {
-      errorMsg = error.response?.data?.error || error.message
+      const providerError = error.response?.data?.error
+      errorMsg = providerError || (error.response?.status
+        ? `SMS provider returned HTTP ${error.response.status}`
+        : error.message)
     }
 
     return {
