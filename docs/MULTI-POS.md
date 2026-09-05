@@ -63,6 +63,8 @@ The generated installer is in `installer/output`. Its configuration wizard asks 
 
 Only `DATABASE_URL` is stored in `gateway.env`. Store and cloud settings are stored separately in `gateway.config.json` under `%PROGRAMDATA%\Shea\Local Gateway`.
 
+For source development on macOS or Linux, run `npm run configure -- ...` from `gateways/local-gateway`. Development configuration is written to the ignored `gateways/local-gateway/.data` directory rather than `/etc`.
+
 ## Safety rules
 
 - Restrict LAN port `3510` to the store's trusted VLAN.

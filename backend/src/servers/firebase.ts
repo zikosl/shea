@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
-import admin from 'firebase-admin'
+import { cert, getApps, initializeApp } from 'firebase-admin/app'
+import { getMessaging, type MulticastMessage } from 'firebase-admin/messaging'
 import { env } from '../core/config/env'
 
 interface NotificationPayload {
@@ -38,13 +39,13 @@ function initializeMessaging() {
     return null
   }
 
-  if (!admin.apps.length) {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccountPath),
+  if (getApps().length === 0) {
+    initializeApp({
+      credential: cert(serviceAccountPath),
     })
   }
 
-  return admin.messaging()
+  return getMessaging()
 }
 
 const messaging = initializeMessaging()
@@ -55,7 +56,7 @@ export async function sendNotification(payload: NotificationPayload) {
     return
   }
 
-  const message: admin.messaging.MulticastMessage = {
+  const message: MulticastMessage = {
     tokens,
     notification: {
       title: payload.title,

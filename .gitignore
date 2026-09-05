@@ -43,8 +43,7 @@ shea-rider/
 shea-pos/
 gateways/
 packages/
-# Package manager files
+# npm lockfiles are not used by the Yarn-managed services.
 package-lock.json
 !shea-pos/package-lock.json
-yarn.lock
 pnpm-lock.yaml

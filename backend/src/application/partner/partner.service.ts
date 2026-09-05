@@ -6,9 +6,22 @@ import { sendEmailPassword } from '../../utils/mailer'
 import { createSession, ensureEmail } from '../auth/auth.service'
 import { LogSatus } from '../../types'
 
+export const DEFAULT_PARTNER_PRIMARY_COLOR = '#CC6F98'
+
+export function normalizePartnerPrimaryColor(value?: string | null) {
+  if (value === undefined || value === null) return undefined
+
+  const normalized = value.trim().toUpperCase()
+  if (!/^#[0-9A-F]{6}$/.test(normalized)) {
+    throw createBadRequestError('Primary color must use the #RRGGBB format')
+  }
+
+  return normalized
+}
+
 export async function createPartner(
   prisma: PrismaClient,
-  input: { email: string; companyName: string; niches?: number[] | null },
+  input: { email: string; companyName: string; niches?: number[] | null; primaryColor?: string | null },
 ) {
   const email = ensureEmail(input.email)
   const password = generateRandomPassword(12)
@@ -23,6 +36,7 @@ export async function createPartner(
         partner: {
           create: {
             companyName: input.companyName,
+            primaryColor: normalizePartnerPrimaryColor(input.primaryColor) ?? DEFAULT_PARTNER_PRIMARY_COLOR,
           },
         },
       },
@@ -104,6 +118,7 @@ export async function updatePartnerProfile(
     online?: boolean | null
     latitude?: number | null
     longitude?: number | null
+    primaryColor?: string | null
   },
 ) {
   await prisma.partner.update({
@@ -115,6 +130,7 @@ export async function updatePartnerProfile(
       online: data.online ?? undefined,
       latitude: data.latitude ?? undefined,
       longitude: data.longitude ?? undefined,
+      primaryColor: normalizePartnerPrimaryColor(data.primaryColor),
     },
   })
 

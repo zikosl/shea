@@ -1,0 +1,2 @@
+ALTER TABLE "Partner"
+ADD COLUMN "primaryColor" TEXT NOT NULL DEFAULT '#CC6F98';

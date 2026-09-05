@@ -83,6 +83,58 @@ type AdminDashboardWindowStats {
   partnerFees: Float!
 }
 
+type AdminDispatchBoard {
+  drivers: [AdminDispatchDriver!]!
+  generatedAt: DateTime!
+  orders: [AdminDispatchOrder!]!
+}
+
+type AdminDispatchDriver {
+  activeDeliveryCount: Int!
+  email: String
+  isAvailable: Boolean!
+  latitude: Float!
+  locationUpdatedAt: DateTime
+  longitude: Float!
+  name: String!
+  online: Boolean!
+  phone: String
+  state: String!
+  userId: Int!
+}
+
+type AdminDispatchLine {
+  id: Int!
+  name: String!
+  price: Float!
+  quantity: Int!
+}
+
+type AdminDispatchOrder {
+  activeOfferCount: Int!
+  assignedDriverId: Int
+  clientName: String!
+  clientPhone: String
+  createdAt: DateTime!
+  deliveryId: Int!
+  destinationAddress: String
+  destinationLatitude: Float
+  destinationLongitude: Float
+  dispatchCount: Int!
+  items: [AdminDispatchLine!]!
+  lastDispatchAt: DateTime
+  needsAttention: Boolean!
+  orderId: Int!
+  partnerAddress: String
+  partnerLatitude: Float!
+  partnerLongitude: Float!
+  partnerName: String!
+  scheduledAt: DateTime
+  status: DeliveryStatus!
+  total: Float!
+  type: DeliveryType!
+}
+
 type AuthPayload {
   accessToken: String
   accessTokenExpires: DateTime
@@ -103,6 +155,28 @@ type Brand {
 type BrandResult {
   brands: [Brand!]!
   totalBrands: Int
+}
+
+enum CapabilityCode {
+  CUSTOM_ORDERS
+  DELIVERY_PICKUP
+  GIFT_BUILDER
+  GIFT_GALLERY
+  GIFT_REPORTS
+  GIFT_TEMPLATES
+  PRODUCTION
+  PRODUCTION_TASKS
+  QUOTATIONS
+}
+
+enum CapabilityOverrideEffect {
+  DISABLE
+  ENABLE
+}
+
+enum CapabilitySource {
+  NICHE_DEFAULT
+  PARTNER_OVERRIDE
 }
 
 type CashSession {
@@ -126,6 +200,47 @@ type CashSession {
 enum CashSessionStatus {
   CLOSED
   OPEN
+}
+
+type CatalogProposal {
+  adminNote: String
+  categoryId: Int
+  createdAt: DateTime!
+  description: String!
+  deviceId: String
+  entityType: CatalogProposalEntityType!
+  id: String!
+  image: String
+  localId: String!
+  name: String!
+  name_ar: String!
+  nicheId: Int!
+  parentProposalId: String
+  partner: Partner
+  partnerId: Int!
+  rejectionReason: String
+  resolvedCategoryId: Int
+  resolvedProductTypeId: Int
+  reviewedAt: DateTime
+  status: CatalogProposalStatus!
+  updatedAt: DateTime!
+}
+
+enum CatalogProposalEntityType {
+  CATEGORY
+  PRODUCT_TYPE
+}
+
+type CatalogProposalResult {
+  proposals: [CatalogProposal!]!
+  total: Int!
+}
+
+enum CatalogProposalStatus {
+  APPROVED
+  MERGED
+  PENDING
+  REJECTED
 }
 
 type Category {
@@ -158,6 +273,27 @@ type Client {
   userId: Int
 }
 
+input CreateGiftOrderInput {
+  addressId: Int
+  cardMessage: String
+  customerName: String!
+  customerPhone: String
+  deliveryAddress: String
+  discount: Float
+  fulfillmentMode: FulfillmentMode!
+  lines: [GiftOrderLineInput!]
+  nicheId: Int
+  note: String
+  occasion: String
+  orderNumber: String
+  partnerId: Int
+  recipientName: String
+  requiredAt: DateTime
+  style: String
+  tasks: [String!]
+  wrappingNote: String
+}
+
 input CreateSaleInput {
   customerName: String
   deviceId: String
@@ -167,6 +303,63 @@ input CreateSaleInput {
   payment: SalePaymentInput
   saleNumber: String
   taxTotal: Float
+}
+
+type CustomOrder {
+  address: Address
+  addressId: Int
+  client: Client
+  clientId: Int
+  confirmedOrder: Order
+  confirmedOrderId: Int
+  createdAt: DateTime!
+  customerName: String!
+  customerPhone: String
+  deliveryAddress: String
+  discount: Float!
+  fulfillmentMode: FulfillmentMode!
+  gift: GiftSpecification
+  id: String!
+  lines: [CustomOrderLine!]!
+  niche: Niche
+  nicheId: Int
+  note: String
+  orderNumber: String!
+  partnerId: Int!
+  quotations: [GiftQuotation!]!
+  requiredAt: DateTime
+  status: CustomOrderStatus!
+  subtotal: Float!
+  tasks: [ProductionTask!]!
+  total: Float!
+  updatedAt: DateTime!
+  version: Int!
+}
+
+type CustomOrderLine {
+  customOrderId: String!
+  description: String
+  id: String!
+  name: String!
+  productId: Int
+  quantity: Float!
+  sortOrder: Int!
+  total: Float!
+  unitCost: Float!
+  unitPrice: Float!
+}
+
+enum CustomOrderStatus {
+  AWAITING_CUSTOMER_APPROVAL
+  CANCELLED
+  CONFIRMED
+  DRAFT
+  FULFILLED
+  IN_PREPARATION
+  MATERIALS_RESERVED
+  QUOTED
+  READY
+  REQUESTED
 }
 
 """
@@ -226,6 +419,7 @@ type Driver {
   isAvailable: Boolean
   lastname: String
   latitude: Float
+  locationUpdatedAt: DateTime
   longitude: Float
   online: Boolean
   user: User
@@ -243,6 +437,12 @@ type DriverRoute {
   encodedPolyline: String!
 }
 
+type EffectiveCapability {
+  code: CapabilityCode!
+  enabled: Boolean!
+  source: CapabilitySource!
+}
+
 """The `File` scalar type represents a file upload."""
 scalar File
 
@@ -251,6 +451,55 @@ type FileUploadResponse {
   filename: String!
   mimetype: String!
   url: String!
+}
+
+enum FulfillmentMode {
+  DELIVERY
+  PICKUP
+}
+
+input GiftOrderLineInput {
+  description: String
+  name: String!
+  productId: Int
+  quantity: Float!
+  unitCost: Float
+  unitPrice: Float!
+}
+
+type GiftQuotation {
+  customOrderId: String!
+  discount: Float!
+  id: String!
+  lines: [GiftQuotationLine!]!
+  note: String
+  quoteNumber: String!
+  status: QuotationStatus!
+  subtotal: Float!
+  total: Float!
+  validUntil: DateTime
+  version: Int!
+}
+
+type GiftQuotationLine {
+  description: String
+  id: String!
+  name: String!
+  product: Product
+  productId: Int
+  quantity: Float!
+  total: Float!
+  unitPrice: Float!
+}
+
+type GiftSpecification {
+  cardMessage: String
+  customOrderId: String!
+  id: String!
+  occasion: String
+  recipientName: String
+  style: String
+  wrappingNote: String
 }
 
 input ImagesList {
@@ -266,6 +515,7 @@ input InputProductVariant {
   price: Float!
   reorderThreshold: Int
   stock: Int
+  trackInventory: Boolean
   variantId: Int!
 }
 
@@ -290,22 +540,31 @@ enum LogStatus {
 
 type Mutation {
   addPartnerNiche(niches: [Int!]!): [PartnerNiche]!
+  adminAssignDelivery(deliveryId: Int!, driverId: Int!, force: Boolean = false, reason: String): Delivery
+  adminOfferDelivery(deliveryId: Int!, driverId: Int!): OrderDispatch
+  adminUnassignDelivery(deliveryId: Int!, reason: String!): Delivery
+  approveCatalogProposal(adminNote: String, id: String!): CatalogProposal
   approveProductTemplateRequest(adminNote: String, id: Int!): ProductTemplateRequest
   closeCashSession(countedCash: Float!, id: String!, note: String): CashSession
+  configureStoreNetwork(cloudGatewayUrl: String, cloudSyncEnabled: Boolean!, localGatewayUrl: String, storeId: String!): Store!
   createAddress(address: String, label: String!, latitude: Float!, longitude: Float!): Address
   createBrand(image: String!, name: String!, niche_id: Int): Brand
   createCategory(image: String, name: String!, name_ar: String!, niche_id: Int): Category
+  createClientGiftOrder(input: CreateGiftOrderInput!): CustomOrder!
   createDriver(email: String!, firstname: String!, lastname: String!): Driver
+  createGiftOrder(input: CreateGiftOrderInput!): CustomOrder!
+  createGiftQuotation(customOrderId: String!, note: String, validUntil: DateTime): GiftQuotation!
   createManyProducts(data: [InputProductVariant]): Boolean
   createNiche(image: String, name: String!, name_ar: String!): Niche
   createOrder(data: OrderInput!): Order
-  createPartner(companyName: String!, email: String!, feeRate: Float, feeType: PartnerFeeType, fixedFee: Float, niches: [Int!]): Partner
+  createPartner(companyName: String!, email: String!, feeRate: Float, feeType: PartnerFeeType, fixedFee: Float, niches: [Int!], primaryColor: String): Partner
   createPartnerPosOrder(data: PartnerPosOrderInput!): Order
-  createProduct(available: Boolean, costPrice: Float, customDescription: String, customImages: ImagesList, customName: String, discount: Float, isActive: Boolean, isVisibleInPos: Boolean, notes: String, onlineVisible: Boolean, price: Float, reorderThreshold: Int, stock: Int, variantId: Int!, vendorBarcode: String, vendorSku: String): Product
+  createProduct(available: Boolean, costPrice: Float, customDescription: String, customImages: ImagesList, customName: String, discount: Float, isActive: Boolean, isVisibleInPos: Boolean, notes: String, onlineVisible: Boolean, price: Float, reorderThreshold: Int, stock: Int, trackInventory: Boolean, variantId: Int!, vendorBarcode: String, vendorSku: String): Product
   createProductTemplate(brand_id: Int!, category_id: Int!, description: String, images: ImagesList, name: String!, product_type_id: Int): ProductTemplate
   createProductType(category_id: Int!, name: String!, name_ar: String!): ProductType
   createSale(data: CreateSaleInput!): Sale
   createSchedule(time: String!): PartnerDeliverySchedule
+  createStore(code: String!, name: String!, timezone: String): Store!
   createVariant(data: [ProductVariantInput!]!, productId: Int!): [Variant!]!
   deleteAddress(id: Int!): Address
   deleteBrand(id: Int!): Brand
@@ -321,30 +580,42 @@ type Mutation {
   deliverOrder(id: Int!): OrderDispatch
   driverOrder(id: Int!, status: DispatchStatus!): OrderDispatch
   logout: Boolean
+  mergeCatalogProposal(adminNote: String, id: String!, targetId: Int!): CatalogProposal
   mergeProductTemplateRequest(adminNote: String, id: Int!, targetTemplateId: Int!): ProductTemplateRequest
   openCashSession(deviceId: String, note: String, openingAmount: Float): CashSession
   partnerOrder(id: Int!, status: DeliveryStatus!): Order
   pickOrder(id: Int!): OrderDispatch
+  provisionStoreGateway(storeId: String!): StoreGatewayCredential!
   readAllLogs: Boolean
   readLog(id: Int!): Boolean
   recordSyncEvent(action: SyncEventAction!, deviceId: String, entity: String!, idempotencyKey: String!, payload: String!): SyncEvent
   refreshToken(data: String!): AuthPayload
-  registerDevice(appVersion: String, deviceKey: String!, name: String, platform: Platform!): Device
+  registerDevice(appVersion: String, deviceKey: String!, name: String, platform: Platform!, storeId: String): Device
   registerPushToken(deviceId: String, platform: Platform!, token: String!): Boolean
+  rejectCatalogProposal(adminNote: String, id: String!, rejectionReason: String!): CatalogProposal
   rejectProductTemplateRequest(adminNote: String, id: Int!, rejectionReason: String): ProductTemplateRequest
+  reserveGiftMaterials(customOrderId: String!): CustomOrder!
+  respondToGiftQuotation(accept: Boolean!, addressId: Int, customOrderId: String!): CustomOrder!
+  revokeStoreTerminal(terminalId: String!): StoreTerminal!
   sendOtp(phone: String!): Boolean
+  setNicheCapability(capability: CapabilityCode!, enabled: Boolean!, nicheId: Int!): NicheCapability
+  setPartnerCapabilityOverride(capability: CapabilityCode!, effect: CapabilityOverrideEffect, partnerId: Int!): PartnerCapabilityOverride
+  setStoreDeploymentMode(mode: StoreDeploymentMode!, storeId: String!): Store!
   signIn(email: String!, password: String!): AuthPayload
-  submitProductTemplateRequest(brand_id: Int, category_id: Int!, description: String, images: ImagesList, name: String!, name_ar: String, product_type_id: Int, variants: [ProductTemplateRequestVariantInput]): ProductTemplateRequest
+  submitCatalogProposal(categoryId: Int, description: String, deviceId: String, entityType: CatalogProposalEntityType!, image: String, localId: String!, name: String!, name_ar: String, nicheId: Int!, parentProposalId: String): CatalogProposal
+  submitProductTemplateRequest(brand_id: Int, categoryProposalId: String, category_id: Int, description: String, images: ImagesList, name: String!, name_ar: String, posDeviceId: String, posLocalId: String, productTypeProposalId: String, product_type_id: Int, variants: [ProductTemplateRequestVariantInput]): ProductTemplateRequest
+  transitionGiftOrder(expectedVersion: Int!, id: String!, status: CustomOrderStatus!): CustomOrder!
   updateAddress(address: String, id: Int!, isDefault: Boolean, label: String, latitude: Float, longitude: Float): Address
   updateBrand(id: Int!, image: String, name: String, niche_id: Int): Brand
   updateCategory(id: Int!, image: String, name: String, name_ar: String, niche_id: Int): Category
   updateClientProfile(avatar: String, email: String, firstname: String, language: String, lastname: String, theme: Boolean, themePreference: ThemePreference): AuthPayload
   updateDriver(email: String, firstname: String, id: Int!, lastname: String): Driver
+  updateDriverLocation(isAvailable: Boolean, latitude: Float!, longitude: Float!): Driver
   updateDriverProfile(firstname: String, lastname: String, online: Boolean): AuthPayload
   updateNiche(id: Int!, image: String, name: String, name_ar: String): Niche
-  updatePartner(companyName: String, email: String, feeRate: Float, feeType: PartnerFeeType, fixedFee: Float, id: Int!, niches: [Int!]): Partner
-  updatePartnerProfile(address: String, avatar: String, companyName: String, latitude: Float, longitude: Float, online: Boolean): AuthPayload
-  updateProduct(available: Boolean, costPrice: Float, customDescription: String, customImages: ImagesList, customName: String, discount: Float, id: Int!, isActive: Boolean, isVisibleInPos: Boolean, notes: String, onlineVisible: Boolean, price: Float, reorderThreshold: Int, stock: Int, vendorBarcode: String, vendorSku: String): ProductView
+  updatePartner(companyName: String, email: String, feeRate: Float, feeType: PartnerFeeType, fixedFee: Float, id: Int!, niches: [Int!], primaryColor: String): Partner
+  updatePartnerProfile(address: String, avatar: String, companyName: String, latitude: Float, longitude: Float, online: Boolean, primaryColor: String): AuthPayload
+  updateProduct(available: Boolean, costPrice: Float, customDescription: String, customImages: ImagesList, customName: String, discount: Float, id: Int!, isActive: Boolean, isVisibleInPos: Boolean, notes: String, onlineVisible: Boolean, price: Float, reorderThreshold: Int, stock: Int, trackInventory: Boolean, vendorBarcode: String, vendorSku: String): ProductView
   updateProductTemplate(brand_id: Int, category_id: Int, description: String, id: Int!, name: String, product_type_id: Int): ProductTemplate
   updateProductTemplateImages(id: Int!, images: ImagesList): [ProductImage]
   updateProductType(id: Int!, name: String, name_ar: String): ProductType
@@ -362,6 +633,13 @@ type Niche {
   image: String
   name: String
   name_ar: String
+}
+
+type NicheCapability {
+  capability: CapabilityCode!
+  enabledByDefault: Boolean!
+  id: Int!
+  nicheId: Int!
 }
 
 type NicheResult {
@@ -452,8 +730,16 @@ type Partner {
   longitude: Float
   niches: [PartnerNiche]!
   online: Boolean
+  primaryColor: String!
   user: User
   userId: Int
+}
+
+type PartnerCapabilityOverride {
+  capability: CapabilityCode!
+  effect: CapabilityOverrideEffect!
+  id: Int!
+  partnerId: Int!
 }
 
 type PartnerDeliverySchedule {
@@ -536,6 +822,13 @@ enum Platform {
   WEB
 }
 
+type PosBootstrap {
+  cursor: String!
+  generatedAt: DateTime!
+  offlineUntil: DateTime!
+  payload: String!
+}
+
 input PosSaleItemInput {
   discount: Float
   productId: Int!
@@ -580,6 +873,7 @@ type Product {
   price: Float
   reorderThreshold: Int
   stock: Int
+  trackInventory: Boolean
   variant: Variant
   variantId: Int
   vendorBarcode: String
@@ -644,6 +938,7 @@ type ProductTemplatePartnerPreview {
   products: [ProductView]!
   reorderThreshold: Int!
   stock: Int!
+  trackInventory: Boolean!
   variantId: Int!
   variant_name: String
   variant_sku: String
@@ -662,6 +957,7 @@ type ProductTemplateRequest {
   brand: Brand
   brand_id: Int
   category: Category
+  categoryProposalId: String
   category_id: Int
   createdAt: DateTime
   description: String
@@ -673,7 +969,10 @@ type ProductTemplateRequest {
   name_ar: String
   partner: Partner
   partnerId: Int
+  posDeviceId: String
+  posLocalId: String
   productType: ProductType
+  productTypeProposalId: String
   product_type_id: Int
   rejectionReason: String
   status: ProductTemplateRequestStatus
@@ -694,25 +993,34 @@ enum ProductTemplateRequestStatus {
 }
 
 type ProductTemplateRequestVariant {
+  costPrice: Float
   description: String
   id: Int!
   image: String
+  localId: String
   name: String
   price: Float
+  reorderThreshold: Int
   requestId: Int
+  resolvedVariantId: Int
   sku: String
   stock: Int
   tags: [String]
+  trackInventory: Boolean
 }
 
 input ProductTemplateRequestVariantInput {
+  costPrice: Float
   description: String
   image: String
+  localId: String
   name: String
   price: Float
+  reorderThreshold: Int
   sku: String
   stock: Int
   tags: [String]
+  trackInventory: Boolean
 }
 
 type ProductTemplateResult {
@@ -771,6 +1079,7 @@ type ProductView {
   sku: String
   stock: Int
   tags: [Tag]
+  trackInventory: Boolean
   variantId: Int
   variantName: String
   vendorBarcode: String
@@ -782,9 +1091,31 @@ type ProductViewResult {
   totalProducts: Int
 }
 
+type ProductionTask {
+  customOrderId: String!
+  description: String
+  dueAt: DateTime
+  id: String!
+  sortOrder: Int!
+  status: ProductionTaskStatus!
+  title: String!
+}
+
+enum ProductionTaskStatus {
+  BLOCKED
+  DONE
+  IN_PROGRESS
+  TODO
+}
+
 type Query {
   adminDashboardStats: AdminDashboardStats!
+  adminDispatchBoard: AdminDispatchBoard!
+  adminStoreNetworks(search: String): [Store!]!
+  capabilityCatalog: [CapabilityCode!]!
+  effectiveCapabilities(partnerId: Int): [EffectiveCapability!]!
   findManyBrands(isFull: Boolean, limit: Int!, niche_id: Int, page: Int!, search: String): BrandResult
+  findManyCatalogProposals(entityType: CatalogProposalEntityType, limit: Int!, page: Int!, partnerId: Int, search: String, status: CatalogProposalStatus): CatalogProposalResult
   findManyCategories(isFull: Boolean, limit: Int!, niche_id: Int, page: Int!, search: String): CategoryResult
   findManyDrivers(isFull: Boolean, limit: Int!, page: Int!, search: String): DriverResult
   findManyLogs: [Log]
@@ -817,6 +1148,8 @@ type Query {
   getAllCategories: [Category!]!
   getAllNiches: [Niche!]!
   getDriverRoute(dispatchId: Int!, originLatitude: Float!, originLongitude: Float!): DriverRoute
+  getGiftOrder(id: String): CustomOrder
+  getMyGiftOrder(id: String): CustomOrder
   getOrder(id: Int!): Order
   getOrderDispatch(id: Int!): OrderDispatch
   getOrderDispatchByOrder(orderId: Int!): OrderDispatch
@@ -828,17 +1161,32 @@ type Query {
   listDevices: [Device!]!
   listDriverOrderHistory: [Order]!
   listDriverOrders: [OrderDispatch]!
+  listGiftOrders(limit: Int, search: String, status: CustomOrderStatus): [CustomOrder!]!
+  listMyGiftOrders(limit: Int, status: CustomOrderStatus): [CustomOrder!]!
   listOrders: [Order]!
   listPartnerPosOrders: [Order]!
   listSales(limit: Int, page: Int, status: SaleStatus): [Sale!]!
   listStockMovements(limit: Int, page: Int, productId: Int, type: StockMovementType): [StockMovement!]!
   listSyncEvents(deviceId: String, limit: Int, page: Int, status: SyncEventStatus): [SyncEvent!]!
+  myPartnerProfile: Partner!
+  myStores: [Store!]!
+  nicheCapabilityDefaults(nicheId: Int): [NicheCapability!]!
+  partnerCapabilityOverrides(partnerId: Int): [PartnerCapabilityOverride!]!
   partnerStatistics: PartnerStatisticsResult!
+  posBootstrap(deviceKey: String!): PosBootstrap!
 }
 
 enum QueryOrder {
   asc
   desc
+}
+
+enum QuotationStatus {
+  ACCEPTED
+  DRAFT
+  EXPIRED
+  REJECTED
+  SENT
 }
 
 enum Role {
@@ -851,13 +1199,17 @@ enum Role {
 type Sale {
   cashierId: Int
   completedAt: DateTime
+  costTotal: Float!
   createdAt: DateTime!
   customerName: String
   deviceId: String
   discountTotal: Float!
+  grossProfit: Float!
   id: String!
   items: [SaleItem!]!
+  netProfit: Float!
   note: String
+  partnerFee: Float!
   partnerId: Int!
   payments: [Payment!]!
   saleNumber: String!
@@ -871,12 +1223,14 @@ type Sale {
 }
 
 type SaleItem {
+  costPrice: Float!
   createdAt: DateTime!
   discount: Float!
   id: String!
   product: ProductView
   productId: Int!
   productName: String!
+  profit: Float!
   quantity: Float!
   saleId: String!
   tax: Float!
@@ -923,6 +1277,58 @@ enum StockMovementType {
   SALE
   TRANSFER_IN
   TRANSFER_OUT
+}
+
+type Store {
+  cloudGatewayUrl: String
+  cloudSyncEnabled: Boolean!
+  code: String!
+  createdAt: DateTime!
+  deploymentMode: StoreDeploymentMode!
+  gatewayLastSeenAt: DateTime
+  gatewayProvisionedAt: DateTime
+  id: String!
+  localGatewayUrl: String
+  name: String!
+  partnerId: Int!
+  partnerName: String!
+  status: StoreStatus!
+  terminals: [StoreTerminal!]!
+  timezone: String!
+  updatedAt: DateTime!
+}
+
+enum StoreDeploymentMode {
+  MULTI_POS
+  SOLO
+}
+
+type StoreGatewayCredential {
+  cloudGatewayUrl: String!
+  issuedAt: DateTime!
+  storeId: String!
+  token: String!
+}
+
+enum StoreStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+type StoreTerminal {
+  createdAt: DateTime!
+  deviceId: String
+  id: String!
+  lastSeenAt: DateTime
+  name: String!
+  status: StoreTerminalStatus!
+  storeId: String!
+  updatedAt: DateTime!
+}
+
+enum StoreTerminalStatus {
+  ACTIVE
+  REVOKED
 }
 
 type SyncEvent {

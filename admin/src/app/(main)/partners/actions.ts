@@ -17,6 +17,7 @@ import { gql } from "graphql-request";
 type PartnerResponse = {
   id: string;
   companyName: string;
+  primaryColor?: string | null;
   feeType?: "NONE" | "PERCENTAGE" | "FIXED" | "MIXED";
   feeRate?: number | null;
   fixedFee?: number | null;
@@ -36,6 +37,7 @@ const mapPartner = (data: PartnerResponse) =>
     ? {
         id: data.id,
     companyName: data.companyName,
+    primaryColor: data.primaryColor ?? "#CC6F98",
     feeType: data.feeType ?? "NONE",
     feeRate: Number(data.feeRate ?? 0),
     fixedFee: Number(data.fixedFee ?? 0),

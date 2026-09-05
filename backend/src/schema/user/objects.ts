@@ -73,6 +73,7 @@ export const Partner = objectType({
         t.float('latitude');
         t.float('longitude');
         t.string('address');
+        t.nonNull.string('primaryColor');
         t.field('feeType', { type: 'PartnerFeeType' });
         t.float('feeRate');
         t.float('fixedFee');

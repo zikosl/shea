@@ -1,10 +1,11 @@
 import { gql } from "graphql-request"
 
 const CREATE_PARTNER = gql`
-  mutation createPartner($companyName: String!, $email: String!, $niches: [Int!], $feeType: PartnerFeeType, $feeRate: Float, $fixedFee: Float) {
-    createPartner(companyName: $companyName, email: $email, niches: $niches, feeType: $feeType, feeRate: $feeRate, fixedFee: $fixedFee) {
+  mutation createPartner($companyName: String!, $email: String!, $niches: [Int!], $feeType: PartnerFeeType, $feeRate: Float, $fixedFee: Float, $primaryColor: String) {
+    createPartner(companyName: $companyName, email: $email, niches: $niches, feeType: $feeType, feeRate: $feeRate, fixedFee: $fixedFee, primaryColor: $primaryColor) {
       id
       companyName
+      primaryColor
       feeType
       feeRate
       fixedFee
@@ -26,10 +27,11 @@ const CREATE_PARTNER = gql`
 
 // Mutation to update an existing partner
 const UPDATE_PARTNER = gql`
-  mutation updatePartner($id: Int!, $companyName: String, $email: String, $niches: [Int!], $feeType: PartnerFeeType, $feeRate: Float, $fixedFee: Float) {
-    updatePartner(id: $id, companyName: $companyName, email: $email, niches: $niches, feeType: $feeType, feeRate: $feeRate, fixedFee: $fixedFee) {
+  mutation updatePartner($id: Int!, $companyName: String, $email: String, $niches: [Int!], $feeType: PartnerFeeType, $feeRate: Float, $fixedFee: Float, $primaryColor: String) {
+    updatePartner(id: $id, companyName: $companyName, email: $email, niches: $niches, feeType: $feeType, feeRate: $feeRate, fixedFee: $fixedFee, primaryColor: $primaryColor) {
       id
       companyName
+      primaryColor
       feeType
       feeRate
       fixedFee

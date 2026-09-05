@@ -33,6 +33,9 @@ const formSchema = z.object({
   email: z.string().email({
     message: "Email must be valid.",
   }),
+  primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, {
+    message: "Use a valid hex color such as #CC6F98.",
+  }).transform((value) => value.toUpperCase()),
   feeType: z.enum(["NONE", "PERCENTAGE", "FIXED", "MIXED"]).default("NONE"),
   feeRate: z.coerce.number().min(0).max(100).default(0),
   fixedFee: z.coerce.number().min(0).default(0),
@@ -66,6 +69,7 @@ export default function ItemForm({
     defaultValues: {
       companyName: initialData?.companyName ?? "",
       email: initialData?.email ?? "",
+      primaryColor: initialData?.primaryColor ?? "#CC6F98",
       feeType: initialData?.feeType ?? "NONE",
       feeRate: initialData?.feeRate ?? 0,
       fixedFee: initialData?.fixedFee ?? 0,
@@ -144,6 +148,49 @@ export default function ItemForm({
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="primaryColor"
+              render={({ field }) => (
+                <FormItem className="rounded-2xl border bg-muted/20 p-4">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <FormLabel>Partner app color</FormLabel>
+                      <FormDescription>
+                        Controls the primary actions and highlights in the partner application.
+                      </FormDescription>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <FormControl>
+                        <input
+                          type="color"
+                          aria-label="Choose partner app color"
+                          className="h-11 w-14 cursor-pointer rounded-lg border bg-background p-1"
+                          value={field.value}
+                          onChange={(event) => field.onChange(event.target.value.toUpperCase())}
+                        />
+                      </FormControl>
+                      <div
+                        className="h-11 w-24 rounded-xl border shadow-sm"
+                        style={{ backgroundColor: field.value }}
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </div>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      className="max-w-48 font-mono uppercase"
+                      maxLength={7}
+                      spellCheck={false}
+                      onChange={(event) => field.onChange(event.target.value.toUpperCase())}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="rounded-2xl border bg-muted/30 p-4">
               <div className="mb-4">

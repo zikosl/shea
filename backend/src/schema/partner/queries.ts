@@ -8,6 +8,14 @@ import { createBadRequestError } from "../../core/errors/app-error"
 export const Query = extendType({
     type: 'Query',
     definition(t) {
+        t.nonNull.field('myPartnerProfile', {
+            type: 'Partner',
+            resolve: async (_parent, _args, ctx: Context) => {
+                const userId = getUserId(ctx)
+                return ctx.prisma.partner.findUnique({ where: { userId } })
+            },
+        })
+
         t.field('findOnePartner', {
             type: 'Partner',
             args: {

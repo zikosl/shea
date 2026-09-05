@@ -282,6 +282,7 @@ model Partner {
   latitude            Float                       @default(0)
   longitude           Float                       @default(0)
   address             String?
+  primaryColor        String                      @default("#CC6F98")
   feeType             PartnerFeeType              @default(NONE)
   feeRate             Float                       @default(0)
   fixedFee            Float                       @default(0)

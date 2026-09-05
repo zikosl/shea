@@ -6,6 +6,7 @@ import {
   addPartnerNiches,
   createPartner,
   updatePartnerProfile,
+  normalizePartnerPrimaryColor,
 } from '../../application/partner/partner.service'
 import { createBadRequestError } from '../../core/errors/app-error'
 
@@ -21,12 +22,14 @@ export const PartnerMutation = extendType({
                 feeType: arg({ type: 'PartnerFeeType' }),
                 feeRate: floatArg(),
                 fixedFee: floatArg(),
+                primaryColor: stringArg(),
             },
-            resolve: async (_parent, { email: oldmail, companyName, niches, feeType, feeRate, fixedFee }, ctx: Context) => {
+            resolve: async (_parent, { email: oldmail, companyName, niches, feeType, feeRate, fixedFee, primaryColor }, ctx: Context) => {
                 const partner = await createPartner(ctx.prisma, {
                     email: oldmail,
                     companyName,
-                    niches
+                    niches,
+                    primaryColor,
                 })
                 if (feeType || typeof feeRate === 'number' || typeof fixedFee === 'number') {
                     return ctx.prisma.partner.update({
@@ -64,8 +67,9 @@ export const PartnerMutation = extendType({
                 feeType: arg({ type: 'PartnerFeeType' }),
                 feeRate: floatArg(),
                 fixedFee: floatArg(),
+                primaryColor: stringArg(),
             },
-            resolve: async (_parent, { id, email, companyName, niches, feeType, feeRate, fixedFee }, ctx: Context) => {
+            resolve: async (_parent, { id, email, companyName, niches, feeType, feeRate, fixedFee, primaryColor }, ctx: Context) => {
                 // Update both User.email and Partner fields atomically
                 const updated = await ctx.prisma.partner.update({
                     where: { id },
@@ -74,6 +78,7 @@ export const PartnerMutation = extendType({
                         feeType: feeType ?? undefined,
                         feeRate: feeRate ?? undefined,
                         fixedFee: fixedFee ?? undefined,
+                        primaryColor: normalizePartnerPrimaryColor(primaryColor),
                         user: email
                             ? { update: { email } }
                             : undefined,
@@ -104,8 +109,9 @@ export const PartnerMutation = extendType({
                 online: booleanArg(),
                 latitude: floatArg(),
                 longitude: floatArg(),
+                primaryColor: stringArg(),
             },
-            resolve: async (_parent, { companyName, avatar, online, latitude, longitude, address }, context: Context) => {
+            resolve: async (_parent, { companyName, avatar, online, latitude, longitude, address, primaryColor }, context: Context) => {
                 const userId = getUserId(context)
                 return updatePartnerProfile(context.prisma, userId, {
                     companyName,
@@ -113,7 +119,8 @@ export const PartnerMutation = extendType({
                     online,
                     latitude,
                     longitude,
-                    address
+                    address,
+                    primaryColor,
                 })
             },
         })

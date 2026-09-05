@@ -3,6 +3,7 @@ type Partner = {
     email: string;
     password: string;
     companyName: string;
+    primaryColor?: string;
     feeType?: "NONE" | "PERCENTAGE" | "FIXED" | "MIXED";
     feeRate?: number;
     fixedFee?: number;
