@@ -110,8 +110,9 @@ export const PartnerMutation = extendType({
                 latitude: floatArg(),
                 longitude: floatArg(),
                 primaryColor: stringArg(),
+                language: stringArg(),
             },
-            resolve: async (_parent, { companyName, avatar, online, latitude, longitude, address, primaryColor }, context: Context) => {
+            resolve: async (_parent, { companyName, avatar, online, latitude, longitude, address, primaryColor, language }, context: Context) => {
                 const userId = getUserId(context)
                 return updatePartnerProfile(context.prisma, userId, {
                     companyName,
@@ -121,6 +122,7 @@ export const PartnerMutation = extendType({
                     longitude,
                     address,
                     primaryColor,
+                    language,
                 })
             },
         })

@@ -8,6 +8,14 @@ import { LogSatus } from '../../types'
 
 export const DEFAULT_PARTNER_PRIMARY_COLOR = '#CC6F98'
 
+export function normalizePartnerLanguage(value?: string | null) {
+  if (value == null) return undefined
+  if (value !== 'en' && value !== 'ar') {
+    throw createBadRequestError('Language must be en or ar')
+  }
+  return value
+}
+
 export function normalizePartnerPrimaryColor(value?: string | null) {
   if (value === undefined || value === null) return undefined
 
@@ -119,6 +127,7 @@ export async function updatePartnerProfile(
     latitude?: number | null
     longitude?: number | null
     primaryColor?: string | null
+    language?: string | null
   },
 ) {
   await prisma.partner.update({
@@ -131,6 +140,7 @@ export async function updatePartnerProfile(
       latitude: data.latitude ?? undefined,
       longitude: data.longitude ?? undefined,
       primaryColor: normalizePartnerPrimaryColor(data.primaryColor),
+      language: normalizePartnerLanguage(data.language),
     },
   })
 

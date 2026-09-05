@@ -614,7 +614,7 @@ type Mutation {
   updateDriverProfile(firstname: String, lastname: String, online: Boolean): AuthPayload
   updateNiche(id: Int!, image: String, name: String, name_ar: String): Niche
   updatePartner(companyName: String, email: String, feeRate: Float, feeType: PartnerFeeType, fixedFee: Float, id: Int!, niches: [Int!], primaryColor: String): Partner
-  updatePartnerProfile(address: String, avatar: String, companyName: String, latitude: Float, longitude: Float, online: Boolean, primaryColor: String): AuthPayload
+  updatePartnerProfile(address: String, avatar: String, companyName: String, latitude: Float, longitude: Float, online: Boolean, primaryColor: String, language: String): AuthPayload
   updateProduct(available: Boolean, costPrice: Float, customDescription: String, customImages: ImagesList, customName: String, discount: Float, id: Int!, isActive: Boolean, isVisibleInPos: Boolean, notes: String, onlineVisible: Boolean, price: Float, reorderThreshold: Int, stock: Int, trackInventory: Boolean, vendorBarcode: String, vendorSku: String): ProductView
   updateProductTemplate(brand_id: Int, category_id: Int, description: String, id: Int!, name: String, product_type_id: Int): ProductTemplate
   updateProductTemplateImages(id: Int!, images: ImagesList): [ProductImage]
@@ -731,6 +731,7 @@ type Partner {
   niches: [PartnerNiche]!
   online: Boolean
   primaryColor: String!
+  language: String!
   user: User
   userId: Int
 }
