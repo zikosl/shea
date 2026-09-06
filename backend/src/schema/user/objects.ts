@@ -1,6 +1,8 @@
 // @ts-nocheck
 import { enumType, objectType } from 'nexus'
 import { Context } from '../../context'
+import { CapabilityCode } from '@prisma/client'
+import { effectiveCapabilities } from '../../modules/capabilities/service'
 
 // Core types
 export const User = objectType({
@@ -79,6 +81,14 @@ export const Partner = objectType({
         t.float('feeRate');
         t.float('fixedFee');
         t.int('userId');
+        t.nonNull.boolean('supportsGifts', {
+            resolve: async (parent, _args, ctx: Context) => {
+                if (typeof parent.supportsGifts === 'boolean') return parent.supportsGifts
+                if (!parent.userId) return false
+                const capabilities = await effectiveCapabilities(ctx.prisma, parent.userId)
+                return capabilities.some(({ code, enabled }) => code === CapabilityCode.GIFT_BUILDER && enabled)
+            },
+        });
         t.nonNull.list.field('niches', {
             type: 'PartnerNiche',
             resolve: async (parent, _args, ctx) => {

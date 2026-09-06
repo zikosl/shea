@@ -1,7 +1,8 @@
 import { nonNull, extendType, stringArg, intArg, booleanArg, arg } from "nexus"
-import { Prisma } from "@prisma/client"
+import { CapabilityCode, Prisma } from "@prisma/client"
 import { getUserId } from "../../../utils"
 import { Context } from "../../../context"
+import { partnerUserIdsWithCapability } from '../../../modules/capabilities/service'
 
 export const ProductQuery = extendType({
     type: 'Query',
@@ -118,15 +119,23 @@ export const ProductQuery = extendType({
                 page: nonNull(intArg()),
                 limit: nonNull(intArg()),
                 isFull: booleanArg(),
-                order: arg({ type: "QueryOrder" })
+                order: arg({ type: "QueryOrder" }),
+                giftEligible: booleanArg(),
             },
-            resolve: async (_parent, { search, page, limit, isFull = false, category_id, brand_id, product_type_id, partnerId, order }: any, ctx: Context) => {
+            resolve: async (_parent, { search, page, limit, isFull = false, category_id, brand_id, product_type_id, partnerId, order, giftEligible }: any, ctx: Context) => {
 
 
                 const userId = getUserId(ctx);
                 const partner = await ctx.prisma.partner.findUnique({ where: { userId } })
                 if (partner)
                     partnerId = partner.userId
+
+                const giftPartnerIds = giftEligible
+                    ? await partnerUserIdsWithCapability(ctx.prisma, CapabilityCode.GIFT_BUILDER)
+                    : null
+                if (giftPartnerIds && partnerId && !giftPartnerIds.includes(partnerId)) {
+                    return { productPartners: [], totalProductPartners: 0 }
+                }
 
                 let where: Prisma.ProductTemplatePartnerPreviewWhereInput = search
                     ? {
@@ -139,6 +148,7 @@ export const ProductQuery = extendType({
                     : {
                         partnerId
                     };
+                if (giftPartnerIds) where.partnerId = partnerId ?? { in: giftPartnerIds }
                 if (brand_id) {
                     where = {
                         ...where,

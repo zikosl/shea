@@ -734,6 +734,7 @@ type Partner {
   niches: [PartnerNiche]!
   online: Boolean
   primaryColor: String!
+  supportsGifts: Boolean!
   user: User
   userId: Int
 }
@@ -1127,7 +1128,7 @@ type Query {
   findManyPartnerNiches: [PartnerNiche]!
   findManyPartners(isFull: Boolean, limit: Int!, niche_id: Int, page: Int!, search: String): PartnerResult
   findManyPricing: [Pricing]!
-  findManyProductPartners(brand_id: Int, category_id: Int, isFull: Boolean, limit: Int!, order: QueryOrder, page: Int!, partnerId: Int, product_type_id: Int, search: String): ProductTemplatePartnerPreviewResult
+  findManyProductPartners(brand_id: Int, category_id: Int, giftEligible: Boolean, isFull: Boolean, limit: Int!, order: QueryOrder, page: Int!, partnerId: Int, product_type_id: Int, search: String): ProductTemplatePartnerPreviewResult
   findManyProductTemplateRequests(category_id: Int, limit: Int!, niche_id: Int, page: Int!, product_type_id: Int, search: String, status: ProductTemplateRequestStatus): ProductTemplateRequestResult
   findManyProductTemplates(brand_id: Int, category_id: Int, isFull: Boolean, limit: Int!, niche_id: Int, page: Int!, product_type_id: Int, search: String): ProductTemplateResult
   findManyProductTypes(brand_id: Int, category_id: Int, isFull: Boolean, limit: Int!, niche_id: Int, page: Int!, search: String): ProductTypeResult

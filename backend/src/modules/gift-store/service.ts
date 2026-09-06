@@ -113,6 +113,7 @@ export async function createGiftOrder(prisma: PrismaClient, partnerUserId: numbe
 /** Client requests must be bound to an account and a single storefront. */
 export async function createClientGiftOrder(prisma: PrismaClient, clientId: number, input: any) {
   if (!input.partnerId) throw new GraphQLError('PARTNER_REQUIRED')
+  await requireCapability(prisma, input.partnerId, CapabilityCode.GIFT_BUILDER)
   const [client, partner] = await Promise.all([
     prisma.client.findUnique({ where: { userId: clientId }, include: { user: { select: { phone: true } } } }),
     prisma.partner.findUnique({ where: { userId: input.partnerId } }),

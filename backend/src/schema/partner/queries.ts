@@ -1,9 +1,10 @@
 // @ts-nocheck
 import { nonNull, extendType, stringArg, intArg, booleanArg } from "nexus"
-import { Prisma } from "@prisma/client"
+import { CapabilityCode, Prisma } from "@prisma/client"
 import { Context } from "../../context"
 import { getUserId } from "../../utils"
 import { createBadRequestError } from "../../core/errors/app-error"
+import { partnerUserIdsWithCapability } from '../../modules/capabilities/service'
 
 export const Query = extendType({
     type: 'Query',
@@ -57,17 +58,24 @@ export const Query = extendType({
                         }
                     }
                 }
-                const totalPartners = await ctx.prisma.partner.count({ where });
-                const partners = await ctx.prisma.partner.findMany({
-                    ...args,
-                    ...(isFull ? {} : {
-                        take: limit,
-                        skip: limit * (page - 1),
+                const [totalPartners, partners, giftPartnerIds] = await Promise.all([
+                    ctx.prisma.partner.count({ where }),
+                    ctx.prisma.partner.findMany({
+                        ...args,
+                        ...(isFull ? {} : {
+                            take: limit,
+                            skip: limit * (page - 1),
+                        }),
                     }),
-                });
+                    partnerUserIdsWithCapability(ctx.prisma, CapabilityCode.GIFT_BUILDER, { onlineOnly: false }),
+                ]);
+                const giftPartners = new Set(giftPartnerIds)
 
                 return {
-                    partners,
+                    partners: partners.map((partner) => ({
+                        ...partner,
+                        supportsGifts: giftPartners.has(partner.userId),
+                    })),
                     totalPartners,
                 };
             },

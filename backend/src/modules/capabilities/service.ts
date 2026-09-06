@@ -41,3 +41,30 @@ export async function requireCapability(prisma: PrismaClient, partnerUserId: num
   if (!capabilities.some((item) => item.code === code && item.enabled))
     throw new GraphQLError(`CAPABILITY_REQUIRED:${code}`)
 }
+
+export async function partnerUserIdsWithCapability(
+  prisma: PrismaClient,
+  capability: CapabilityCode,
+  options: { onlineOnly?: boolean } = { onlineOnly: true },
+) {
+  const partners = await prisma.partner.findMany({
+    where: {
+      ...(options.onlineOnly === false ? {} : { online: true }),
+      OR: [
+        { capabilityOverrides: { some: { capability, effect: CapabilityOverrideEffect.ENABLE } } },
+        {
+          AND: [
+            { capabilityOverrides: { none: { capability, effect: CapabilityOverrideEffect.DISABLE } } },
+            {
+              partnerNiches: {
+                some: { niche: { capabilities: { some: { capability, enabledByDefault: true } } } },
+              },
+            },
+          ],
+        },
+      ],
+    },
+    select: { userId: true },
+  })
+  return partners.map(({ userId }) => userId)
+}
