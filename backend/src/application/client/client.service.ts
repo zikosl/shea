@@ -36,6 +36,28 @@ function isAppReviewOtp(phone: string, code?: string) {
   return phoneMatches && code === env.appReviewOtp.code
 }
 
+async function consumeOtp(prisma: PrismaClient, phone: string, code: string) {
+  const otpRecord = await prisma.otp.findUnique({ where: { phone } })
+
+  if (!otpRecord) throw createNotFoundError('OTP_NOT_FOUND')
+  if (otpRecord.verified) throw createBadRequestError('OTP_ALREADY_USED')
+  if (otpRecord.expiresAt < new Date()) throw createBadRequestError('OTP_EXPIRED')
+  if (otpRecord.attempts >= 3) throw createBadRequestError('TOO_MANY_ATTEMPTS')
+
+  if (otpRecord.code !== code) {
+    await prisma.otp.update({
+      where: { phone },
+      data: { attempts: { increment: 1 } },
+    })
+    throw createBadRequestError('INVALID_OTP')
+  }
+
+  await prisma.otp.update({
+    where: { phone },
+    data: { verified: true, updatedAt: new Date() },
+  })
+}
+
 export async function sendOtp(prisma: PrismaClient, phone: string) {
   const isReviewPhone = isAppReviewOtp(phone)
 
@@ -96,42 +118,7 @@ export async function verifyOtp(prisma: PrismaClient, phone: string, code: strin
     })
   }
 
-  const otpRecord = await prisma.otp.findUnique({
-    where: { phone },
-  })
-
-  if (!otpRecord) {
-    throw createNotFoundError('OTP_NOT_FOUND')
-  }
-
-  if (otpRecord.verified) {
-    throw createBadRequestError('OTP_ALREADY_USED')
-  }
-
-  if (otpRecord.expiresAt < new Date()) {
-    throw createBadRequestError('OTP_EXPIRED')
-  }
-
-  if (otpRecord.attempts >= 3) {
-    throw createBadRequestError('TOO_MANY_ATTEMPTS')
-  }
-
-  if (otpRecord.code !== code) {
-    await prisma.otp.update({
-      where: { phone },
-      data: { attempts: { increment: 1 } },
-    })
-
-    throw createBadRequestError('INVALID_OTP')
-  }
-
-  await prisma.otp.update({
-    where: { phone },
-    data: {
-      verified: true,
-      updatedAt: new Date(),
-    },
-  })
+  await consumeOtp(prisma, phone, code)
 
   let user = await prisma.user.findUnique({
     where: { phone },
@@ -158,6 +145,57 @@ export async function verifyOtp(prisma: PrismaClient, phone: string, code: strin
     where: { userId: user.id },
     update: {},
     create: { userId: user.id },
+  })
+
+  return createSession(user, prisma)
+}
+
+export async function requestClientPhoneChange(
+  prisma: PrismaClient,
+  userId: number,
+  phone: string,
+) {
+  if (!phoneRegex.test(phone)) {
+    throw createBadRequestError('INVALID_PHONE_NUMBER')
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId } })
+  if (!user || user.role !== 'CLIENT') {
+    throw createBadRequestError('CLIENT_ACCOUNT_REQUIRED')
+  }
+  if (user.phone && normalizePhoneForComparison(user.phone) === normalizePhoneForComparison(phone)) {
+    throw createBadRequestError('PHONE_UNCHANGED')
+  }
+
+  const owner = await prisma.user.findUnique({ where: { phone } })
+  if (owner && owner.id !== userId) {
+    throw createBadRequestError('PHONE_ALREADY_IN_USE')
+  }
+
+  return sendOtp(prisma, phone)
+}
+
+export async function verifyClientPhoneChange(
+  prisma: PrismaClient,
+  userId: number,
+  phone: string,
+  code: string,
+) {
+  const currentUser = await prisma.user.findUnique({ where: { id: userId } })
+  if (!currentUser || currentUser.role !== 'CLIENT') {
+    throw createBadRequestError('CLIENT_ACCOUNT_REQUIRED')
+  }
+
+  const owner = await prisma.user.findUnique({ where: { phone } })
+  if (owner && owner.id !== userId) {
+    throw createBadRequestError('PHONE_ALREADY_IN_USE')
+  }
+
+  await consumeOtp(prisma, phone, code)
+
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: { phone },
   })
 
   return createSession(user, prisma)

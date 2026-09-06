@@ -127,6 +127,8 @@ export const permissions = shield(
       configureStoreNetwork: isAdmin,
       createOrder: isClient,
       updateClientProfile: isClient,
+      requestClientPhoneChange: isClient,
+      verifyClientPhoneChange: isClient,
       driverOrder: isDriver,
       pickOrder: isDriver,
       deliverOrder: isDriver,

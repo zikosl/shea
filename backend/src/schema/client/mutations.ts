@@ -1,7 +1,13 @@
 import { arg, booleanArg, extendType, nonNull, stringArg } from 'nexus'
 import { Context } from '../../context'
 import { getUserId } from '../../utils'
-import { sendOtp, updateClientProfile, verifyOtp } from '../../application/client/client.service'
+import {
+  requestClientPhoneChange,
+  sendOtp,
+  updateClientProfile,
+  verifyClientPhoneChange,
+  verifyOtp,
+} from '../../application/client/client.service'
 
 const Mutation = extendType({
   type: 'Mutation',
@@ -40,6 +46,24 @@ const Mutation = extendType({
       resolve: async (_parent, args, context: Context) => {
         const userId = getUserId(context)
         return updateClientProfile(context.prisma, userId, args)
+      },
+    })
+
+    t.boolean('requestClientPhoneChange', {
+      args: { phone: nonNull(stringArg()) },
+      resolve: async (_parent, { phone }, context: Context) => {
+        return requestClientPhoneChange(context.prisma, getUserId(context), phone)
+      },
+    })
+
+    t.field('verifyClientPhoneChange', {
+      type: 'AuthPayload',
+      args: {
+        phone: nonNull(stringArg()),
+        code: nonNull(stringArg()),
+      },
+      resolve: async (_parent, { phone, code }, context: Context) => {
+        return verifyClientPhoneChange(context.prisma, getUserId(context), phone, code)
       },
     })
   },

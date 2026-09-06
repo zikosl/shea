@@ -594,6 +594,7 @@ type Mutation {
   registerPushToken(deviceId: String, platform: Platform!, token: String!): Boolean
   rejectCatalogProposal(adminNote: String, id: String!, rejectionReason: String!): CatalogProposal
   rejectProductTemplateRequest(adminNote: String, id: Int!, rejectionReason: String): ProductTemplateRequest
+  requestClientPhoneChange(phone: String!): Boolean
   reserveGiftMaterials(customOrderId: String!): CustomOrder!
   respondToGiftQuotation(accept: Boolean!, addressId: Int, customOrderId: String!): CustomOrder!
   revokeStoreTerminal(terminalId: String!): StoreTerminal!
@@ -614,7 +615,7 @@ type Mutation {
   updateDriverProfile(firstname: String, lastname: String, online: Boolean): AuthPayload
   updateNiche(id: Int!, image: String, name: String, name_ar: String): Niche
   updatePartner(companyName: String, email: String, feeRate: Float, feeType: PartnerFeeType, fixedFee: Float, id: Int!, niches: [Int!], primaryColor: String): Partner
-  updatePartnerProfile(address: String, avatar: String, companyName: String, latitude: Float, longitude: Float, online: Boolean, primaryColor: String, language: String): AuthPayload
+  updatePartnerProfile(address: String, avatar: String, companyName: String, language: String, latitude: Float, longitude: Float, online: Boolean, primaryColor: String): AuthPayload
   updateProduct(available: Boolean, costPrice: Float, customDescription: String, customImages: ImagesList, customName: String, discount: Float, id: Int!, isActive: Boolean, isVisibleInPos: Boolean, notes: String, onlineVisible: Boolean, price: Float, reorderThreshold: Int, stock: Int, trackInventory: Boolean, vendorBarcode: String, vendorSku: String): ProductView
   updateProductTemplate(brand_id: Int, category_id: Int, description: String, id: Int!, name: String, product_type_id: Int): ProductTemplate
   updateProductTemplateImages(id: Int!, images: ImagesList): [ProductImage]
@@ -623,6 +624,7 @@ type Mutation {
   updateVariant(data: UpdateVariantInput!, id: Int!): Variant
   uploadFile(file: File!): FileUploadResponse
   upsertPricing(name: PricingName!, price: Int!): Pricing
+  verifyClientPhoneChange(code: String!, phone: String!): AuthPayload
   verifyOtp(code: String!, phone: String!): AuthPayload
 }
 
@@ -726,12 +728,12 @@ type Partner {
   feeType: PartnerFeeType
   fixedFee: Float
   id: Int
+  language: String!
   latitude: Float
   longitude: Float
   niches: [PartnerNiche]!
   online: Boolean
   primaryColor: String!
-  language: String!
   user: User
   userId: Int
 }

@@ -66,6 +66,9 @@ services:
       EMAIL_USER: ${EMAIL_USER:-}
       EMAIL_PASSWORD: ${EMAIL_PASSWORD:-}
       EMAIL_USER_NAME: ${EMAIL_USER_NAME:-Shea}
+      APP_REVIEW_OTP_ENABLED: ${APP_REVIEW_OTP_ENABLED:-false}
+      APP_REVIEW_OTP_PHONE: ${APP_REVIEW_OTP_PHONE:-}
+      APP_REVIEW_OTP_CODE: ${APP_REVIEW_OTP_CODE:-}
     volumes:
       - ./backend/src:/app/src
       - ./backend/prisma:/app/prisma
