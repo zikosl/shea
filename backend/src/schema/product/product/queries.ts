@@ -1,6 +1,6 @@
 import { nonNull, extendType, stringArg, intArg, booleanArg, arg } from "nexus"
 import { CapabilityCode, Prisma } from "@prisma/client"
-import { getUserId } from "../../../utils"
+import { getOptionalUserId } from "../../../utils"
 import { Context } from "../../../context"
 import { partnerUserIdsWithCapability } from '../../../modules/capabilities/service'
 
@@ -50,8 +50,10 @@ export const ProductQuery = extendType({
             resolve: async (_parent, { search, page, limit, isFull = false, category_id, brand_id, product_type_id, partnerId, order }: any, ctx: Context) => {
 
 
-                const userId = getUserId(ctx);
-                const partner = await ctx.prisma.partner.findUnique({ where: { userId } })
+                const userId = getOptionalUserId(ctx);
+                const partner = userId
+                    ? await ctx.prisma.partner.findUnique({ where: { userId } })
+                    : null
                 if (partner)
                     partnerId = partner.userId
 
@@ -125,8 +127,10 @@ export const ProductQuery = extendType({
             resolve: async (_parent, { search, page, limit, isFull = false, category_id, brand_id, product_type_id, partnerId, order, giftEligible }: any, ctx: Context) => {
 
 
-                const userId = getUserId(ctx);
-                const partner = await ctx.prisma.partner.findUnique({ where: { userId } })
+                const userId = getOptionalUserId(ctx);
+                const partner = userId
+                    ? await ctx.prisma.partner.findUnique({ where: { userId } })
+                    : null
                 if (partner)
                     partnerId = partner.userId
 

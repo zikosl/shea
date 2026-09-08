@@ -26,6 +26,7 @@ export const Query = extendType({
                                 include: {
                                     partner: true,
                                     client: { include: { user: true } },
+                                    driverRequest: true,
                                     address: true,
                                     items: {
                                         include: {
@@ -55,7 +56,10 @@ export const Query = extendType({
                     orders: deliveries.map((delivery) => {
                         const activeOffers = delivery.dispatches.filter((entry) => entry.status === DispatchStatus.SENT && entry.expiresAt > now)
                         const lastDispatch = delivery.dispatches[0]
-                        const total = delivery.order.items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0)
+                        const driverRequest = delivery.order.driverRequest
+                        const total = driverRequest
+                            ? Number(driverRequest.cashToCollect)
+                            : delivery.order.items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0)
                         return {
                             orderId: delivery.orderId,
                             deliveryId: delivery.id,
@@ -68,8 +72,8 @@ export const Query = extendType({
                             partnerAddress: delivery.order.partner.address,
                             partnerLatitude: delivery.order.partner.latitude,
                             partnerLongitude: delivery.order.partner.longitude,
-                            clientName: `${delivery.order.client.firstname} ${delivery.order.client.lastname}`.trim() || 'Customer',
-                            clientPhone: delivery.order.client.user.phone,
+                            clientName: driverRequest?.recipientName ?? (`${delivery.order.client.firstname} ${delivery.order.client.lastname}`.trim() || 'Customer'),
+                            clientPhone: driverRequest?.recipientPhone ?? delivery.order.client.user.phone,
                             destinationAddress: delivery.order.address.address || delivery.order.address.label,
                             destinationLatitude: delivery.order.address.latitude,
                             destinationLongitude: delivery.order.address.longitude,
@@ -78,12 +82,14 @@ export const Query = extendType({
                             activeOfferCount: activeOffers.length,
                             lastDispatchAt: lastDispatch?.sentAt,
                             needsAttention: delivery.status === DeliveryStatus.READY && activeOffers.length === 0 && (!lastDispatch || lastDispatch.sentAt < attentionBefore),
-                            items: delivery.order.items.map((item) => ({
-                                id: item.id,
-                                name: item.product.customName || item.product.variant.name || item.product.variant.product.name,
-                                quantity: item.quantity,
-                                price: item.price,
-                            })),
+                            items: driverRequest
+                                ? [{ id: 0, name: driverRequest.packageDescription, quantity: 1, price: driverRequest.cashToCollect }]
+                                : delivery.order.items.map((item) => ({
+                                    id: item.id,
+                                    name: item.product.customName || item.product.variant.name || item.product.variant.product.name,
+                                    quantity: item.quantity,
+                                    price: item.price,
+                                })),
                         }
                     }),
                     drivers: drivers.map((driver) => {

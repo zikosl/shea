@@ -38,6 +38,11 @@ const Order = objectType({
                     where: { orderId: parent.id }
                 })
         })
+        t.field('driverRequest', {
+            type: 'PartnerDriverRequest',
+            resolve: (parent, _, ctx) =>
+                ctx.prisma.partnerDriverRequest.findUnique({ where: { orderId: parent.id } })
+        })
         t.float('total', {
             resolve: async (parent, _args, ctx) => {
                 const res: any = await ctx.prisma.$queryRaw`

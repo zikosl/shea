@@ -75,6 +75,7 @@ enum OrderSource {
   ONLINE
   POS
   GIFT
+  DRIVER_REQUEST
 }
 
 enum PartnerFeeType {
@@ -302,6 +303,7 @@ model Partner {
   customOrders        CustomOrder[]
   giftTemplates       GiftTemplate[]
   stores              Store[]
+  driverRequests      PartnerDriverRequest[]
 }
 
 model Driver {
@@ -1023,12 +1025,38 @@ model Order {
   partner Partner @relation(fields: [partnerId], references: [userId])
   address Address @relation(fields: [addressId], references: [id])
 
-  createdAt      DateTime        @default(now())
+  createdAt      DateTime              @default(now())
   items          OrderItem[]
   orderDispatchs OrderDispatch[]
   delivery       Delivery?
   sales          Sale[]
-  giftRequest    CustomOrder?    @relation("GiftConfirmation")
+  giftRequest    CustomOrder?          @relation("GiftConfirmation")
+  driverRequest  PartnerDriverRequest?
+}
+
+model PartnerDriverRequest {
+  id                   String   @id @default(uuid())
+  requestNumber        String   @unique
+  partnerId            Int
+  orderId              Int      @unique
+  recipientName        String
+  recipientPhone       String
+  packageDescription   String
+  pickupAddress        String
+  pickupLatitude       Float
+  pickupLongitude      Float
+  destinationAddress   String
+  destinationLatitude  Float
+  destinationLongitude Float
+  cashToCollect        Float    @default(0)
+  note                 String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  partner Partner @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([partnerId, createdAt])
 }
 
 model Delivery {
