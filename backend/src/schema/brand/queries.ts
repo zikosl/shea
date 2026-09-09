@@ -47,6 +47,7 @@ export const Query = extendType({
                         ? {
                             OR: [
                                 { name: { contains: search, mode: 'insensitive' } },
+                                { name_ar: { contains: search, mode: 'insensitive' } },
                             ],
                         }
                         : {}),

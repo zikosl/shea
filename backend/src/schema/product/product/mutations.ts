@@ -132,7 +132,9 @@ const ProductTemplateMutation = extendType({
             type: 'ProductTemplate',
             args: {
                 name: nonNull(stringArg()),
+                name_ar: stringArg(),
                 description: stringArg(),
+                description_ar: stringArg(),
                 images: arg({ type: ImagesList }),
                 category_id: nonNull(intArg()),
                 product_type_id: intArg(),
@@ -151,7 +153,9 @@ const ProductTemplateMutation = extendType({
             args: {
                 id: nonNull(intArg()),
                 name: stringArg(),
+                name_ar: stringArg(),
                 description: stringArg(),
+                description_ar: stringArg(),
                 category_id: intArg(),
                 product_type_id: intArg(),
                 brand_id: intArg(),

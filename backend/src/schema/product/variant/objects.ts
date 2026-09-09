@@ -16,7 +16,9 @@ const Variant = objectType({
     definition(t) {
         t.nonNull.int('id')
         t.nullable.string('name') // e.g. "Banana flavor"
+        t.nullable.string('name_ar')
         t.nullable.string('description')
+        t.nullable.string('description_ar')
         t.nullable.string('sku')
         t.nonNull.int('productId')
 

@@ -37,6 +37,7 @@ const formSchema = z.object({
   name: z.string().min(2, {
     message: "name must be at least 2 characters.",
   }),
+  name_ar: z.string().optional(),
   image: z.string().min(2, {
     message: "image must be uploaded.",
   }),
@@ -59,6 +60,7 @@ export default function ItemForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: initialData?.name ?? "",
+      name_ar: initialData?.name_ar ?? "",
       image: initialData?.image ?? "",
       niche_id: initialData?.niche_id ? String(initialData.niche_id) : "",
     },
@@ -131,6 +133,20 @@ export default function ItemForm({
                     <Input placeholder="" {...field} />
                   </FormControl>
                   <FormDescription>This name appears across catalog filters and product pages.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="name_ar"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Arabic name</FormLabel>
+                  <FormControl>
+                    <Input dir="rtl" lang="ar" placeholder="اسم العلامة التجارية" {...field} />
+                  </FormControl>
+                  <FormDescription>Displayed when the customer uses Arabic. English is used if left empty.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

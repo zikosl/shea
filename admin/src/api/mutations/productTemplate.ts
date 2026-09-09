@@ -3,7 +3,9 @@ import { gql } from "graphql-request"
 const CREATE_PRODUCT_TEMPLATE = gql`
   mutation createProductTemplate(
     $name: String!
+    $name_ar: String
     $description: String
+    $description_ar: String
     $images: ImagesList
     $category_id: Int!
     $product_type_id: Int
@@ -11,7 +13,9 @@ const CREATE_PRODUCT_TEMPLATE = gql`
   ) {
     createProductTemplate(
       name: $name
+      name_ar: $name_ar
       description: $description
+      description_ar: $description_ar
       images: $images
       category_id: $category_id
       product_type_id: $product_type_id
@@ -19,7 +23,9 @@ const CREATE_PRODUCT_TEMPLATE = gql`
     ) {
       id
       name
+      name_ar
       description
+      description_ar
       product_type_id
       category_id
       brand_id
@@ -28,11 +34,13 @@ const CREATE_PRODUCT_TEMPLATE = gql`
 `;
 
 const UPDATE_PRODUCT_TEMPLATE = gql`
-  mutation updateProductTemplate($id: Int!, $name: String, $description: String, $category_id: Int, $product_type_id: Int, $brand_id: Int) {
-    updateProductTemplate(id: $id, name: $name, description: $description, category_id: $category_id, product_type_id: $product_type_id, brand_id: $brand_id) {
+  mutation updateProductTemplate($id: Int!, $name: String, $name_ar: String, $description: String, $description_ar: String, $category_id: Int, $product_type_id: Int, $brand_id: Int) {
+    updateProductTemplate(id: $id, name: $name, name_ar: $name_ar, description: $description, description_ar: $description_ar, category_id: $category_id, product_type_id: $product_type_id, brand_id: $brand_id) {
       id
       name
+      name_ar
       description
+      description_ar
       product_type_id
       category_id
       brand_id

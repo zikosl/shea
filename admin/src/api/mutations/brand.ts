@@ -1,10 +1,11 @@
 import { gql } from "graphql-request"
 
 const CREATE_BRAND = gql`
-  mutation createBrand($name: String!,$image: String!, $niche_id: Int) {
-    createBrand(name: $name,image:$image,niche_id:$niche_id) {
+  mutation createBrand($name: String!, $name_ar: String, $image: String!, $niche_id: Int) {
+    createBrand(name: $name, name_ar: $name_ar, image:$image,niche_id:$niche_id) {
       id
       name
+      name_ar
       image
       niche_id
     }
@@ -13,10 +14,11 @@ const CREATE_BRAND = gql`
 
 // Mutation to update an existing 
 const UPDATE_BRAND = gql`
-  mutation updateBrand($id: Int!,$name: String,$image: String,$niche_id: Int) {
-    updateBrand(id: $id, name: $name,image:$image,niche_id:$niche_id){
+  mutation updateBrand($id: Int!, $name: String, $name_ar: String, $image: String, $niche_id: Int) {
+    updateBrand(id: $id, name: $name, name_ar: $name_ar, image:$image,niche_id:$niche_id){
       id
       name
+      name_ar
       image
       niche_id
     }

@@ -5,7 +5,9 @@ export const FIND_ONE_PRODUCT_TEMPLATE = gql`
     findOneProductTemplate(id: $id) {
       id
       name
+      name_ar
       description
+      description_ar
       product_type_id
       brand_id
       category_id
@@ -47,7 +49,9 @@ export const FIND_MANY_PRODUCT_TEMPLATES = gql`
       productTemplates {
         id
         name
+        name_ar
         description
+        description_ar
         product_type_id
         brand_id
         category_id

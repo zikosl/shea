@@ -6,6 +6,7 @@ const Brand = objectType({
     definition(t) {
         t.nonNull.int('id')
         t.string('name')
+        t.string('name_ar')
         t.string('image')
         t.int('niche_id')
         t.field('niche', {

@@ -8,7 +8,9 @@ const UpdateVariantInput = inputObjectType({
     name: "UpdateVariantInput",
     definition(t) {
         t.string("name")
+        t.string("name_ar")
         t.string("description")
+        t.string("description_ar")
         t.string("sku") // optional manual SKU override
         t.list.string("tags")
         t.list.nonNull.string("images") // URLs of new images
@@ -21,7 +23,9 @@ const ProductVariantInput = inputObjectType({
     name: "ProductVariantInput",
     definition(t) {
         t.string("name")
+        t.string("name_ar")
         t.string("description")
+        t.string("description_ar")
         t.string("sku")
         t.list.string("tags")
     },
@@ -36,7 +40,7 @@ export const VariantMutation = extendType({
                 productId: nonNull(intArg()),
                 data: nonNull(list(nonNull("ProductVariantInput"))),
             },
-            resolve: async (_parent, { productId, data }: { productId: number, data: Array<{ name?: string | null; description?: string | null; sku?: string | null; tags?: Array<string | null> | null }> }, ctx: Context) => {
+            resolve: async (_parent, { productId, data }: { productId: number, data: Array<{ name?: string | null; name_ar?: string | null; description?: string | null; description_ar?: string | null; sku?: string | null; tags?: Array<string | null> | null }> }, ctx: Context) => {
                 const product = await ctx.prisma.productTemplate.findUnique({
                     where: { id: productId },
                 });
@@ -66,7 +70,9 @@ export const VariantMutation = extendType({
                     const generatedSuffix = suffix || name.toUpperCase().replace(/[^A-Z0-9]+/g, "-").replace(/^-|-$/g, "") || "VARIANT";
                     return {
                         name,
+                        name_ar: variant.name_ar?.trim() || null,
                         description: variant.description?.trim() || null,
+                        description_ar: variant.description_ar?.trim() || null,
                         sku: variant.sku?.trim() || `${productSlug}-${generatedSuffix}`.substring(0, 50),
                         tags,
                     };
@@ -87,7 +93,9 @@ export const VariantMutation = extendType({
                     variants.map((variant) => ctx.prisma.variant.create({
                         data: {
                             name: variant.name,
+                            name_ar: variant.name_ar,
                             description: variant.description,
+                            description_ar: variant.description_ar,
                             sku: variant.sku,
                             productId,
                             tags: {
@@ -104,7 +112,7 @@ export const VariantMutation = extendType({
                 id: nonNull(intArg()),
                 data: nonNull(arg({ type: "UpdateVariantInput" })),
             },
-            resolve: async (_parent, { id, data }: { id: number; data: { name?: string | null; description?: string | null; sku?: string | null; tags?: string[] | null; images?: string[] | null } }, ctx: Context) => {
+            resolve: async (_parent, { id, data }: { id: number; data: { name?: string | null; name_ar?: string | null; description?: string | null; description_ar?: string | null; sku?: string | null; tags?: string[] | null; images?: string[] | null } }, ctx: Context) => {
                 // Step 1: Fetch variant
                 const variant = await ctx.prisma.variant.findUnique({
                     where: { id },
@@ -127,7 +135,9 @@ export const VariantMutation = extendType({
                         where: { id },
                         data: {
                             name,
+                            name_ar: data.name_ar === undefined ? variant.name_ar : data.name_ar?.trim() || null,
                             description: data.description === undefined ? variant.description : data.description?.trim() || null,
+                            description_ar: data.description_ar === undefined ? variant.description_ar : data.description_ar?.trim() || null,
                             sku,
                         },
                     });

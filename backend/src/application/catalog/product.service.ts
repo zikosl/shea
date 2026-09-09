@@ -213,7 +213,9 @@ export async function createProductTemplate(
   prisma: PrismaClient,
   input: {
     name: string
+    name_ar?: string | null
     description?: string | null
+    description_ar?: string | null
     images?: string[] | null
     category_id: number
     product_type_id?: number | null
@@ -248,10 +250,12 @@ export async function createProductTemplate(
   const productTemplate = await prisma.productTemplate.create({
     data: {
       name: input.name,
+      name_ar: input.name_ar?.trim() ?? '',
       category_id: input.category_id,
       product_type_id: input.product_type_id ?? null,
       brand_id: input.brand_id,
       description: input.description ?? '',
+      description_ar: input.description_ar?.trim() ?? '',
       images: {
         create: images.map((url) => ({ url })),
       },
@@ -279,7 +283,9 @@ export async function updateProductTemplate(
   input: {
     id: number
     name?: string | null
+    name_ar?: string | null
     description?: string | null
+    description_ar?: string | null
     category_id?: number | null
     product_type_id?: number | null
     brand_id?: number | null
@@ -314,7 +320,9 @@ export async function updateProductTemplate(
     where: { id: input.id },
     data: {
       name: input.name ?? undefined,
+      name_ar: input.name_ar ?? undefined,
       description: input.description ?? undefined,
+      description_ar: input.description_ar ?? undefined,
       category_id: input.category_id ?? undefined,
       product_type_id: input.product_type_id === null ? null : input.product_type_id ?? undefined,
       brand_id: input.brand_id ?? undefined,

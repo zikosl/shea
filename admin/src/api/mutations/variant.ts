@@ -5,7 +5,9 @@ export const CREATE_VARIANTS = gql`
     createVariant(productId: $productId, data: $data) {
       id
       name
+      name_ar
       description
+      description_ar
       sku
     }
   }
@@ -16,7 +18,9 @@ export const UPDATE_VARIANT = gql`
     updateVariant(id: $id, data: $data) {
       id
       name
+      name_ar
       description
+      description_ar
       tags { id value }
       sku
       images {

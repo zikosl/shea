@@ -17,7 +17,9 @@ import {
 type ProductTemplateResponse = {
   id: number;
   name: string;
+  name_ar?: string | null;
   description?: string | null;
+  description_ar?: string | null;
   product_type_id?: number | null;
   brand_id: number;
   category_id?: number | null;
@@ -31,7 +33,9 @@ type ProductTemplateResponse = {
 
 type ProductTemplatePayload = {
   name: string;
+  name_ar?: string;
   description?: string;
+  description_ar?: string;
   category_id: string;
   product_type_id?: string;
   brand_id: string;
@@ -53,7 +57,9 @@ function mapItem(data: ProductTemplateResponse): ProductTemplate {
   return {
     id: String(data.id),
     name: data.name,
+    name_ar: data.name_ar ?? "",
     description: data.description ?? "",
+    description_ar: data.description_ar ?? "",
     product_type_id: data.product_type_id ? String(data.product_type_id) : "",
     brand_id: String(data.brand_id),
     category_id: data.category_id ? String(data.category_id) : undefined,
@@ -74,7 +80,9 @@ export async function createItem(itemData: ProductTemplatePayload) {
     CREATE_ITEM,
     {
       name: itemData.name,
+      name_ar: itemData.name_ar,
       description: itemData.description,
+      description_ar: itemData.description_ar,
       category_id: Number(itemData.category_id),
       product_type_id: itemData.product_type_id ? Number(itemData.product_type_id) : null,
       brand_id: Number(itemData.brand_id),
@@ -128,7 +136,9 @@ export async function updateItem(id: string, itemData: ProductTemplatePayload) {
     {
       id: Number.parseInt(id, 10),
       name: itemData.name,
+      name_ar: itemData.name_ar,
       description: itemData.description,
+      description_ar: itemData.description_ar,
       category_id: Number(itemData.category_id),
       product_type_id: itemData.product_type_id ? Number(itemData.product_type_id) : null,
       brand_id: Number(itemData.brand_id),

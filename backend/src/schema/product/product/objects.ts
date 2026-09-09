@@ -2,6 +2,43 @@ import { Prisma } from "@prisma/client"
 import { objectType } from "nexus"
 import { getUserId } from "../../../utils"
 
+type ProductCatalogDetails = {
+    name: string | null
+    name_ar: string | null
+    variantName: string | null
+    variantNameAr: string | null
+    sku: string | null
+    images: Array<{ id: number; url: string; altText: string | null; variantId: number | null; product_template_id: number | null }>
+}
+
+const productCatalogCache = new WeakMap<object, Promise<ProductCatalogDetails>>()
+
+const getProductCatalogDetails = (parent: Record<string, unknown>, ctx: any) => {
+    const cached = productCatalogCache.get(parent)
+    if (cached) return cached
+
+    const details = ctx.prisma.variant.findUnique({
+        where: { id: parent.variantId as number },
+        select: {
+            name: true,
+            name_ar: true,
+            sku: true,
+            images: true,
+            product: { select: { name: true, name_ar: true } },
+        },
+    }).then((variant: any) => ({
+        name: (parent.customName as string | null) || variant?.product.name || null,
+        name_ar: (parent.customName as string | null) || variant?.product.name_ar || null,
+        variantName: variant?.name || null,
+        variantNameAr: variant?.name_ar || null,
+        sku: (parent.vendorSku as string | null) || variant?.sku || null,
+        images: variant?.images || [],
+    }))
+
+    productCatalogCache.set(parent, details)
+    return details
+}
+
 
 const Product = objectType({
     name: 'Product',
@@ -25,6 +62,29 @@ const Product = objectType({
         t.string('notes')
         t.int('partnerId')
         t.int('variantId')
+        t.string('name', {
+            resolve: async (parent, _args, ctx) => (await getProductCatalogDetails(parent, ctx)).name,
+        })
+        t.string('name_ar', {
+            resolve: async (parent, _args, ctx) => (await getProductCatalogDetails(parent, ctx)).name_ar,
+        })
+        t.string('variantName', {
+            resolve: async (parent, _args, ctx) => (await getProductCatalogDetails(parent, ctx)).variantName,
+        })
+        t.string('variantNameAr', {
+            resolve: async (parent, _args, ctx) => (await getProductCatalogDetails(parent, ctx)).variantNameAr,
+        })
+        t.string('sku', {
+            resolve: async (parent, _args, ctx) => (await getProductCatalogDetails(parent, ctx)).sku,
+        })
+        t.nonNull.list.nonNull.field('images', {
+            type: 'ProductImage',
+            resolve: async (parent, _args, ctx) => (await getProductCatalogDetails(parent, ctx)).images,
+        })
+        t.field('image', {
+            type: 'ProductImage',
+            resolve: async (parent, _args, ctx) => (await getProductCatalogDetails(parent, ctx)).images[0] ?? null,
+        })
 
         t.field('partner', {
             type: 'Partner',
@@ -53,6 +113,7 @@ const ProductTemplate = objectType({
         t.string('name')
         t.string('name_ar')
         t.string('description')
+        t.string('description_ar')
         t.int('product_type_id')
 
         t.field('productType', {
@@ -145,6 +206,12 @@ const ProductView = objectType({
         t.string('name_ar')
         t.string('sku')
         t.string('variantName')
+        t.string('variantNameAr', {
+            resolve: async (parent, _args, ctx) => {
+                const variant = await ctx.prisma.variant.findUnique({ where: { id: parent.variantId }, select: { name_ar: true } })
+                return variant?.name_ar ?? null
+            },
+        })
         t.float('price')
         t.float('costPrice')
         t.float('discount')
@@ -268,6 +335,12 @@ const ProductTemplatePartnerPreview = objectType({
         t.nonNull.string('name');
         t.nonNull.string('name_ar');
         t.nonNull.string('description');
+        t.string('description_ar', {
+            resolve: async (parent, _args, ctx) => {
+                const template = await ctx.prisma.productTemplate.findUnique({ where: { id: parent.product_template_id }, select: { description_ar: true } })
+                return template?.description_ar ?? ''
+            },
+        });
         t.nullable.int('product_type_id', { resolve: (parent) => parent.product_type_id ?? null });
         t.nonNull.int('category_id');
         t.int('brand_id');
@@ -275,6 +348,12 @@ const ProductTemplatePartnerPreview = objectType({
         // Variant fields
         t.nonNull.int('variantId');
         t.string('variant_name');
+        t.string('variant_name_ar', {
+            resolve: async (parent, _args, ctx) => {
+                const variant = await ctx.prisma.variant.findUnique({ where: { id: parent.variantId }, select: { name_ar: true } })
+                return variant?.name_ar ?? null
+            },
+        });
         t.string('variant_sku');
 
         // Product fields

@@ -38,7 +38,9 @@ export default function VariantsManager({ productId, productName, variants, tota
   const [dimensions, setDimensions] = useState([""]);
   const [editing, setEditing] = useState<ProductVariant | null>(null);
   const [editName, setEditName] = useState("");
+  const [editNameAr, setEditNameAr] = useState("");
   const [editDescription, setEditDescription] = useState("");
+  const [editDescriptionAr, setEditDescriptionAr] = useState("");
   const [editTags, setEditTags] = useState("");
   const [editSku, setEditSku] = useState("");
   const [editImages, setEditImages] = useState<string[]>([]);
@@ -71,7 +73,9 @@ export default function VariantsManager({ productId, productName, variants, tota
   function beginEdit(variant: ProductVariant) {
     setEditing(variant);
     setEditName(variant.name ?? "");
+    setEditNameAr(variant.name_ar ?? "");
     setEditDescription(variant.description ?? "");
+    setEditDescriptionAr(variant.description_ar ?? "");
     setEditTags(variant.tags.map((tag) => tag.value).join(", "));
     setEditSku(variant.sku ?? "");
     setEditImages(variant.images.map((image) => image.url));
@@ -170,14 +174,16 @@ export default function VariantsManager({ productId, productName, variants, tota
           <DialogHeader><DialogTitle>Edit variant</DialogTitle><DialogDescription>Update its catalog identity and optional variant-specific images.</DialogDescription></DialogHeader>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2"><Label htmlFor="variant-name">Name</Label><Input id="variant-name" value={editName} onChange={(event) => setEditName(event.target.value)} placeholder="Optional when tags are provided" /></div>
+            <div className="space-y-2"><Label htmlFor="variant-name-ar">Arabic name</Label><Input id="variant-name-ar" dir="rtl" lang="ar" value={editNameAr} onChange={(event) => setEditNameAr(event.target.value)} placeholder="اسم الخيار" /></div>
             <div className="space-y-2"><Label htmlFor="variant-sku">SKU</Label><Input id="variant-sku" value={editSku} onChange={(event) => setEditSku(event.target.value)} /></div>
           </div>
           <div className="space-y-2"><Label htmlFor="variant-tags">Tags</Label><Input id="variant-tags" value={editTags} onChange={(event) => setEditTags(event.target.value)} placeholder="20ml, Red" /><p className="text-xs text-muted-foreground">A variant must have a name or at least one comma-separated tag.</p></div>
           <div className="space-y-2"><Label htmlFor="variant-description">Description</Label><Textarea id="variant-description" value={editDescription} onChange={(event) => setEditDescription(event.target.value)} placeholder="Optional details specific to this variant" /></div>
+          <div className="space-y-2"><Label htmlFor="variant-description-ar">Arabic description</Label><Textarea id="variant-description-ar" dir="rtl" lang="ar" value={editDescriptionAr} onChange={(event) => setEditDescriptionAr(event.target.value)} placeholder="تفاصيل الخيار باللغة العربية" /></div>
           <div className="space-y-3"><Label>Images</Label><FileUploader multiple maxFiles={6} maxSize={10 * 1024 * 1024} progresses={progresses} onUpload={uploadVariantImages} disabled={isUploading} />
             {editImages.length ? <div className="grid grid-cols-3 gap-3">{editImages.map((url) => <div key={url} className="relative aspect-square overflow-hidden rounded-lg border"><Image unoptimized fill src={resolvePublicAssetUrl(url)} alt="" className="object-cover" /><Button type="button" variant="secondary" size="icon" className="absolute right-1 top-1 h-7 w-7" onClick={() => setEditImages((images) => images.filter((image) => image !== url))}><X /></Button></div>)}</div> : null}
           </div>
-          <DialogFooter><Button type="button" variant="outline" onClick={() => setEditing(null)}>Cancel</Button><Button type="button" disabled={isPending || isUploading || (!editName.trim() && !editTags.split(",").some((tag) => tag.trim()))} onClick={() => editing && run(() => updateVariantItem(productId, Number(editing.id), { name: editName, description: editDescription, sku: editSku, tags: editTags.split(","), images: editImages }), "Variant updated", () => setEditing(null))}>{(isPending || isUploading) && <Loader2 className="animate-spin" />} Save changes</Button></DialogFooter>
+          <DialogFooter><Button type="button" variant="outline" onClick={() => setEditing(null)}>Cancel</Button><Button type="button" disabled={isPending || isUploading || (!editName.trim() && !editTags.split(",").some((tag) => tag.trim()))} onClick={() => editing && run(() => updateVariantItem(productId, Number(editing.id), { name: editName, name_ar: editNameAr, description: editDescription, description_ar: editDescriptionAr, sku: editSku, tags: editTags.split(","), images: editImages }), "Variant updated", () => setEditing(null))}>{(isPending || isUploading) && <Loader2 className="animate-spin" />} Save changes</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 

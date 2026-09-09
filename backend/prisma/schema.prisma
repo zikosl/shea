@@ -378,6 +378,7 @@ model ProductType {
 model Brand {
   id               Int                      @id @default(autoincrement())
   name             String
+  name_ar          String                   @default("")
   image            String
   niche            Niche?                   @relation(fields: [niche_id], references: [id])
   niche_id         Int?
@@ -850,6 +851,7 @@ model ProductTemplate {
   name        String
   name_ar     String @default("")
   description String @default("")
+  description_ar String @default("")
 
   category_id     Int
   category        Category     @relation(fields: [category_id], references: [id])
@@ -967,7 +969,9 @@ model ProductTemplateRequestVariant {
 model Variant {
   id          Int     @id @default(autoincrement())
   name        String? // e.g. "Banana flavor", "Red color"
+  name_ar     String?
   description String?
+  description_ar String?
   sku         String? @unique
 
   productId Int

@@ -42,7 +42,9 @@ const formSchema = z.object({
   name: z.string().min(2, {
     message: "name must be at least 2 characters.",
   }),
+  name_ar: z.string().optional(),
   description: z.string().optional(),
+  description_ar: z.string().optional(),
   niche_id: z.string().min(1, "Niche is required"),
   category_id: z.string().min(1, "Category is required"),
   product_type_id: z.string().optional(),
@@ -76,7 +78,9 @@ export default function ItemForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: initialData?.name ?? "",
+      name_ar: initialData?.name_ar ?? "",
       description: initialData?.description ?? "",
+      description_ar: initialData?.description_ar ?? "",
       niche_id: initialData?.niche_id ?? initialData?.category?.niche_id?.toString() ?? "",
       category_id: initialData?.category_id ?? "",
       product_type_id: initialData?.product_type_id ?? "",
@@ -144,7 +148,9 @@ export default function ItemForm({
     try {
       const payload = {
         name: values.name,
+        name_ar: values.name_ar,
         description: values.description,
+        description_ar: values.description_ar,
         category_id: values.category_id,
         product_type_id: values.product_type_id,
         brand_id: values.brand_id,
@@ -194,6 +200,21 @@ export default function ItemForm({
                     <FormDescription>
                       This is the template name shown across the catalog.
                     </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="name_ar"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Arabic name</FormLabel>
+                    <FormControl>
+                      <Input dir="rtl" lang="ar" placeholder="اسم المنتج" {...field} />
+                    </FormControl>
+                    <FormDescription>Used throughout the Arabic customer experience.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -301,6 +322,21 @@ export default function ItemForm({
                   <FormDescription>
                     Add the core product description used across template-based listings.
                   </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description_ar"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Arabic description</FormLabel>
+                  <FormControl>
+                    <Textarea dir="rtl" lang="ar" placeholder="وصف المنتج باللغة العربية..." className="min-h-32" {...field} />
+                  </FormControl>
+                  <FormDescription>English is used as a fallback when this field is empty.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

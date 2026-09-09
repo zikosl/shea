@@ -9,7 +9,9 @@ import { requestServerGraphQL } from "@/lib/server-request";
 type VariantResponse = {
   id: number;
   name?: string | null;
+  name_ar?: string | null;
   description?: string | null;
+  description_ar?: string | null;
   sku?: string | null;
   productId: number;
   tags?: Array<{ id: number; value: string }>;
@@ -21,7 +23,9 @@ function mapVariant(variant: VariantResponse): ProductVariant {
   return {
     id: String(variant.id),
     name: variant.name,
+    name_ar: variant.name_ar,
     description: variant.description,
+    description_ar: variant.description_ar,
     sku: variant.sku,
     productId: String(variant.productId),
     tags: (variant.tags ?? []).map((tag) => ({ id: String(tag.id), value: tag.value })),
@@ -68,7 +72,7 @@ export async function createVariantCombinations(productId: number, dimensions: s
 export async function updateVariantItem(
   productId: number,
   id: number,
-  data: { name: string; description: string; sku: string; tags: string[]; images: string[] },
+  data: { name: string; name_ar: string; description: string; description_ar: string; sku: string; tags: string[]; images: string[] },
 ) {
   const tags = Array.from(new Set(data.tags.map((tag) => tag.trim()).filter(Boolean)));
   if (!data.name.trim() && !tags.length) throw new Error("Add a variant name or at least one tag");
@@ -76,7 +80,9 @@ export async function updateVariantItem(
     id,
     data: {
       name: data.name.trim() || null,
+      name_ar: data.name_ar.trim() || null,
       description: data.description.trim() || null,
+      description_ar: data.description_ar.trim() || null,
       sku: data.sku.trim() || null,
       tags,
       images: data.images,

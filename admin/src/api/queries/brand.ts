@@ -5,6 +5,7 @@ export const FIND_ONE_BRAND = gql`
     findOneBrand(id: $id) {
       id
       name
+      name_ar
       image
       niche_id
       niche {
@@ -21,11 +22,13 @@ export const GET_ALL_BRANDS = gql`
     getAllBrands(niche_id: $niche_id) {
       id
       name
+      name_ar
       image
       niche_id
       niche {
         id
         name
+        name_ar
         name_ar
       }
     }

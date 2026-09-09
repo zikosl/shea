@@ -30,6 +30,7 @@ export const VariantQuery = extendType({
                         productId,
                         OR: [
                             { name: { contains: search, mode: 'insensitive' } },
+                            { name_ar: { contains: search, mode: 'insensitive' } },
                             { sku: { contains: search, mode: 'insensitive' } },
                         ],
                     }

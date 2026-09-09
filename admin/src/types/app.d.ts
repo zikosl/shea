@@ -63,6 +63,7 @@ type Niche = {
 type Brand = {
     id: string;
     name: string;
+    name_ar: string;
     image: string;
     niche_id?: string | number | null;
     niche?: Niche | null;
@@ -76,7 +77,9 @@ type ProductTemplateImage = {
 type ProductTemplate = {
     id: string;
     name: string;
+    name_ar: string;
     description: string;
+    description_ar: string;
     product_type_id?: string;
     brand_id: string;
     category_id?: string;
@@ -91,7 +94,9 @@ type ProductTemplate = {
 type ProductVariant = {
     id: string;
     name?: string | null;
+    name_ar?: string | null;
     description?: string | null;
+    description_ar?: string | null;
     sku?: string | null;
     productId: string;
     tags: Array<{ id: string; value: string }>;
