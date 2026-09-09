@@ -1,14 +1,15 @@
 import { gql } from "graphql-request"
 
 const CREATE_PARTNER = gql`
-  mutation createPartner($companyName: String!, $email: String!, $niches: [Int!], $feeType: PartnerFeeType, $feeRate: Float, $fixedFee: Float, $primaryColor: String) {
-    createPartner(companyName: $companyName, email: $email, niches: $niches, feeType: $feeType, feeRate: $feeRate, fixedFee: $fixedFee, primaryColor: $primaryColor) {
+  mutation createPartner($companyName: String!, $email: String!, $niches: [Int!], $feeType: PartnerFeeType, $feeRate: Float, $fixedFee: Float, $driverRequestFee: Float, $primaryColor: String) {
+    createPartner(companyName: $companyName, email: $email, niches: $niches, feeType: $feeType, feeRate: $feeRate, fixedFee: $fixedFee, driverRequestFee: $driverRequestFee, primaryColor: $primaryColor) {
       id
       companyName
       primaryColor
       feeType
       feeRate
       fixedFee
+      driverRequestFee
       niches {
         id
         niche_id
@@ -27,14 +28,15 @@ const CREATE_PARTNER = gql`
 
 // Mutation to update an existing partner
 const UPDATE_PARTNER = gql`
-  mutation updatePartner($id: Int!, $companyName: String, $email: String, $niches: [Int!], $feeType: PartnerFeeType, $feeRate: Float, $fixedFee: Float, $primaryColor: String) {
-    updatePartner(id: $id, companyName: $companyName, email: $email, niches: $niches, feeType: $feeType, feeRate: $feeRate, fixedFee: $fixedFee, primaryColor: $primaryColor) {
+  mutation updatePartner($id: Int!, $companyName: String, $email: String, $niches: [Int!], $feeType: PartnerFeeType, $feeRate: Float, $fixedFee: Float, $driverRequestFee: Float, $primaryColor: String) {
+    updatePartner(id: $id, companyName: $companyName, email: $email, niches: $niches, feeType: $feeType, feeRate: $feeRate, fixedFee: $fixedFee, driverRequestFee: $driverRequestFee, primaryColor: $primaryColor) {
       id
       companyName
       primaryColor
       feeType
       feeRate
       fixedFee
+      driverRequestFee
       niches {
         id
         niche_id

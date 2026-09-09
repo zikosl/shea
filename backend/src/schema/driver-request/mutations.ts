@@ -1,10 +1,11 @@
 import { arg, extendType, nonNull, stringArg } from 'nexus'
 import { GraphQLError } from 'graphql'
 import { Context } from '../../context'
-import { DeliveryStatus, DeliveryType, DispatchStatus, LogSatus, PricingName } from '../../types'
+import { DeliveryStatus, DeliveryType, DispatchStatus, LogSatus } from '../../types'
 import { getUserId } from '../../utils'
 import { ensurePartnerPosIdentity } from '../order/pos'
 import { sendNotification } from '../../servers/firebase'
+import { resolveDriverRequestFee } from './pricing'
 
 const requestInclude = {
   order: {
@@ -56,8 +57,7 @@ export default extendType({
         const pickupLongitude = coordinate(identity.partner.longitude, -180, 180, 'STORE_LOCATION_REQUIRED')
         if (pickupLatitude === 0 && pickupLongitude === 0) throw new GraphQLError('STORE_LOCATION_REQUIRED')
         const pickupAddress = required(identity.partner.address ?? '', 'STORE_ADDRESS_REQUIRED')
-        const pricing = await ctx.prisma.pricing.findUnique({ where: { name: PricingName.NORMAL_DELIVERY_TAX } })
-        const deliveryPrice = Number(pricing?.price ?? 0)
+        const { amount: deliveryPrice } = await resolveDriverRequestFee(ctx.prisma, partnerId)
         const requestNumber = `DRV-${partnerId}-${Date.now().toString(36).toUpperCase()}`
 
         const request = await ctx.prisma.$transaction(async (tx) => {
@@ -169,6 +169,7 @@ export default extendType({
             where: { id: delivery.id },
             data: { status: DeliveryStatus.CANCELED, driverId: null },
           })
+          await tx.partnerDriverRequest.update({ where: { id }, data: { canceledAt: new Date() } })
           if (previousDriverId) {
             const active = await tx.delivery.count({
               where: { driverId: previousDriverId, id: { not: delivery.id }, status: { in: [DeliveryStatus.ASSIGNED, DeliveryStatus.PICKED] } },

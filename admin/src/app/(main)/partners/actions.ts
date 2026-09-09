@@ -21,6 +21,7 @@ type PartnerResponse = {
   feeType?: "NONE" | "PERCENTAGE" | "FIXED" | "MIXED";
   feeRate?: number | null;
   fixedFee?: number | null;
+  driverRequestFee?: number | null;
   niches?: ({
     id: string;
     niche_id: number | string | null;
@@ -41,6 +42,7 @@ const mapPartner = (data: PartnerResponse) =>
     feeType: data.feeType ?? "NONE",
     feeRate: Number(data.feeRate ?? 0),
     fixedFee: Number(data.fixedFee ?? 0),
+    driverRequestFee: data.driverRequestFee ?? null,
         email: data.user.email,
         password: data.user.password,
         niches: (data.niches ?? [])

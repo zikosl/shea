@@ -111,6 +111,7 @@ export const Query = extendType({
                 async function aggregate(from?: Date) {
                     const where: Prisma.OrderWhereInput = {
                         partnerId,
+                        source: { not: 'DRIVER_REQUEST' },
                         ...(from ? { createdAt: { gte: from } } : {}),
                     }
                     const [sum, orders] = await Promise.all([
@@ -136,11 +137,47 @@ export const Query = extendType({
                     }
                 }
 
+                async function aggregateDeliveries(from?: Date) {
+                    const requests = await ctx.prisma.partnerDriverRequest.findMany({
+                        where: {
+                            partnerId,
+                            ...(from ? { createdAt: { gte: from } } : {}),
+                        },
+                        include: { order: { include: { delivery: true } } },
+                    })
+                    const completed = requests.filter((request) => request.deliveredAt)
+                    const canceled = requests.filter((request) => request.canceledAt)
+                    const active = requests.length - completed.length - canceled.length
+                    const assignmentDurations = requests
+                        .filter((request) => request.assignedAt)
+                        .map((request) => request.assignedAt.getTime() - request.createdAt.getTime())
+                    const deliveryDurations = completed
+                        .filter((request) => request.pickedUpAt)
+                        .map((request) => request.deliveredAt.getTime() - request.pickedUpAt.getTime())
+                    const averageMinutes = (values: number[]) => values.length
+                        ? values.reduce((total, value) => total + value, 0) / values.length / 60_000
+                        : 0
+
+                    return {
+                        totalRequests: requests.length,
+                        activeRequests: active,
+                        completedRequests: completed.length,
+                        canceledRequests: canceled.length,
+                        completionRate: requests.length ? (completed.length / requests.length) * 100 : 0,
+                        fees: requests.reduce((total, request) => total + Number(request.order.delivery?.price ?? 0), 0),
+                        cashCollected: completed.reduce((total, request) => total + Number(request.cashToCollect), 0),
+                        averageAssignmentMinutes: averageMinutes(assignmentDurations),
+                        averageDeliveryMinutes: averageMinutes(deliveryDurations),
+                    }
+                }
+
                 return {
                     today: await aggregate(startOfToday),
                     week: await aggregate(startOfWeek),
                     month: await aggregate(startOfMonth),
                     allTime: await aggregate(),
+                    deliveryMonth: await aggregateDeliveries(startOfMonth),
+                    deliveryAllTime: await aggregateDeliveries(),
                 }
             },
         })

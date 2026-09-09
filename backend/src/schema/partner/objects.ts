@@ -41,6 +41,22 @@ const PartnerStatisticsResult = objectType({
         t.nonNull.field('week', { type: 'PartnerStatistics' })
         t.nonNull.field('month', { type: 'PartnerStatistics' })
         t.nonNull.field('allTime', { type: 'PartnerStatistics' })
+        t.nonNull.field('deliveryMonth', { type: 'PartnerDeliveryStatistics' })
+        t.nonNull.field('deliveryAllTime', { type: 'PartnerDeliveryStatistics' })
+    },
+})
+const PartnerDeliveryStatistics = objectType({
+    name: 'PartnerDeliveryStatistics',
+    definition(t) {
+        t.nonNull.int('totalRequests')
+        t.nonNull.int('activeRequests')
+        t.nonNull.int('completedRequests')
+        t.nonNull.int('canceledRequests')
+        t.nonNull.float('completionRate')
+        t.nonNull.float('fees')
+        t.nonNull.float('cashCollected')
+        t.nonNull.float('averageAssignmentMinutes')
+        t.nonNull.float('averageDeliveryMinutes')
     },
 })
 export default {
@@ -48,4 +64,5 @@ export default {
     PartnerNiche,
     PartnerStatistics,
     PartnerStatisticsResult,
+    PartnerDeliveryStatistics,
 }

@@ -7,6 +7,7 @@ type Partner = {
     feeType?: "NONE" | "PERCENTAGE" | "FIXED" | "MIXED";
     feeRate?: number;
     fixedFee?: number;
+    driverRequestFee?: number | null;
     niches?: number[];
     partnerNiches?: PartnerNiche[];
     capabilityOverrides?: Record<CapabilityCode, CapabilityOverrideEffect | null>;

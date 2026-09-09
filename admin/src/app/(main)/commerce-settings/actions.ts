@@ -6,7 +6,7 @@ import { CREATE_SCHEDULE, DELETE_SCHEDULE, UPSERT_PRICING } from "@/api/mutation
 import { FIND_MANY_PRICING, FIND_MANY_SCHEDULES } from "@/api/queries";
 import { requestServerGraphQL } from "@/lib/server-request";
 
-export type PricingName = "APP_TAX" | "NORMAL_DELIVERY_TAX" | "GROUP_DELIVERY_TAX" | "STORE_TAX" | "PICKUP_TAX";
+export type PricingName = "APP_TAX" | "NORMAL_DELIVERY_TAX" | "DRIVER_REQUEST_FEE" | "GROUP_DELIVERY_TAX" | "STORE_TAX" | "PICKUP_TAX";
 export type PricingItem = { id: number; name: PricingName; price: number };
 export type ScheduleItem = { id: number; time: string; isActive: boolean };
 

@@ -17,6 +17,7 @@ const pricingDefinitions: Array<{ name: PricingName; label: string; description:
   { name: "APP_TAX", label: "Platform fee", description: "Application fee added to an order." },
   { name: "STORE_TAX", label: "Store fee", description: "Store-side service amount added at checkout." },
   { name: "NORMAL_DELIVERY_TAX", label: "Standard delivery", description: "Default fee for a regular delivery." },
+  { name: "DRIVER_REQUEST_FEE", label: "Driver request", description: "Default fee when a partner requests a standalone driver." },
   { name: "GROUP_DELIVERY_TAX", label: "Grouped delivery", description: "Fee used when deliveries are grouped." },
   { name: "PICKUP_TAX", label: "Pickup", description: "Fee applied when the customer collects an order." },
 ];

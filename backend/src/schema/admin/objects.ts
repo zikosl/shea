@@ -5,6 +5,7 @@ export const PricingNameEnum = enumType({
     members: [
         'APP_TAX',
         'NORMAL_DELIVERY_TAX',
+        'DRIVER_REQUEST_FEE',
         'GROUP_DELIVERY_TAX',
         'STORE_TAX',
         'PICKUP_TAX',

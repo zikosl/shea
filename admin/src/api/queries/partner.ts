@@ -10,6 +10,7 @@ export const FIND_ONE_PARTNER = gql`
       feeType
       feeRate
       fixedFee
+      driverRequestFee
       niches {
         id
         niche_id
@@ -37,6 +38,7 @@ export const FIND_MANY_PARTNERS = gql`
         feeType
         feeRate
         fixedFee
+        driverRequestFee
         niches {
           id
           niche_id

@@ -288,6 +288,7 @@ model Partner {
   feeType             PartnerFeeType              @default(NONE)
   feeRate             Float                       @default(0)
   fixedFee            Float                       @default(0)
+  driverRequestFee    Float?
   Product             Product[]
   Order               Order[]
   devices             Device[]
@@ -1050,6 +1051,10 @@ model PartnerDriverRequest {
   destinationLongitude Float
   cashToCollect        Float    @default(0)
   note                 String?
+  assignedAt           DateTime?
+  pickedUpAt           DateTime?
+  deliveredAt          DateTime?
+  canceledAt           DateTime?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
@@ -1230,6 +1235,7 @@ view ProductTemplateView {
 enum PricingName {
   APP_TAX
   NORMAL_DELIVERY_TAX
+  DRIVER_REQUEST_FEE
   GROUP_DELIVERY_TAX
   STORE_TAX
   PICKUP_TAX

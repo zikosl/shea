@@ -33,6 +33,10 @@ const PartnerDriverRequest = objectType({
     t.nonNull.float('destinationLongitude')
     t.nonNull.float('cashToCollect')
     t.string('note')
+    t.field('assignedAt', { type: 'DateTime' })
+    t.field('pickedUpAt', { type: 'DateTime' })
+    t.field('deliveredAt', { type: 'DateTime' })
+    t.field('canceledAt', { type: 'DateTime' })
     t.nonNull.field('createdAt', { type: 'DateTime' })
     t.nonNull.field('updatedAt', { type: 'DateTime' })
     t.nonNull.field('delivery', {
@@ -61,4 +65,12 @@ const PartnerDriverRequest = objectType({
   },
 })
 
-export default { PartnerDriverRequestInput, PartnerDriverRequest }
+const PartnerDriverRequestQuote = objectType({
+  name: 'PartnerDriverRequestQuote',
+  definition(t) {
+    t.nonNull.float('amount')
+    t.nonNull.string('source')
+  },
+})
+
+export default { PartnerDriverRequestInput, PartnerDriverRequest, PartnerDriverRequestQuote }

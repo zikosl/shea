@@ -39,6 +39,7 @@ const formSchema = z.object({
   feeType: z.enum(["NONE", "PERCENTAGE", "FIXED", "MIXED"]).default("NONE"),
   feeRate: z.coerce.number().min(0).max(100).default(0),
   fixedFee: z.coerce.number().min(0).default(0),
+  driverRequestFee: z.number().min(0).nullable(),
   niches: z.array(z.number()).default([]),
 })
 
@@ -73,6 +74,7 @@ export default function ItemForm({
       feeType: initialData?.feeType ?? "NONE",
       feeRate: initialData?.feeRate ?? 0,
       fixedFee: initialData?.fixedFee ?? 0,
+      driverRequestFee: initialData?.driverRequestFee ?? null,
       niches: initialData?.niches ?? [],
     },
   })
@@ -248,6 +250,47 @@ export default function ItemForm({
                   )}
                 />
               </div>
+              <FormField
+                control={form.control}
+                name="driverRequestFee"
+                render={({ field }) => {
+                  const inheritsGlobalFee = field.value === null;
+                  return (
+                    <FormItem className="mt-5 rounded-xl border bg-background p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <FormLabel>Driver request fee</FormLabel>
+                          <FormDescription>
+                            Inherit the global price or set a custom fee for this partner.
+                          </FormDescription>
+                        </div>
+                        <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
+                          <input
+                            type="checkbox"
+                            checked={inheritsGlobalFee}
+                            onChange={(event) => field.onChange(event.target.checked ? null : 0)}
+                            className="h-4 w-4 accent-primary"
+                          />
+                          Use global fee
+                        </label>
+                      </div>
+                      {!inheritsGlobalFee && (
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="1"
+                            min="0"
+                            value={field.value ?? 0}
+                            onChange={(event) => field.onChange(Number(event.target.value))}
+                            className="mt-3 max-w-xs"
+                          />
+                        </FormControl>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
             </div>
 
             <FormField

@@ -59,6 +59,7 @@ export const permissions = shield(
       partnerCapabilityOverrides: isAdmin,
       listGiftOrders: isPartner,
       listPartnerDriverRequests: isPartner,
+      partnerDriverRequestQuote: isPartner,
       myStores: isPartner,
       myPartnerProfile: isPartner,
       adminStoreNetworks: isAdmin,

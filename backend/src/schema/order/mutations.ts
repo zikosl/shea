@@ -158,7 +158,15 @@ const Mutation = extendType({
                                 data: { status: DispatchStatus.EXPIRED },
                             })
                             await tx.driver.update({ where: { userId: driverId }, data: { isAvailable: false } })
+                            await tx.partnerDriverRequest.updateMany({
+                                where: { orderId: dispatch.orderId },
+                                data: { assignedAt: new Date() },
+                            })
                             return tx.delivery.findUniqueOrThrow({ where: { id: dispatch.deliveryId } })
+                        })
+                        const driverRequest = await ctx.prisma.partnerDriverRequest.findUnique({
+                            where: { orderId: order.orderId },
+                            include: { partner: { include: { user: { include: { pushTokens: { orderBy: { createdAt: 'desc' }, take: 1 } } } } } },
                         })
                         // Log assignment for both client and partner
                         await ctx.prisma.log.create({
@@ -168,9 +176,17 @@ const Mutation = extendType({
                                 title_ar: `تم تعيين الطلب رقم #${order.orderId}`,
                                 body_ar: `تم تعيين الطلب (رقم: ${order.orderId}) إلى سائق التوصيل.`,
                                 type: LogSatus.ORDER_UPDATE,
-                                userId: order.clientId
+                                userId: driverRequest?.partnerId ?? order.clientId
                             }
                         })
+                        if (driverRequest) {
+                            await sendNotification({
+                                tokens: driverRequest.partner.user.pushTokens[0]?.token ?? '',
+                                title: 'Driver assigned',
+                                body: `A driver accepted ${driverRequest.requestNumber}.`,
+                                data: { event: 'ORDER_ASSIGNED', orderId: String(order.orderId) },
+                            })
+                        }
                     } else dispatch = await ctx.prisma.orderDispatch.update({ data: { status }, where: { id } })
                     return dispatch
                 }
@@ -201,6 +217,14 @@ const Mutation = extendType({
                         delivery: true,
                         order: {
                             include: {
+                                driverRequest: true,
+                                partner: {
+                                    include: {
+                                        user: {
+                                            include: { pushTokens: { orderBy: { createdAt: 'desc' }, take: 1 } },
+                                        },
+                                    },
+                                },
                                 client: {
                                     select: {
                                         user: {
@@ -231,6 +255,10 @@ const Mutation = extendType({
                                     status: DeliveryStatus.PICKED
                                 }
                             })
+                            await tx.partnerDriverRequest.updateMany({
+                                where: { orderId: order.orderId },
+                                data: { pickedUpAt: new Date() },
+                            })
                             await tx.log.create({
                                 data: {
                                     title: `Order #${order.orderId} has been Picked`,
@@ -238,14 +266,18 @@ const Mutation = extendType({
                                     title_ar: `تم استلام الطلب رقم #${order.orderId}`,
                                     body_ar: `تم استلام الطلب (رقم: ${order.orderId}) بواسطة سائق التوصيل.`,
                                     type: LogSatus.ORDER_UPDATE,
-                                    userId: order.order.clientId
+                                    userId: order.order.driverRequest?.partnerId ?? order.order.clientId
                                 }
                             })
                         })
                         await sendNotification({
-                            tokens: order.order.client.user.pushTokens[0]?.token ?? '',
-                            title: `Order #${order.orderId} picked up`,
-                            body: "Your order was picked up and is on its way.",
+                            tokens: order.order.driverRequest
+                                ? order.order.partner.user.pushTokens[0]?.token ?? ''
+                                : order.order.client.user.pushTokens[0]?.token ?? '',
+                            title: order.order.driverRequest ? 'Driver request picked up' : `Order #${order.orderId} picked up`,
+                            body: order.order.driverRequest
+                                ? `${order.order.driverRequest.requestNumber} is on its way to the recipient.`
+                                : 'Your order was picked up and is on its way.',
                             data: {
                                 event: "ORDER_PICKED_UP",
                                 orderId: `${order.orderId}`,
@@ -279,7 +311,12 @@ const Mutation = extendType({
                     },
                     include: {
                         delivery: true,
-                        order: true
+                        order: {
+                            include: {
+                                driverRequest: true,
+                                partner: { include: { user: { include: { pushTokens: { orderBy: { createdAt: 'desc' }, take: 1 } } } } },
+                            },
+                        }
                     }
                 })
                 if (order?.order) {
@@ -295,6 +332,10 @@ const Mutation = extendType({
                                     status: DeliveryStatus.DELIVERED
                                 }
                             })
+                            await tx.partnerDriverRequest.updateMany({
+                                where: { orderId: order.orderId },
+                                data: { deliveredAt: new Date() },
+                            })
                             const remainingDeliveries = await tx.delivery.count({
                                 where: { driverId: userId, id: { not: order.deliveryId }, status: { in: [DeliveryStatus.ASSIGNED, DeliveryStatus.PICKED] } },
                             })
@@ -308,10 +349,18 @@ const Mutation = extendType({
                                     title_ar: `تم تسليم الطلب رقم #${order.orderId}`,
                                     body_ar: `تم تسليم الطلب (رقم: ${order.orderId}) بواسطة سائق التوصيل.`,
                                     type: LogSatus.ORDER_UPDATE,
-                                    userId: order.order.clientId
+                                    userId: order.order.driverRequest?.partnerId ?? order.order.clientId
                                 }
                             })
                         })
+                        if (order.order.driverRequest) {
+                            await sendNotification({
+                                tokens: order.order.partner.user.pushTokens[0]?.token ?? '',
+                                title: 'Delivery completed',
+                                body: `${order.order.driverRequest.requestNumber} was confirmed as delivered by the driver.`,
+                                data: { event: 'ORDER_DELIVERED', orderId: String(order.orderId) },
+                            })
+                        }
                     }
                     return order;
                 }
@@ -781,6 +830,7 @@ const Mutation = extendType({
                         data: { deliveryId, orderId: delivery.orderId, driverId, status: DispatchStatus.ACCEPTED, sentAt: new Date(), expiresAt: new Date(Date.now() + ORDER_DELAY) },
                     })
                     const result = await tx.delivery.update({ where: { id: deliveryId }, data: { driverId, status: DeliveryStatus.ASSIGNED } })
+                    await tx.partnerDriverRequest.updateMany({ where: { orderId: delivery.orderId }, data: { assignedAt: new Date() } })
                     await tx.driver.update({ where: { userId: driverId }, data: { isAvailable: false } })
                     if (previousDriverId && previousDriverId !== driverId) {
                         const remaining = await tx.delivery.count({ where: { driverId: previousDriverId, id: { not: deliveryId }, status: { in: [DeliveryStatus.ASSIGNED, DeliveryStatus.PICKED] } } })
@@ -817,6 +867,7 @@ const Mutation = extendType({
                 const updated = await ctx.prisma.$transaction(async (tx) => {
                     await tx.orderDispatch.updateMany({ where: { deliveryId, status: { in: [DispatchStatus.SENT, DispatchStatus.ACCEPTED] } }, data: { status: DispatchStatus.EXPIRED } })
                     const result = await tx.delivery.update({ where: { id: deliveryId }, data: { driverId: null, status: DeliveryStatus.READY } })
+                    await tx.partnerDriverRequest.updateMany({ where: { orderId: delivery.orderId }, data: { assignedAt: null } })
                     const remaining = await tx.delivery.count({ where: { driverId: previousDriverId, id: { not: deliveryId }, status: { in: [DeliveryStatus.ASSIGNED, DeliveryStatus.PICKED] } } })
                     if (remaining === 0) await tx.driver.update({ where: { userId: previousDriverId }, data: { isAvailable: true } })
                     await tx.auditLog.create({

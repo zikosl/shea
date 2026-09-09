@@ -80,6 +80,7 @@ export const Partner = objectType({
         t.field('feeType', { type: 'PartnerFeeType' });
         t.float('feeRate');
         t.float('fixedFee');
+        t.float('driverRequestFee');
         t.int('userId');
         t.nonNull.boolean('supportsGifts', {
             resolve: async (parent, _args, ctx: Context) => {

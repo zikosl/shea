@@ -22,22 +22,24 @@ export const PartnerMutation = extendType({
                 feeType: arg({ type: 'PartnerFeeType' }),
                 feeRate: floatArg(),
                 fixedFee: floatArg(),
+                driverRequestFee: floatArg(),
                 primaryColor: stringArg(),
             },
-            resolve: async (_parent, { email: oldmail, companyName, niches, feeType, feeRate, fixedFee, primaryColor }, ctx: Context) => {
+            resolve: async (_parent, { email: oldmail, companyName, niches, feeType, feeRate, fixedFee, driverRequestFee, primaryColor }, ctx: Context) => {
                 const partner = await createPartner(ctx.prisma, {
                     email: oldmail,
                     companyName,
                     niches,
                     primaryColor,
                 })
-                if (feeType || typeof feeRate === 'number' || typeof fixedFee === 'number') {
+                if (feeType || typeof feeRate === 'number' || typeof fixedFee === 'number' || typeof driverRequestFee === 'number') {
                     return ctx.prisma.partner.update({
                         where: { id: partner.id },
                         data: {
                             feeType: feeType ?? undefined,
                             feeRate: feeRate ?? undefined,
                             fixedFee: fixedFee ?? undefined,
+                            driverRequestFee: driverRequestFee ?? undefined,
                         },
                     })
                 }
@@ -67,9 +69,10 @@ export const PartnerMutation = extendType({
                 feeType: arg({ type: 'PartnerFeeType' }),
                 feeRate: floatArg(),
                 fixedFee: floatArg(),
+                driverRequestFee: floatArg(),
                 primaryColor: stringArg(),
             },
-            resolve: async (_parent, { id, email, companyName, niches, feeType, feeRate, fixedFee, primaryColor }, ctx: Context) => {
+            resolve: async (_parent, { id, email, companyName, niches, feeType, feeRate, fixedFee, driverRequestFee, primaryColor }, ctx: Context) => {
                 // Update both User.email and Partner fields atomically
                 const updated = await ctx.prisma.partner.update({
                     where: { id },
@@ -78,6 +81,7 @@ export const PartnerMutation = extendType({
                         feeType: feeType ?? undefined,
                         feeRate: feeRate ?? undefined,
                         fixedFee: fixedFee ?? undefined,
+                        driverRequestFee: driverRequestFee === null ? null : driverRequestFee ?? undefined,
                         primaryColor: normalizePartnerPrimaryColor(primaryColor),
                         user: email
                             ? { update: { email } }
