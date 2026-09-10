@@ -28,6 +28,7 @@ import {
   EMAIL_ALREADY_IN_USE_MESSAGE,
 } from '@/lib/form-errors';
 import { ResetAccessCode } from '@/components/accounts/reset-access-code';
+import { CapabilityInfo } from '@/components/capabilities/capability-info';
 
 
 const formSchema = z.object({
@@ -410,7 +411,14 @@ export default function ItemForm({
                     return (
                       <div key={code} className="flex items-center justify-between gap-4 rounded-xl border bg-background p-3">
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium">{code.replaceAll("_", " ").toLowerCase()}</p>
+                          <div className="flex items-center gap-1.5">
+                            <p className="truncate text-sm font-medium">{code.replaceAll("_", " ").toLowerCase()}</p>
+                            <CapabilityInfo
+                              code={code}
+                              enabled={isEnabled}
+                              source={override ? "override" : "inherited"}
+                            />
+                          </div>
                           <p className="text-xs text-muted-foreground">
                             {override ? `Forced ${override.toLowerCase()}` : `Inherited ${isEnabled ? "on" : "off"}`}
                           </p>
