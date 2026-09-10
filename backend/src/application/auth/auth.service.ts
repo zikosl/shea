@@ -127,3 +127,43 @@ export function ensureEmail(email: string) {
 
   return normalizedEmail
 }
+
+export const EMAIL_ALREADY_IN_USE = 'EMAIL_ALREADY_IN_USE'
+
+export async function ensureEmailAvailable(
+  prisma: PrismaClient,
+  email: string,
+  excludeUserId?: number,
+) {
+  const normalizedEmail = ensureEmail(email)
+  const existingUser = await prisma.user.findFirst({
+    where: {
+      email: { equals: normalizedEmail, mode: 'insensitive' },
+      ...(excludeUserId ? { id: { not: excludeUserId } } : {}),
+    },
+    select: { id: true },
+  })
+
+  if (existingUser) {
+    throw createBadRequestError(EMAIL_ALREADY_IN_USE)
+  }
+
+  return normalizedEmail
+}
+
+export function throwAccountWriteError(error: unknown, fallbackMessage: string): never {
+  if (error instanceof GraphQLError) {
+    throw error
+  }
+
+  if (
+    typeof error === 'object'
+    && error !== null
+    && 'code' in error
+    && error.code === 'P2002'
+  ) {
+    throw createBadRequestError(EMAIL_ALREADY_IN_USE)
+  }
+
+  throw createBadRequestError(fallbackMessage)
+}

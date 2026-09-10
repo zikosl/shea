@@ -21,18 +21,22 @@ import * as z from 'zod';
 import { useState } from 'react';
 import { Check, Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
-import { createItem, savePartnerCapabilities, updateItem } from '../actions';
+import { savePartnerAccount, savePartnerCapabilities } from '../actions';
 import { Item, name_plural, title_singular } from '../_constant';
 import { useRouter } from 'next/navigation';
+import {
+  EMAIL_ALREADY_IN_USE_MESSAGE,
+} from '@/lib/form-errors';
+import { ResetAccessCode } from '@/components/accounts/reset-access-code';
 
 
 const formSchema = z.object({
   companyName: z.string().min(2, {
     message: "Company name must be at least 2 characters.",
   }),
-  email: z.string().email({
+  email: z.string().trim().email({
     message: "Email must be valid.",
-  }),
+  }).transform((value) => value.toLowerCase()),
   primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, {
     message: "Use a valid hex color such as #CC6F98.",
   }).transform((value) => value.toUpperCase()),
@@ -81,22 +85,32 @@ export default function ItemForm({
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true)
+    form.clearErrors('email')
     try {
+      const result = await savePartnerAccount(initialData?.id, values)
+      if (result.ok === false) {
+        if (result.code === 'EMAIL_ALREADY_IN_USE') {
+          form.setError('email', { type: 'server', message: EMAIL_ALREADY_IN_USE_MESSAGE }, { shouldFocus: true })
+          toast.error(EMAIL_ALREADY_IN_USE_MESSAGE)
+        } else {
+          toast.error(`Failed to save ${title_singular.toLowerCase()}. Please try again.`)
+        }
+        return
+      }
+
       if (initialData) {
-        await updateItem(initialData.id, values)
         await savePartnerCapabilities(initialData.id, capabilityOverrides)
       }
       else {
-        const partner = await createItem(values)
-        if (partner?.id && Object.keys(capabilityOverrides).length) {
-          await savePartnerCapabilities(partner.id, capabilityOverrides)
+        if (result.item?.id && Object.keys(capabilityOverrides).length) {
+          await savePartnerCapabilities(result.item.id, capabilityOverrides)
         }
         form.reset()
       }
       router.replace(`/${name_plural}`)
       toast.success(`${title_singular} saved successfully.`)
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : `Failed to save ${title_singular.toLowerCase()}.`)
+    } catch {
+      toast.error(`The ${title_singular.toLowerCase()} was saved, but its access settings could not be updated.`)
     } finally {
       setLoading(false)
     }
@@ -421,6 +435,13 @@ export default function ItemForm({
                   })}
                 </div>
               </section>
+            ) : null}
+            {initialData ? (
+              <ResetAccessCode
+                account="partner"
+                accountId={initialData.id}
+                email={initialData.email}
+              />
             ) : null}
           </CardContent>
           <CardFooter className="flex justify-between">

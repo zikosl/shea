@@ -1,9 +1,13 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { createBadRequestError, createNotFoundError } from '../../core/errors/app-error'
-import { generateRandomPassword } from '../../utils/password'
+import { generateAccessCode } from '../../utils/password'
 import { sendEmailPassword } from '../../utils/mailer'
-import { createSession, ensureEmail } from '../auth/auth.service'
+import {
+  createSession,
+  ensureEmailAvailable,
+  throwAccountWriteError,
+} from '../auth/auth.service'
 import { LogSatus } from '../../types'
 
 export const DEFAULT_PARTNER_PRIMARY_COLOR = '#CC6F98'
@@ -31,50 +35,56 @@ export async function createPartner(
   prisma: PrismaClient,
   input: { email: string; companyName: string; niches?: number[] | null; primaryColor?: string | null },
 ) {
-  const email = ensureEmail(input.email)
-  const password = generateRandomPassword(12)
+  const email = await ensureEmailAvailable(prisma, input.email)
+  const password = generateAccessCode()
   const passwordHash = await bcrypt.hash(password, 10)
-  const userWithPartner = await prisma.$transaction(async (tx) => {
-    const createdUser = await tx.user.create({
-      data: {
-        email,
-        passwordHash,
-        role: 'PARTNER',
-        authMethod: 'EMAIL_PASSWORD',
-        partner: {
-          create: {
-            companyName: input.companyName,
-            primaryColor: normalizePartnerPrimaryColor(input.primaryColor) ?? DEFAULT_PARTNER_PRIMARY_COLOR,
+  let userWithPartner
+
+  try {
+    userWithPartner = await prisma.$transaction(async (tx) => {
+      const createdUser = await tx.user.create({
+        data: {
+          email,
+          passwordHash,
+          role: 'PARTNER',
+          authMethod: 'EMAIL_PASSWORD',
+          partner: {
+            create: {
+              companyName: input.companyName,
+              primaryColor: normalizePartnerPrimaryColor(input.primaryColor) ?? DEFAULT_PARTNER_PRIMARY_COLOR,
+            },
           },
         },
-      },
-      include: {
-        partner: true,
-      },
-    })
-
-    if (input.niches && input.niches.length > 0) {
-      await tx.partner_Niche.createMany({
-        data: input.niches.map((nicheId) => ({
-          niche_id: nicheId,
-          partnerId: createdUser.partner!.id,
-        })),
-        skipDuplicates: true,
+        include: {
+          partner: true,
+        },
       })
-    }
 
-    await tx.log.create({
-      data: {
-        title: 'New Partner Has Been Created',
-        body: `A new partner for "${input.companyName}" has been created.`,
-        title_ar: 'تم إنشاء شريك جديد',
-        body_ar: `تم إنشاء شريك جديد للشركة "${input.companyName}".`,
-        type: LogSatus.NEW_PARTNER,
-      },
+      if (input.niches && input.niches.length > 0) {
+        await tx.partner_Niche.createMany({
+          data: input.niches.map((nicheId) => ({
+            niche_id: nicheId,
+            partnerId: createdUser.partner!.id,
+          })),
+          skipDuplicates: true,
+        })
+      }
+
+      await tx.log.create({
+        data: {
+          title: 'New Partner Has Been Created',
+          body: `A new partner for "${input.companyName}" has been created.`,
+          title_ar: 'تم إنشاء شريك جديد',
+          body_ar: `تم إنشاء شريك جديد للشركة "${input.companyName}".`,
+          type: LogSatus.NEW_PARTNER,
+        },
+      })
+
+      return createdUser
     })
-
-    return createdUser
-  })
+  } catch (error) {
+    throwAccountWriteError(error, 'PARTNER_CREATION_FAILED')
+  }
 
   try {
     const messageId = await sendEmailPassword({

@@ -18,11 +18,14 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { redirect } from 'next/navigation';
 import { toast } from 'sonner';
-import { createItem, updateItem } from '../actions';
+import { saveDriverAccount } from '../actions';
 import { Item, name_plural, title_singular } from '../_constant';
 import { useRouter } from 'next/navigation';
+import {
+  EMAIL_ALREADY_IN_USE_MESSAGE,
+} from '@/lib/form-errors';
+import { ResetAccessCode } from '@/components/accounts/reset-access-code';
 
 
 const formSchema = z.object({
@@ -32,9 +35,9 @@ const formSchema = z.object({
   lastname: z.string().min(2, {
     message: "name must be at least 2 characters.",
   }),
-  email: z.union([z.string().email({
-    message: "email must be a valid."
-  }), z.string().optional()]),
+  email: z.string().trim().email({
+    message: "Email must be valid."
+  }).transform((value) => value.toLowerCase()),
 })
 
 export default function ItemForm({
@@ -57,19 +60,26 @@ export default function ItemForm({
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
     setLoading(true)
-    if (initialData) {
-      await updateItem(initialData.id, values)
+    form.clearErrors('email')
+    try {
+      const result = await saveDriverAccount(initialData?.id, values)
+      if (result.ok === false) {
+        if (result.code === 'EMAIL_ALREADY_IN_USE') {
+          form.setError('email', { type: 'server', message: EMAIL_ALREADY_IN_USE_MESSAGE }, { shouldFocus: true })
+          toast.error(EMAIL_ALREADY_IN_USE_MESSAGE)
+        } else {
+          toast.error(`Failed to save ${title_singular.toLowerCase()}. Please try again.`)
+        }
+        return
+      }
+
+      if (!initialData) form.reset()
+      router.replace(`/${name_plural}`)
+      toast.success(`${title_singular} saved successfully.`)
+    } finally {
+      setLoading(false)
     }
-    else {
-      await createItem(values)
-      form.reset()
-    }
-    router.replace(`/${name_plural}`)
-    toast.success(`${title_singular} saved successfully.`)
-    setLoading(false)
   }
   return (
     <Form {...form}>
@@ -129,6 +139,15 @@ export default function ItemForm({
                 </FormItem>
               )}
             />
+            {initialData ? (
+              <div className="mt-6">
+                <ResetAccessCode
+                  account="driver"
+                  accountId={initialData.id}
+                  email={initialData.email}
+                />
+              </div>
+            ) : null}
           </CardContent>
           <CardFooter className="flex justify-between">
             <Button disabled={loading} type="submit">

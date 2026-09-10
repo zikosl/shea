@@ -9,10 +9,24 @@ import {
   normalizePartnerPrimaryColor,
 } from '../../application/partner/partner.service'
 import { createBadRequestError } from '../../core/errors/app-error'
+import {
+    ensureEmailAvailable,
+    throwAccountWriteError,
+} from '../../application/auth/auth.service'
+import { resetAccountAccessCode } from '../../application/auth/access-code.service'
 
 export const PartnerMutation = extendType({
     type: 'Mutation',
     definition(t) {
+        t.nonNull.boolean('resetPartnerAccessCode', {
+            args: { id: nonNull(intArg()) },
+            resolve: async (_parent, { id }, ctx: Context) => resetAccountAccessCode(ctx.prisma, {
+                actorId: getUserId(ctx),
+                kind: 'PARTNER',
+                profileId: id,
+            }),
+        })
+
         t.field('createPartner', {
             type: 'Partner',
             args: {
@@ -73,21 +87,35 @@ export const PartnerMutation = extendType({
                 primaryColor: stringArg(),
             },
             resolve: async (_parent, { id, email, companyName, niches, feeType, feeRate, fixedFee, driverRequestFee, primaryColor }, ctx: Context) => {
-                // Update both User.email and Partner fields atomically
-                const updated = await ctx.prisma.partner.update({
+                const partner = await ctx.prisma.partner.findUnique({
                     where: { id },
-                    data: {
-                        companyName: companyName ?? undefined,
-                        feeType: feeType ?? undefined,
-                        feeRate: feeRate ?? undefined,
-                        fixedFee: fixedFee ?? undefined,
-                        driverRequestFee: driverRequestFee === null ? null : driverRequestFee ?? undefined,
-                        primaryColor: normalizePartnerPrimaryColor(primaryColor),
-                        user: email
-                            ? { update: { email } }
-                            : undefined,
-                    }
+                    select: { userId: true },
                 })
+                if (!partner) throw createBadRequestError('PARTNER_NOT_FOUND')
+
+                const normalizedEmail = email
+                    ? await ensureEmailAvailable(ctx.prisma, email, partner.userId)
+                    : undefined
+
+                let updated
+                try {
+                    updated = await ctx.prisma.partner.update({
+                        where: { id },
+                        data: {
+                            companyName: companyName ?? undefined,
+                            feeType: feeType ?? undefined,
+                            feeRate: feeRate ?? undefined,
+                            fixedFee: fixedFee ?? undefined,
+                            driverRequestFee: driverRequestFee === null ? null : driverRequestFee ?? undefined,
+                            primaryColor: normalizePartnerPrimaryColor(primaryColor),
+                            user: normalizedEmail
+                                ? { update: { email: normalizedEmail } }
+                                : undefined,
+                        }
+                    })
+                } catch (error) {
+                    throwAccountWriteError(error, 'PARTNER_UPDATE_FAILED')
+                }
                 if (niches) {
                     await ctx.prisma.partner_Niche.deleteMany({ where: { partnerId: id } })
                     await ctx.prisma.partner_Niche.createMany({

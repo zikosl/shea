@@ -1,14 +1,28 @@
 import { nonNull, extendType, stringArg, intArg, booleanArg, floatArg } from 'nexus'
 import { Context } from '../../context'
-import { generateRandomPassword } from '../../utils/password'
+import { generateAccessCode } from '../../utils/password'
 import bcrypt from 'bcryptjs'
 import { sendEmailPassword } from '../../utils/mailer'
 import { getUserId, handleSignIn } from '../../utils'
 import { createBadRequestError } from '../../core/errors/app-error'
+import {
+    ensureEmailAvailable,
+    throwAccountWriteError,
+} from '../../application/auth/auth.service'
+import { resetAccountAccessCode } from '../../application/auth/access-code.service'
 
 export const DriverMutation = extendType({
     type: 'Mutation',
     definition(t) {
+        t.nonNull.boolean('resetDriverAccessCode', {
+            args: { id: nonNull(intArg()) },
+            resolve: async (_parent, { id }, ctx: Context) => resetAccountAccessCode(ctx.prisma, {
+                actorId: getUserId(ctx),
+                kind: 'DRIVER',
+                profileId: id,
+            }),
+        })
+
         t.field('createDriver', {
             type: 'Driver',
             args: {
@@ -18,11 +32,8 @@ export const DriverMutation = extendType({
             },
             resolve: async (_parent, { email: oldmail, firstname, lastname }, ctx: Context) => {
                 // 1. Generate & hash password
-                const password = generateRandomPassword(12)
-                const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(oldmail) ? oldmail.toLowerCase() : null
-                if (!email) {
-                    throw createBadRequestError("Invalid email address")
-                }
+                const email = await ensureEmailAvailable(ctx.prisma, oldmail)
+                const password = generateAccessCode()
                 const passwordHash = await bcrypt.hash(password, 10)
 
                 try {
@@ -46,8 +57,8 @@ export const DriverMutation = extendType({
                     // 4. Return the Driver profile (with user relation populated)
                     return userWithDriver.driver
                 }
-                catch {
-                    throw createBadRequestError("Error While creating a driver")
+                catch (error) {
+                    throwAccountWriteError(error, 'DRIVER_CREATION_FAILED')
                 }
                 // 2. Create the User + Driver in one nested write
 
@@ -66,18 +77,30 @@ export const DriverMutation = extendType({
                 lastname: stringArg(),
             },
             resolve: async (_parent, { id, email, firstname, lastname }, ctx: Context) => {
-                // Update both User.email and Driver fields atomically
-                const updated = await ctx.prisma.driver.update({
+                const driver = await ctx.prisma.driver.findUnique({
                     where: { id },
-                    data: {
-                        firstname: firstname ?? undefined,
-                        lastname: lastname ?? undefined,
-                        user: email
-                            ? { update: { email } }
-                            : undefined,
-                    }
+                    select: { userId: true },
                 })
-                return updated
+                if (!driver) throw createBadRequestError('DRIVER_NOT_FOUND')
+
+                const normalizedEmail = email
+                    ? await ensureEmailAvailable(ctx.prisma, email, driver.userId)
+                    : undefined
+
+                try {
+                    return await ctx.prisma.driver.update({
+                        where: { id },
+                        data: {
+                            firstname: firstname ?? undefined,
+                            lastname: lastname ?? undefined,
+                            user: normalizedEmail
+                                ? { update: { email: normalizedEmail } }
+                                : undefined,
+                        }
+                    })
+                } catch (error) {
+                    throwAccountWriteError(error, 'DRIVER_UPDATE_FAILED')
+                }
             },
         })
 

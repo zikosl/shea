@@ -6,6 +6,7 @@
     "start": "node dist/server.js",
     "clean": "rm -rf dist",
     "build": "tsc -p tsconfig.json",
+    "test:credentials": "npm run build && node --test dist/utils/password.test.js",
     "seed:cosmetics": "ts-node prisma/seed-cosmetics.ts",
     "localize:cosmetics-images": "sh -c 'if [ -f dist/scripts/localize-cosmetics-images.js ]; then node dist/scripts/localize-cosmetics-images.js; else ts-node src/scripts/localize-cosmetics-images.ts; fi'",
     "sync:cosmetics-images": "sh -c 'if [ -f dist/scripts/sync-cosmetics-images.js ]; then node dist/scripts/sync-cosmetics-images.js; else ts-node src/scripts/sync-cosmetics-images.ts; fi'"

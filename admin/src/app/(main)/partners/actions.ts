@@ -13,6 +13,10 @@ import {
 } from "./_constant/request";
 import { FIND_MANY_NICHES } from "@/api/queries";
 import { gql } from "graphql-request";
+import {
+  AccountSaveResult,
+  getAccountSaveErrorCode,
+} from "@/lib/form-errors";
 
 type PartnerResponse = {
   id: string;
@@ -52,13 +56,7 @@ const mapPartner = (data: PartnerResponse) =>
       }
     : null;
 
-export const {
-  createItem,
-  getItemById,
-  getSearchItem,
-  updateItem,
-  deleteItem
-} = createResourceActions<PartnerResponse, Item>({
+const resourceActions = createResourceActions<PartnerResponse, Item>({
   createMutation: CREATE_ITEM,
   deleteMutation: DELETE_ITEM,
   findManyQuery: FIND_MANY_ITEMS,
@@ -69,6 +67,39 @@ export const {
   path: link,
   mapItem: mapPartner,
 });
+
+export const {
+  createItem,
+  getItemById,
+  getSearchItem,
+  updateItem,
+  deleteItem
+} = resourceActions;
+
+type PartnerAccountInput = Partial<{
+  companyName: string;
+  email: string;
+  primaryColor: string;
+  feeType: "NONE" | "PERCENTAGE" | "FIXED" | "MIXED";
+  feeRate: number;
+  fixedFee: number;
+  driverRequestFee: number | null;
+  niches: number[];
+}>;
+
+export async function savePartnerAccount(
+  id: string | undefined,
+  data: PartnerAccountInput,
+): Promise<AccountSaveResult<Item>> {
+  try {
+    const item = id
+      ? await resourceActions.updateItem(id, data as Partial<PartnerResponse>)
+      : await resourceActions.createItem(data as Partial<PartnerResponse>);
+    return { ok: true, item };
+  } catch (error) {
+    return { ok: false, code: getAccountSaveErrorCode(error) };
+  }
+}
 
 export async function getPartnerFormNiches() {
   const response = await requestServerGraphQL<{

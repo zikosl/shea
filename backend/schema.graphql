@@ -599,6 +599,8 @@ type Mutation {
   rejectProductTemplateRequest(adminNote: String, id: Int!, rejectionReason: String): ProductTemplateRequest
   requestClientPhoneChange(phone: String!): Boolean
   reserveGiftMaterials(customOrderId: String!): CustomOrder!
+  resetDriverAccessCode(id: Int!): Boolean!
+  resetPartnerAccessCode(id: Int!): Boolean!
   respondToGiftQuotation(accept: Boolean!, addressId: Int, customOrderId: String!): CustomOrder!
   revokeStoreTerminal(terminalId: String!): StoreTerminal!
   sendOtp(phone: String!): Boolean

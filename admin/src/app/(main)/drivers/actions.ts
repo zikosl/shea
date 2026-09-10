@@ -10,6 +10,10 @@ import {
   FIND_ONE_ITEM,
   UPDATE_ITEM
 } from "./_constant/request";
+import {
+  AccountSaveResult,
+  getAccountSaveErrorCode,
+} from "@/lib/form-errors";
 
 type DriverResponse = {
   id: string;
@@ -32,13 +36,7 @@ const mapDriver = (data: DriverResponse) =>
       }
     : null;
 
-export const {
-  createItem,
-  getItemById,
-  getSearchItem,
-  updateItem,
-  deleteItem
-} = createResourceActions<DriverResponse, Item>({
+const resourceActions = createResourceActions<DriverResponse, Item>({
   createMutation: CREATE_ITEM,
   deleteMutation: DELETE_ITEM,
   findManyQuery: FIND_MANY_ITEMS,
@@ -49,3 +47,31 @@ export const {
   path: link,
   mapItem: mapDriver,
 });
+
+export const {
+  createItem,
+  getItemById,
+  getSearchItem,
+  updateItem,
+  deleteItem
+} = resourceActions;
+
+type DriverAccountInput = Partial<{
+  firstname: string;
+  lastname: string;
+  email: string;
+}>;
+
+export async function saveDriverAccount(
+  id: string | undefined,
+  data: DriverAccountInput,
+): Promise<AccountSaveResult<Item>> {
+  try {
+    const item = id
+      ? await resourceActions.updateItem(id, data as Partial<DriverResponse>)
+      : await resourceActions.createItem(data as Partial<DriverResponse>);
+    return { ok: true, item };
+  } catch (error) {
+    return { ok: false, code: getAccountSaveErrorCode(error) };
+  }
+}
