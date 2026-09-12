@@ -144,6 +144,7 @@ export const permissions = shield(
       revokeStoreTerminal: isPartner,
       configureStoreNetwork: isAdmin,
       createOrder: isClient,
+      deleteClientAccount: isClient,
       updateClientProfile: isClient,
       requestClientPhoneChange: isClient,
       verifyClientPhoneChange: isClient,

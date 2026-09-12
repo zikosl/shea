@@ -2,6 +2,7 @@ import { arg, booleanArg, extendType, nonNull, stringArg } from 'nexus'
 import { Context } from '../../context'
 import { getUserId } from '../../utils'
 import {
+  deleteClientAccount,
   requestClientPhoneChange,
   sendOtp,
   updateClientProfile,
@@ -12,6 +13,12 @@ import {
 const Mutation = extendType({
   type: 'Mutation',
   definition(t) {
+    t.nonNull.boolean('deleteClientAccount', {
+      resolve: async (_parent, _args, context: Context) => {
+        return deleteClientAccount(context.prisma, getUserId(context))
+      },
+    })
+
     t.boolean('sendOtp', {
       args: {
         phone: nonNull(stringArg()),

@@ -3,6 +3,9 @@ import { createBadRequestError, createNotFoundError } from '../../core/errors/ap
 import { createSession } from '../auth/auth.service'
 import { sendOtpViaPhoneServer } from '../../utils/phone'
 import { env } from '../../core/config/env'
+import { promises as fs } from 'node:fs'
+import path from 'node:path'
+import { UPLOAD_DIR } from '../../utils/const'
 
 const phoneRegex = /^\+?[1-9]\d{1,14}$/
 
@@ -262,4 +265,111 @@ export async function updateClientProfile(
   }
 
   return createSession(user, prisma)
+}
+
+async function removeClientAvatar(avatar: string | null | undefined) {
+  if (!avatar?.startsWith('/uploads/')) return
+
+  const filename = avatar.slice('/uploads/'.length)
+  if (!filename || filename !== path.basename(filename)) return
+
+  try {
+    await fs.unlink(path.join(UPLOAD_DIR, filename))
+  } catch (error) {
+    const code = error && typeof error === 'object' && 'code' in error ? error.code : undefined
+    if (code !== 'ENOENT') {
+      console.error('[Account deletion] Could not remove client avatar', error)
+    }
+  }
+}
+
+export async function deleteClientAccount(prisma: PrismaClient, userId: number) {
+  const account = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      phone: true,
+      role: true,
+      client: { select: { avatar: true } },
+    },
+  })
+
+  if (!account || account.role !== 'CLIENT' || !account.client) {
+    throw createNotFoundError('CLIENT_ACCOUNT_NOT_FOUND')
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const addresses = await tx.address.findMany({
+      where: { userId },
+      select: { id: true },
+    })
+    const addressIds = addresses.map(({ id }) => id)
+    const orders = await tx.order.findMany({
+      where: {
+        OR: [
+          { clientId: userId },
+          ...(addressIds.length ? [{ addressId: { in: addressIds } }] : []),
+        ],
+      },
+      select: { id: true },
+    })
+    const orderIds = orders.map(({ id }) => id)
+
+    // Gift requests contain recipient details and messages, so remove them
+    // instead of retaining an anonymous shell after deleting the profile.
+    await tx.customOrder.deleteMany({ where: { clientId: userId } })
+
+    if (orderIds.length) {
+      const deliveries = await tx.delivery.findMany({
+        where: { orderId: { in: orderIds } },
+        select: { id: true },
+      })
+      const deliveryIds = deliveries.map(({ id }) => id)
+
+      await tx.sale.updateMany({
+        where: { sourceOrderId: { in: orderIds } },
+        data: { sourceOrderId: null },
+      })
+      await tx.partnerDriverRequest.deleteMany({ where: { orderId: { in: orderIds } } })
+      await tx.orderDispatch.deleteMany({
+        where: {
+          OR: [
+            { orderId: { in: orderIds } },
+            ...(deliveryIds.length ? [{ deliveryId: { in: deliveryIds } }] : []),
+          ],
+        },
+      })
+      await tx.delivery.deleteMany({ where: { orderId: { in: orderIds } } })
+      await tx.orderItem.deleteMany({ where: { orderId: { in: orderIds } } })
+      await tx.order.deleteMany({ where: { id: { in: orderIds } } })
+    }
+
+    if (addressIds.length) {
+      await tx.customOrder.updateMany({
+        where: { addressId: { in: addressIds } },
+        data: { addressId: null },
+      })
+      await tx.delivery.updateMany({
+        where: { addressId: { in: addressIds } },
+        data: { addressId: null },
+      })
+      await tx.address.deleteMany({ where: { id: { in: addressIds } } })
+    }
+
+    await tx.log.deleteMany({ where: { userId } })
+    await tx.auditLog.updateMany({ where: { actorId: userId }, data: { actorId: null } })
+    await tx.sale.updateMany({ where: { cashierId: userId }, data: { cashierId: null } })
+    await tx.stockMovement.updateMany({ where: { userId }, data: { userId: null } })
+    await tx.cashSession.updateMany({ where: { closedById: userId }, data: { closedById: null } })
+    await tx.token.deleteMany({ where: { userId } })
+    await tx.pushToken.deleteMany({ where: { userId } })
+    if (account.phone) {
+      await tx.otp.deleteMany({ where: { phone: account.phone } })
+    }
+    await tx.client.delete({ where: { userId } })
+    await tx.user.delete({ where: { id: userId } })
+  })
+
+  await removeClientAvatar(account.client.avatar)
+  return true
 }

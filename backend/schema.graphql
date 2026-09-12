@@ -572,6 +572,7 @@ type Mutation {
   deleteAddress(id: Int!): Address
   deleteBrand(id: Int!): Brand
   deleteCategory(id: Int!): Category
+  deleteClientAccount: Boolean!
   deleteDriver(id: Int!): Driver
   deleteNiche(id: Int!): Niche
   deletePartner(id: Int!): Partner
