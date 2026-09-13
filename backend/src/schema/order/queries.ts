@@ -1,5 +1,25 @@
 // @ts-nocheck
-import { extendType, floatArg, intArg, nonNull } from "nexus"
+import { extendType, floatArg, intArg, nonNull, arg, objectType } from "nexus"
+import { previewCheckout } from "../../application/client/checkout.service"
+
+export const CheckoutPreview = objectType({
+    name: 'CheckoutPreview',
+    definition(t) {
+        t.nonNull.float('subtotal')
+        t.nonNull.float('appTax')
+        t.nonNull.float('deliveryTax')
+        t.nonNull.float('total')
+        t.nonNull.list.nonNull.field('items', { type: 'CheckoutLine' })
+    },
+})
+export const CheckoutLine = objectType({
+    name: 'CheckoutLine',
+    definition(t) {
+        t.nonNull.int('productId')
+        t.nonNull.int('quantity')
+        t.nonNull.float('price')
+    },
+})
 import { Context } from "../../context"
 import { getUserId } from "../../utils"
 import { DispatchStatus, DeliveryStatus, DeliveryType } from "../../types"
@@ -10,6 +30,11 @@ import { createBadRequestError, createNotFoundError } from "../../core/errors/ap
 export const Query = extendType({
     type: 'Query',
     definition(t) {
+        t.nonNull.field('previewCheckout', {
+            type: CheckoutPreview,
+            args: { data: nonNull(arg({ type: 'OrderInput' })) },
+            resolve: (_parent, { data }, ctx: Context) => previewCheckout(ctx.prisma, getUserId(ctx), data),
+        })
         t.nonNull.field('adminDispatchBoard', {
             type: 'AdminDispatchBoard',
             resolve: async (_parent, _, ctx: Context) => {
@@ -74,9 +99,9 @@ export const Query = extendType({
                             partnerLongitude: delivery.order.partner.longitude,
                             clientName: driverRequest?.recipientName ?? (`${delivery.order.client.firstname} ${delivery.order.client.lastname}`.trim() || 'Customer'),
                             clientPhone: driverRequest?.recipientPhone ?? delivery.order.client.user.phone,
-                            destinationAddress: delivery.order.address.address || delivery.order.address.label,
-                            destinationLatitude: delivery.order.address.latitude,
-                            destinationLongitude: delivery.order.address.longitude,
+                            destinationAddress: delivery.order.address?.address || delivery.order.address?.label,
+                            destinationLatitude: delivery.order.address?.latitude ?? 0,
+                            destinationLongitude: delivery.order.address?.longitude ?? 0,
                             assignedDriverId: delivery.driverId,
                             dispatchCount: delivery.dispatches.length,
                             activeOfferCount: activeOffers.length,
@@ -282,8 +307,8 @@ export const Query = extendType({
                         longitude: dispatch.order.partner.longitude,
                     }
                     : {
-                        latitude: dispatch.order.address.latitude,
-                        longitude: dispatch.order.address.longitude,
+                        latitude: dispatch.order.address?.latitude ?? 0,
+                        longitude: dispatch.order.address?.longitude ?? 0,
                     }
 
                 if (!isValidRouteCoordinate(origin) || !isValidRouteCoordinate(destination)) {

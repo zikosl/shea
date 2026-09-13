@@ -44,6 +44,7 @@ export const permissions = shield(
       findManyPartners: allow,
       findOnePartner: allow,
       findManyProductPartners: allow,
+      previewCheckout: isClient,
       findOneProductPartner: allow,
       adminDashboardStats: isAdmin,
       adminDispatchBoard: isAdmin,

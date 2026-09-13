@@ -1004,6 +1004,7 @@ model ProductImage {
 model Order {
   id   Int      @id @default(autoincrement())
   date DateTime @default(now())
+  requestKey String? @unique
 
   deliveryTax     Int            @default(0)
   appTax          Int            @default(0)
@@ -1024,11 +1025,11 @@ model Order {
 
   partnerId Int
   clientId  Int
-  addressId Int
+  addressId Int?
 
   client  Client  @relation(fields: [clientId], references: [userId])
   partner Partner @relation(fields: [partnerId], references: [userId])
-  address Address @relation(fields: [addressId], references: [id])
+  address Address? @relation(fields: [addressId], references: [id])
 
   createdAt      DateTime              @default(now())
   items          OrderItem[]

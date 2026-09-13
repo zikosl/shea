@@ -259,6 +259,20 @@ type CategoryResult {
   totalCategories: Int
 }
 
+type CheckoutLine {
+  price: Float!
+  productId: Int!
+  quantity: Int!
+}
+
+type CheckoutPreview {
+  appTax: Float!
+  deliveryTax: Float!
+  items: [CheckoutLine!]!
+  subtotal: Float!
+  total: Float!
+}
+
 type Client {
   address: String
   avatar: String
@@ -469,6 +483,7 @@ input GiftOrderLineInput {
 }
 
 type GiftQuotation {
+  createdAt: DateTime!
   customOrderId: String!
   discount: Float!
   id: String!
@@ -703,8 +718,10 @@ input OrderInput {
   addressId: Int
   deliveryPrice: Float
   deliveryType: DeliveryType!
+  expectedTotal: Float
   items: [OrderItemInput]!
   partnerId: Int
+  requestKey: String
 }
 
 type OrderItem {
@@ -1206,9 +1223,9 @@ type Query {
   findManyNiches(isFull: Boolean, limit: Int!, page: Int!, search: String): NicheResult
   findManyOrders: [Order]!
   findManyPartnerNiches: [PartnerNiche]!
-  findManyPartners(isFull: Boolean, limit: Int!, niche_id: Int, page: Int!, search: String): PartnerResult
+  findManyPartners(isFull: Boolean, limit: Int!, niche_id: Int, online: Boolean, page: Int!, search: String): PartnerResult
   findManyPricing: [Pricing]!
-  findManyProductPartners(brand_id: Int, category_id: Int, giftEligible: Boolean, isFull: Boolean, limit: Int!, order: QueryOrder, page: Int!, partnerId: Int, product_type_id: Int, search: String): ProductTemplatePartnerPreviewResult
+  findManyProductPartners(brand_id: Int, category_id: Int, giftEligible: Boolean, isFull: Boolean, limit: Int!, niche_id: Int, order: QueryOrder, page: Int!, partnerId: Int, product_type_id: Int, search: String): ProductTemplatePartnerPreviewResult
   findManyProductTemplateRequests(category_id: Int, limit: Int!, niche_id: Int, page: Int!, product_type_id: Int, search: String, status: ProductTemplateRequestStatus): ProductTemplateRequestResult
   findManyProductTemplates(brand_id: Int, category_id: Int, isFull: Boolean, limit: Int!, niche_id: Int, page: Int!, product_type_id: Int, search: String): ProductTemplateResult
   findManyProductTypes(brand_id: Int, category_id: Int, isFull: Boolean, limit: Int!, niche_id: Int, page: Int!, search: String): ProductTypeResult
@@ -1260,6 +1277,7 @@ type Query {
   partnerDriverRequestQuote: PartnerDriverRequestQuote!
   partnerStatistics: PartnerStatisticsResult!
   posBootstrap(deviceKey: String!): PosBootstrap!
+  previewCheckout(data: OrderInput!): CheckoutPreview!
 }
 
 enum QueryOrder {

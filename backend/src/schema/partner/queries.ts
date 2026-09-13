@@ -32,14 +32,15 @@ export const Query = extendType({
         t.field('findManyPartners', {
             type: 'PartnerResult',
             args: {
+                online: booleanArg(),
                 niche_id: intArg(),
                 search: stringArg(),
                 page: nonNull(intArg()),
                 limit: nonNull(intArg()),
                 isFull: booleanArg(),
             },
-            resolve: async (_parent, { search, page, limit, niche_id, isFull = false }, ctx: Context) => {
-                if (page > 1) {
+            resolve: async (_parent, { search, page, limit, niche_id, online, isFull = false }, ctx: Context) => {
+                if (page < 1 || limit < 1 || limit > 200) {
                     throw createBadRequestError("Page not valide")
                 }
 
@@ -51,6 +52,7 @@ export const Query = extendType({
                     }
                     : {};
                 const args: Prisma.PartnerFindManyArgs = { where }
+                if (online != null) where.online = online
                 if (niche_id) {
                     where.partnerNiches = {
                         some: {
@@ -62,6 +64,7 @@ export const Query = extendType({
                     ctx.prisma.partner.count({ where }),
                     ctx.prisma.partner.findMany({
                         ...args,
+                        orderBy: { id: 'asc' },
                         ...(isFull ? {} : {
                             take: limit,
                             skip: limit * (page - 1),

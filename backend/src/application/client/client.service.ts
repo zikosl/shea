@@ -238,7 +238,7 @@ export async function updateClientProfile(
   if (args.language) clientData.language = args.language.toLowerCase()
   if (args.theme !== undefined && args.theme !== null) clientData.theme = args.theme
   if (args.themePreference) clientData.themePreference = args.themePreference
-  if (args.email) userData.email = args.email.toLowerCase()
+  if (args.email !== undefined) userData.email = args.email?.trim().toLowerCase() || null
 
   await prisma.client.upsert({
     where: { userId },

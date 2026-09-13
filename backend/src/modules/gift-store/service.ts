@@ -188,9 +188,10 @@ export async function respondToGiftQuotation(prisma: PrismaClient, clientId: num
   return prisma.$transaction(async (tx) => {
     const order = await tx.customOrder.findFirst({
       where: { id: customOrderId, clientId },
-      include: { lines: true, partner: true, quotations: { where: { status: 'SENT' }, orderBy: { createdAt: 'desc' }, take: 1 } },
+      include: { lines: true, partner: true, quotations: { where: { status: 'SENT' }, orderBy: { createdAt: 'desc' }, take: 1, include: { lines: true } } },
     })
     if (!order) throw new GraphQLError('GIFT_ORDER_NOT_FOUND')
+    if (accept && order.confirmedOrderId) return tx.customOrder.findUnique({ where: { id: order.id }, include: giftOrderInclude })
     const quote = order.quotations[0]
     if (!quote) throw new GraphQLError('GIFT_QUOTE_NOT_FOUND')
     if (quote.validUntil && quote.validUntil.getTime() < Date.now()) {
@@ -202,21 +203,22 @@ export async function respondToGiftQuotation(prisma: PrismaClient, clientId: num
       return tx.customOrder.update({ where: { id: order.id }, data: { status: 'CANCELLED', version: { increment: 1 } }, include: giftOrderInclude })
     }
     if (order.confirmedOrderId) return tx.customOrder.findUnique({ where: { id: order.id }, include: giftOrderInclude })
-    if (order.lines.some((line) => !line.productId)) throw new GraphQLError('GIFT_CATALOG_ITEMS_MUST_BE_RESOLVED')
+    if (!quote.lines.length || quote.lines.some((line) => !line.productId || !Number.isSafeInteger(line.quantity) || line.quantity <= 0)) throw new GraphQLError('GIFT_CATALOG_ITEMS_MUST_BE_RESOLVED')
     const resolvedAddressId = order.fulfillmentMode === 'PICKUP'
       ? null
       : addressId ?? order.addressId ?? (await tx.address.findFirst({ where: { userId: clientId, isDefault: true }, select: { id: true } }))?.id
-    if (!resolvedAddressId) throw new GraphQLError('ADDRESS_REQUIRED')
+    if (order.fulfillmentMode !== 'PICKUP' && !resolvedAddressId) throw new GraphQLError('ADDRESS_REQUIRED')
     if (resolvedAddressId) {
       const address = await tx.address.findFirst({ where: { id: resolvedAddressId, userId: clientId } })
       if (!address) throw new GraphQLError('ADDRESS_NOT_FOUND')
     }
-    const financials = calculatePartnerFee(order.total, order.partner)
+    const financials = calculatePartnerFee(quote.total, order.partner)
     const fulfillmentOrder = await tx.order.create({ data: {
       clientId, partnerId: order.partnerId, addressId: resolvedAddressId, source: 'GIFT', note: order.note,
       ...financials,
       partnerFeeType: financials.partnerFeeType as any,
-      items: { create: order.lines.map((line) => ({ productId: line.productId!, quantity: Math.max(1, Math.round(line.quantity)), price: line.unitPrice })) },
+      discount: quote.discount,
+      items: { create: quote.lines.map((line) => ({ productId: line.productId!, quantity: line.quantity, price: line.unitPrice })) },
       delivery: { create: { type: order.fulfillmentMode === 'PICKUP' ? DeliveryType.PICKUP : DeliveryType.NORMAL, status: DeliveryStatus.PENDING, addressId: order.fulfillmentMode === 'PICKUP' ? null : resolvedAddressId, scheduledAt: order.requiredAt } },
     } })
     await tx.giftQuotation.update({ where: { id: quote.id }, data: { status: 'ACCEPTED' } })
@@ -225,7 +227,7 @@ export async function respondToGiftQuotation(prisma: PrismaClient, clientId: num
       { userId: clientId, type: LogSatus.ORDER_UPDATE, title: `Gift order confirmed`, body: `Your gift order ${order.orderNumber} is now being prepared.`, title_ar: 'تم تأكيد طلب الهدية', body_ar: `طلب هديتك ${order.orderNumber} قيد التحضير الآن.` },
     ] })
     return tx.customOrder.update({ where: { id: order.id }, data: { status: 'CONFIRMED', confirmedOrderId: fulfillmentOrder.id, addressId: resolvedAddressId, version: { increment: 1 } }, include: giftOrderInclude })
-  })
+  }, { isolationLevel: 'Serializable' })
 }
 
 export async function reserveGiftMaterials(prisma: PrismaClient, partnerUserId: number, customOrderId: string) {

@@ -20,114 +20,7 @@ const Mutation = extendType({
                 data: nonNull(arg({ type: "OrderInput" }))
             },
             resolve: async (_parent, { data }, ctx: Context) => {
-                const userId = getUserId(ctx)
-
-                if (data.items.length === 0) {
-                    throw new GraphQLError("INVALID_ORDER")
-                }
-                let addressId = data.addressId;
-                if (!addressId) {
-                    const address = await ctx.prisma.address.findFirst({
-                        where: {
-                            userId,
-                            isDefault: true,
-                        },
-                        orderBy: { createdAt: 'desc' },
-                    })
-                    if (!address) {
-                        throw new GraphQLError("ADDRESS_REQUIRED")
-                    }
-                    addressId = address.id;
-                }
-                return ctx.prisma.$transaction(async (tx: any) => {
-                    const partner = await tx.partner.findUnique({
-                        where: {
-                            userId: data.partnerId
-                        },
-                        include: {
-                            user: {
-                                include: {
-                                    pushTokens: {
-                                        orderBy: { createdAt: 'desc' },
-                                        take: 1,
-                                        select: { id: true, token: true, userId: true },
-                                    }
-                                }
-                            }
-                        }
-                    })
-                    if (partner) {
-                        if (partner.latitude == 0 || partner.longitude == 0 || !partner.online)
-                            throw new GraphQLError("STORE_UNAVAILABLE")
-                    }
-                    else throw new GraphQLError("PARTNER_NOT_FOUND")
-                    const deliveryPricingName = data.deliveryType == DeliveryType.PICKUP
-                        ? PricingName.PICKUP_TAX
-                        : data.deliveryType == DeliveryType.GROUPED
-                            ? PricingName.GROUP_DELIVERY_TAX
-                            : PricingName.NORMAL_DELIVERY_TAX
-                    const pricing: any[] = await tx.pricing.findMany({
-                        where: {
-                            name: {
-                                in: [
-                                    PricingName.APP_TAX,
-                                    PricingName.STORE_TAX,
-                                    deliveryPricingName,
-                                ]
-                            }
-                        }
-                    })
-                    const subtotal = data.items.reduce((sum: number, item: any) => {
-                        return sum + (Number(item.price ?? 0) * Number(item.quantity ?? 0))
-                    }, 0)
-                    const financials = calculatePartnerFee(subtotal, partner)
-                    const order = await tx.order.create({
-                        data: {
-                            clientId: userId,
-                            partnerId: data.partnerId,
-                            addressId,
-                            deliveryTax: pricing.find(v => v.name == deliveryPricingName)?.price ?? 0,
-                            appTax: pricing.find(v => v.name == PricingName.APP_TAX)?.price ?? 0,
-                            storeTax: pricing.find(v => v.name == PricingName.STORE_TAX)?.price ?? 0,
-                            ...financials,
-                            items: {
-                                create: data.items,
-                            }
-                        }
-                    })
-                    sendNotification({
-                        tokens: partner.user.pushTokens[0]?.token,
-                        title: `Order #${order.orderId} picked up`,
-                        body: "Your order was picked up and is on its way.",
-                        androidChannelId: "new-order-alerts",
-                        sound: "new_order.wav",
-                        data: {
-                            event: "NEW_ORDER",
-                            orderId: `${order.id}`,
-                        }
-                    })
-                    await tx.delivery.create({
-                        data: {
-                            orderId: order.id,
-                            type: data.deliveryType,
-                            status: DeliveryStatus.PENDING,
-                            addressId: data.deliveryType === DeliveryType.PICKUP ? null : addressId,
-                        }
-                    })
-
-                    await tx.log.create({
-                        data: {
-                            title: `New Order #${order.id} Created`,
-                            body: `A new order has been placed.`,
-                            title_ar: `تم إنشاء طلب جديد`,
-                            body_ar: `تم تقديم طلب جديد`,
-                            type: LogSatus.ORDER_UPDATE,
-                            userId: data.partnerId
-                        }
-                    })
-
-                    return order
-                })
+                return submitCheckout(ctx.prisma, getUserId(ctx), data)
             }
         })
 
@@ -883,3 +776,4 @@ const Mutation = extendType({
 })
 
 export default Mutation
+import { submitCheckout } from "../../application/client/checkout.service"

@@ -27,9 +27,9 @@ const Order = objectType({
         t.field('address', {
             type: 'Address',
             resolve: (parent, _, ctx) =>
-                ctx.prisma.address.findUnique({
+                parent.addressId ? ctx.prisma.address.findUnique({
                     where: { id: parent.addressId }
-                })
+                }) : null
         })
         t.field('delivery', {
             type: 'Delivery',
@@ -278,8 +278,9 @@ const OrderInput = inputObjectType({
         t.int('addressId')
         t.nonNull.list.field('items', { type: OrderItemInput })
         t.nonNull.field('deliveryType', { type: 'DeliveryType' })
-        t.int('addressId')
         t.float('deliveryPrice')
+        t.string('requestKey')
+        t.float('expectedTotal')
     }
 })
 

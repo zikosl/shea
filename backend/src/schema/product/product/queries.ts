@@ -113,6 +113,7 @@ export const ProductQuery = extendType({
         t.field('findManyProductPartners', {
             type: 'ProductTemplatePartnerPreviewResult',
             args: {
+                niche_id: intArg(),
                 partnerId: intArg(),
                 category_id: intArg(),
                 brand_id: intArg(),
@@ -124,7 +125,7 @@ export const ProductQuery = extendType({
                 order: arg({ type: "QueryOrder" }),
                 giftEligible: booleanArg(),
             },
-            resolve: async (_parent, { search, page, limit, isFull = false, category_id, brand_id, product_type_id, partnerId, order, giftEligible }: any, ctx: Context) => {
+            resolve: async (_parent, { search, page, limit, isFull = false, category_id, brand_id, product_type_id, partnerId, order, giftEligible, niche_id }: any, ctx: Context) => {
 
 
                 const userId = getOptionalUserId(ctx);
@@ -146,6 +147,7 @@ export const ProductQuery = extendType({
                         partnerId,
                         OR: [
                             { name: { contains: search, mode: 'insensitive' } },
+                            { name_ar: { contains: search, mode: 'insensitive' } },
                             // { description: { contains: search, mode: 'insensitive' } },
                         ],
                     }
@@ -153,6 +155,10 @@ export const ProductQuery = extendType({
                         partnerId
                     };
                 if (giftPartnerIds) where.partnerId = partnerId ?? { in: giftPartnerIds }
+                if (niche_id) {
+                    const categories = await ctx.prisma.category.findMany({ where: { niche_id }, select: { id: true } })
+                    where.AND = [{ category_id: { in: categories.map(category => category.id) } }]
+                }
                 if (brand_id) {
                     where = {
                         ...where,
