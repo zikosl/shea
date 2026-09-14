@@ -410,7 +410,7 @@ const ProductTemplatePartnerPreview = objectType({
             type: 'ProductView',
             resolve: async (parent, _args, ctx) => {
                 return ctx.prisma.productView.findMany({
-                    where: { product_template_id: parent.product_template_id, partnerId: parent.partnerId, ...(!getOptionalUserId(ctx) ? { isActive: true, onlineVisible: true } : {}) },
+                    where: { product_template_id: parent.product_template_id, partnerId: parent.partnerId, ...(!getOptionalUserId(ctx) ? { isActive: true } : {}) },
                 })
             }
         })

@@ -5,9 +5,15 @@ import { resolve } from 'node:path'
 import { buildSchema, graphql } from 'graphql'
 import { applyMiddleware } from 'graphql-middleware'
 import { permissions } from './shield'
+import { getOptionalUserId } from '../utils'
+import { catalogGuard } from './catalog-guard'
 
-const schema = applyMiddleware(buildSchema(readFileSync(resolve(__dirname, '../../schema.graphql'), 'utf8')), permissions)
+const schema = applyMiddleware(buildSchema(readFileSync(resolve(__dirname, '../../schema.graphql'), 'utf8')), permissions, catalogGuard)
 const run = (source: string, rootValue: object) => graphql({ schema, source, rootValue, contextValue: { req: { headers: {} } } })
+
+test('an expired or malformed stored token is treated as anonymous for public catalog reads', () => {
+  assert.equal(getOptionalUserId({ req: { headers: { authorization: 'Bearer expired-token' } } } as any), undefined)
+})
 
 test('guests can read niches and their translated names', async () => {
   const result = await run('{ findManyNiches(page:1,limit:10) { totalNiches niches { id name name_ar image } } }', {

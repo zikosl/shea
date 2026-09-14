@@ -41,5 +41,10 @@ export async function handleSignIn(user: any, prisma: PrismaClient) {
 }
 
 export function getOptionalUserId(context: Context) {
-  return getOptionalUserIdFromRequest(context.req)
+  try {
+    return getOptionalUserIdFromRequest(context.req)
+  } catch {
+    // Public catalog requests remain anonymous when a device carries an expired token.
+    return undefined
+  }
 }
