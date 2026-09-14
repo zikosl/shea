@@ -30,6 +30,9 @@ const isPartner = hasRole('PARTNER')
 const isClient = hasRole('CLIENT')
 const isDriver = hasRole('DRIVER')
 
+const publicFields = (...fields: string[]) => Object.fromEntries(fields.map(field => [field, allow]))
+const storefrontProductFields = publicFields('id', 'name', 'name_ar', 'price', 'discount', 'available', 'stock', 'trackInventory', 'image', 'images', 'partnerId', 'variantId', 'variantName', 'variantNameAr', 'sku', 'isActive', 'onlineVisible')
+
 export const permissions = shield(
   {
     Query: {
@@ -44,6 +47,8 @@ export const permissions = shield(
       findManyPartners: allow,
       findOnePartner: allow,
       findManyProductPartners: allow,
+      findManyProducts: allow,
+      findOneProduct: allow,
       previewCheckout: isClient,
       findOneProductPartner: allow,
       adminDashboardStats: isAdmin,
@@ -154,6 +159,26 @@ export const permissions = shield(
       deliverOrder: isDriver,
       '*': isAuthenticated,
     },
+    // Allow only storefront data; internal costs, notes and private relations retain the fallback rule.
+    Niche: publicFields('id', 'name', 'name_ar', 'image'),
+    NicheResult: publicFields('niches', 'totalNiches'),
+    Brand: publicFields('id', 'name', 'name_ar', 'image', 'niche_id'),
+    BrandResult: publicFields('brands', 'totalBrands'),
+    Category: publicFields('id', 'name', 'name_ar', 'image', 'niche_id'),
+    CategoryResult: publicFields('categories', 'totalCategories'),
+    ProductType: publicFields('id', 'name', 'name_ar', 'category_id'),
+    ProductTypeResult: publicFields('productTypes', 'totalProductTypes'),
+    PartnerResult: publicFields('partners', 'totalPartners'),
+    PartnerNiche: publicFields('id', 'niche'),
+    Product: storefrontProductFields,
+    ProductView: {
+      ...storefrontProductFields,
+      ...publicFields('product_template_id', 'product_type_id', 'category_id', 'brand_id'),
+    },
+    ProductViewResult: publicFields('products', 'totalProducts'),
+    ProductTemplatePartnerPreview: publicFields('product_template_id', 'product_id', 'partnerId', 'name', 'name_ar', 'description', 'description_ar', 'price', 'discount', 'stock', 'trackInventory', 'available', 'brand_id', 'category_id', 'variantId', 'variant_name', 'variant_name_ar', 'variant_sku', 'product_type_id', 'image', 'images', 'products', 'isActive', 'onlineVisible'),
+    ProductTemplatePartnerPreviewResult: publicFields('productPartners', 'totalProductPartners'),
+    ProductImage: publicFields('id', 'url', 'altText', 'variantId', 'product_template_id'),
     AuthPayload: {
       '*': allow,
     },

@@ -27,6 +27,7 @@ import DriverRequest from './schema/driver-request'
 
 import { DateTimeResolver } from 'graphql-scalars'
 import { permissions } from './security/shield'
+import { catalogGuard } from './security/catalog-guard'
 
 export const DateTime = asNexusMethod(DateTimeResolver, 'date')
 
@@ -73,6 +74,6 @@ const schemaWithoutPermissions = makeSchema({
   },
 })
 
-export const schema = applyMiddleware(schemaWithoutPermissions, permissions)
+export const schema = applyMiddleware(schemaWithoutPermissions, permissions, catalogGuard)
 
 // export const schema = schemaWithoutPermissions

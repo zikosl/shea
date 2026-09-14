@@ -13,8 +13,8 @@ export const ProductQuery = extendType({
                 id: nonNull(intArg()),
             },
             resolve: async (_parent, { id }, ctx: Context) => {
-                return ctx.prisma.productView.findUnique({
-                    where: { id },
+                return ctx.prisma.productView.findFirst({
+                    where: { id, ...(!getOptionalUserId(ctx) ? { isActive: true, onlineVisible: true } : {}) },
                 })
             },
         })
@@ -26,9 +26,10 @@ export const ProductQuery = extendType({
                 partnerId: nonNull(intArg()),
             },
             resolve: async (_parent, { id, partnerId }, ctx: Context) => {
-                return ctx.prisma.productTemplatePartnerPreview.findUnique({
+                return ctx.prisma.productTemplatePartnerPreview.findFirst({
                     where: {
-                        product_template_id_partnerId: { product_template_id: id, partnerId }
+                        product_template_id: id, partnerId,
+                        ...(!getOptionalUserId(ctx) ? { isActive: true, onlineVisible: true } : {}),
                     },
                 })
             },
@@ -90,6 +91,7 @@ export const ProductQuery = extendType({
                         category_id: category_id,
                     }
                 }
+                if (!userId) Object.assign(where, { isActive: true, onlineVisible: true });
                 const totalProducts = await ctx.prisma.productView.count({ where });
 
                 const args: Prisma.ProductViewFindManyArgs = isFull ? { where } : {
@@ -179,6 +181,7 @@ export const ProductQuery = extendType({
                 }
 
 
+                if (!userId) Object.assign(where, { isActive: true, onlineVisible: true });
                 const totalProductPartners = await ctx.prisma.productTemplatePartnerPreview.count({ where });
 
                 const args: Prisma.ProductTemplatePartnerPreviewFindManyArgs = isFull ? { where } : {

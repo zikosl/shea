@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client"
 import { objectType } from "nexus"
-import { getUserId } from "../../../utils"
+import { getUserId, getOptionalUserId } from "../../../utils"
 
 type ProductCatalogDetails = {
     name: string | null
@@ -49,7 +49,13 @@ const Product = objectType({
         t.float('discount')
         t.boolean('available')
         t.int('stock')
-        t.boolean('trackInventory')
+        t.boolean('trackInventory', {
+            resolve: async (parent, _args, ctx) => {
+                if (typeof parent.trackInventory === 'boolean') return parent.trackInventory
+                const product = await ctx.prisma.product.findUnique({ where: { id: parent.id }, select: { trackInventory: true } })
+                return product?.trackInventory ?? true
+            },
+        })
         t.int('reorderThreshold')
         t.boolean('isVisibleInPos')
         t.boolean('onlineVisible')
@@ -216,7 +222,12 @@ const ProductView = objectType({
         t.float('costPrice')
         t.float('discount')
         t.int('stock')
-        t.boolean('trackInventory')
+        t.boolean('trackInventory', {
+            resolve: async (parent, _args, ctx) => {
+                const product = await ctx.prisma.product.findUnique({ where: { id: parent.id }, select: { trackInventory: true } })
+                return product?.trackInventory ?? true
+            },
+        })
         t.int('reorderThreshold')
         t.boolean('available')
         t.boolean('isVisibleInPos')
@@ -363,7 +374,12 @@ const ProductTemplatePartnerPreview = objectType({
         t.nonNull.float('discount');
         t.nonNull.boolean('available');
         t.nonNull.int('stock');
-        t.nonNull.boolean('trackInventory');
+        t.nonNull.boolean('trackInventory', {
+            resolve: async (parent, _args, ctx) => {
+                const product = await ctx.prisma.product.findUnique({ where: { id: parent.product_id }, select: { trackInventory: true } })
+                return product?.trackInventory ?? true
+            },
+        });
         t.nonNull.int('reorderThreshold');
         t.nonNull.boolean('isVisibleInPos');
         t.nonNull.boolean('onlineVisible');
@@ -394,7 +410,7 @@ const ProductTemplatePartnerPreview = objectType({
             type: 'ProductView',
             resolve: async (parent, _args, ctx) => {
                 return ctx.prisma.productView.findMany({
-                    where: { product_template_id: parent.product_template_id, partnerId: parent.partnerId },
+                    where: { product_template_id: parent.product_template_id, partnerId: parent.partnerId, ...(!getOptionalUserId(ctx) ? { isActive: true, onlineVisible: true } : {}) },
                 })
             }
         })

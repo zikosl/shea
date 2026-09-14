@@ -11,12 +11,15 @@
 - Gift quotation review with quoted lines, expiry, address selection, acceptance confirmation, and navigation to the resulting order.
 - Pickup quotations no longer require a delivery address; fulfillment uses the accepted quote snapshot.
 - Improved order card RTL/typography, quantity controls, order-history states, and readable notification messages.
+- Catalog inventory policy now resolves from the underlying product and is requested by the client. Non-tracked products use the same availability rule across grids, variants, and cart quantities.
+- Session refresh is single-flight, updates observable credentials, and rejects late responses after logout/account switching. A transient network failure does not clear the account.
 
 ## Verification
 
 - Backend TypeScript build passed.
 - Client TypeScript check passed.
 - Six isolated checkout regression tests passed (`npm run test:checkout` in backend).
+- Twelve client domain tests cover inventory availability, session refresh, and authenticated transport (`npm run test:unit` in shea-client).
 - GraphQL schema validation passed; 13 order/gift/product/partner documents validated against the generated schema.
 - Expo iOS and Android production JavaScript exports passed. These are not signed native builds or device tests.
 
@@ -33,7 +36,8 @@ The migration `202609130001_client_checkout` adds the unique request key and per
 - Test normal delivery, pickup, quote acceptance, and network interruption against a migrated staging database.
 - Exercise concurrent checkout with real PostgreSQL. Mock tests establish validation and sequential idempotency, not database concurrency behavior.
 - Complete stock reservation/cancellation reconciliation across POS, online orders, and gift production. This pass validates stock at checkout but does not introduce a unified inventory reservation ledger.
-- Audit non-inventory-tracked products end to end: older client catalog views still infer availability from stock.
-- Finish broader address editing/geocoding, session-token lifecycle, and accessibility/device coverage from the UX audit before declaring the entire app production-ready.
+- Verify non-inventory-tracked products against the deployed backend on a physical device.
+- Finish broader address editing/geocoding, credential storage hardening, and accessibility/device coverage from the UX audit before declaring the entire app production-ready.
+- The existing native Jest preset lacks `@react-native/jest-preset`; the separate Node unit configuration does not replace native component tests.
 
 No live customer records were edited, no migration was deployed, and no app-store build was submitted.

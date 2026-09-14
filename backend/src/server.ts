@@ -9,10 +9,24 @@ import { useServer } from 'graphql-ws/use/ws'
 import { createContext } from './context'
 import { env } from './core/config/env'
 import { schema } from './schema'
+import { getOperationAST, GraphQLError, type ValidationRule } from 'graphql'
+import { redis } from './servers'
+import { createRequestBudget, rateLimitMiddleware } from './security/request-budget'
+import { queryBudgetRule } from './security/query-budget'
 import './jobs/queue'
 
 const app = express()
 app.disable('x-powered-by')
+// Trust only the reverse-proxy addresses configured by the operator, never arbitrary forwarded headers.
+if (process.env.TRUSTED_PROXY_CIDRS) app.set('trust proxy', process.env.TRUSTED_PROXY_CIDRS.split(',').map(value => value.trim()).filter(Boolean))
+const positiveLimit = (value: string | undefined, fallback: number) => {
+  const parsed = Number(value)
+  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : fallback
+}
+const consumeRequest = createRequestBudget(redis, {
+  minute: positiveLimit(process.env.API_REQUESTS_PER_MINUTE, 180),
+  hour: positiveLimit(process.env.API_REQUESTS_PER_HOUR, 2400),
+})
 app.use((_request, response, next) => {
   response.setHeader('X-Content-Type-Options', 'nosniff')
   response.setHeader('Referrer-Policy', 'no-referrer')
@@ -25,7 +39,7 @@ const graphqlRequestMetadata = new WeakMap<Request, { startedAt: number; operati
 app.use((request, response, next) => {
   const startedAt = Date.now()
   const clientIp =
-    request.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() ||
+    request.ip ||
     request.socket.remoteAddress ||
     'unknown'
 
@@ -80,9 +94,12 @@ const yoga = createYoga({
   schema,
   context: ({ request }) => createContext({ headers: request.headers as any }),
   graphqlEndpoint: '/graphql',
+  batching: false,
   plugins: [
     {
+      onValidate({ addValidationRule }: { addValidationRule: (rule: ValidationRule) => void }) { addValidationRule(queryBudgetRule) },
       onParams({ request, params }) {
+        if (params.query && params.query.length > 65536) throw new GraphQLError('QUERY_TOO_LARGE', { extensions: { code: 'BAD_USER_INPUT' } })
         const operationName = params.operationName || 'AnonymousOperation'
         graphqlRequestMetadata.set(request, {
           startedAt: Date.now(),
@@ -108,24 +125,27 @@ const yoga = createYoga({
   ],
 })
 
-app.use('/graphql', yoga)
+app.use('/graphql', rateLimitMiddleware(consumeRequest), express.json({ limit: '256kb' }), yoga)
 
 const httpServer = createServer(app)
 const wsServer = new ws.WebSocketServer({
   server: httpServer,
   path: '/graphql',
+  maxPayload: 64 * 1024,
 })
 
 useServer(
   {
     schema,
     onConnect: async (ctx: any) => {
+      if (await consumeRequest(ctx.extra.request.socket.remoteAddress || 'unknown')) throw new Error('RATE_LIMITED')
       const origin = ctx.extra.request.headers?.origin
       if (origin && !env.allowedCorsOrigins.includes(origin)) {
         throw new Error('Not allowed by CORS')
       }
     },
     onSubscribe: async (ctx: any, msg: any) => {
+      if (await consumeRequest(ctx.extra.request.socket.remoteAddress || 'unknown')) return [new GraphQLError('RATE_LIMITED')]
       const operationName = msg.payload.operationName || 'AnonymousSubscription'
       console.log(`[GraphQL WS] subscribe ${operationName}`)
       const { schema, contextFactory, parse, validate } = yoga.getEnveloped({
@@ -141,6 +161,9 @@ useServer(
       }
 
       const errors = validate(args.schema, args.document)
+      if (getOperationAST(args.document, args.operationName)?.operation !== 'subscription') {
+        errors.push(new GraphQLError('Use HTTP for queries and mutations'))
+      }
       return errors.length ? errors : args
     },
     onDisconnect: (_ctx: any, code: number, reason: Buffer) => {
