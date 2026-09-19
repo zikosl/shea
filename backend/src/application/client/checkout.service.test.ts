@@ -5,7 +5,11 @@ import { previewCheckout, submitCheckout } from './checkout.service'
 import { DeliveryType, PricingName } from '../../types'
 
 function fixture() {
-  const product = { id: 7, price: 200, stock: 5, trackInventory: true, available: true, isActive: true, onlineVisible: true }
+  const product = {
+    id: 7, price: 200, priceOnRequest: false, stock: 5, trackInventory: true, available: true, isActive: true, onlineVisible: true,
+    customName: null, vendorSku: null,
+    variant: { name: '50 ml', sku: 'SKU-7', product: { name: 'Test product' } },
+  }
   const state = { created: 0, addressReads: 0, existing: null as any }
   const db: any = {
     partner: { findUnique: async () => ({ userId: 2, online: true }) },
@@ -16,6 +20,8 @@ function fixture() {
       findUnique: async () => state.existing,
       create: async ({ data }: any) => { state.created++; state.existing = { id: 9, ...data }; return state.existing },
     },
+    orderStatusHistory: { create: async () => ({}) },
+    outboxEvent: { upsert: async () => ({}) },
     log: { create: async () => ({}) },
     pushToken: { findMany: async () => [] },
     $transaction: async (callback: any) => callback(db),
@@ -29,6 +35,21 @@ test('checkout uses catalog prices, quantities, and configured fees', async () =
   const result = await previewCheckout(db, 1, { ...input, items: [{ productId: 7, quantity: 2, price: 1 }] })
   assert.equal(result.subtotal, 400)
   assert.equal(result.total, 460)
+})
+
+test('request-priced products hide catalog prices and create a quotation workflow', async () => {
+  const { db, input, product, state } = fixture()
+  product.priceOnRequest = true
+
+  const preview = await previewCheckout(db, 1, { ...input, items: [{ productId: 7, quantity: 2, price: 1 }] })
+  assert.equal(preview.pricingMode, 'QUOTE_REQUIRED')
+  assert.equal(preview.items[0].price, 0)
+  assert.equal(preview.subtotal, 0)
+  assert.equal(preview.total, 60)
+
+  await submitCheckout(db, 1, { ...input, expectedTotal: preview.total, items: preview.items })
+  assert.equal(state.existing.pricingMode, 'QUOTE_REQUIRED')
+  assert.equal(state.existing.items.create[0].price, 0)
 })
 
 test('pickup does not require or read a delivery address', async () => {

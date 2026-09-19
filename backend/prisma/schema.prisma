@@ -44,6 +44,8 @@ enum CustomOrderStatus {
   QUOTED
   AWAITING_CUSTOMER_APPROVAL
   CONFIRMED
+  SCHEDULED
+  PREPARATION_DUE
   MATERIALS_RESERVED
   IN_PREPARATION
   READY
@@ -102,6 +104,57 @@ enum CatalogProposalStatus {
   APPROVED
   MERGED
   REJECTED
+}
+
+enum CatalogSubmissionStatus {
+  DRAFT
+  PENDING
+  PARTIALLY_APPROVED
+  APPROVED
+  MERGED
+  REJECTED
+}
+
+enum CatalogVisibility {
+  INTERNAL
+  PUBLIC
+}
+
+enum OrderStatus {
+  REQUESTED
+  PARTNER_ACCEPTED
+  PARTNER_REJECTED
+  AWAITING_CLIENT_APPROVAL
+  CONFIRMED
+  PREPARING
+  READY
+  FULFILLMENT_STARTED
+  COMPLETED
+  CANCELLED
+}
+
+enum OrderKind {
+  STANDARD
+  GIFT
+  DRIVER_REQUEST
+}
+
+enum PricingMode {
+  FIXED
+  QUOTE_REQUIRED
+}
+
+enum OrderRequestKind {
+  CUSTOM
+  GIFT
+  PRICE_CONFIRMATION
+}
+
+enum OutboxStatus {
+  PENDING
+  PROCESSING
+  DELIVERED
+  FAILED
 }
 
 enum StockMovementType {
@@ -216,9 +269,10 @@ model User {
   addresses          Address[]
   pushTokens         PushToken[]
   sales              Sale[]
-  cashSessionsOpened CashSession[]   @relation("CashSessionOpenedBy")
-  cashSessionsClosed CashSession[]   @relation("CashSessionClosedBy")
+  cashSessionsOpened CashSession[]        @relation("CashSessionOpenedBy")
+  cashSessionsClosed CashSession[]        @relation("CashSessionClosedBy")
   stockMovements     StockMovement[]
+  orderStatusChanges OrderStatusHistory[]
 }
 
 model Address {
@@ -305,6 +359,8 @@ model Partner {
   giftTemplates       GiftTemplate[]
   stores              Store[]
   driverRequests      PartnerDriverRequest[]
+  catalogSubmissions  CatalogSubmission[]
+  provisionalProducts ProvisionalProduct[]
 }
 
 model Driver {
@@ -399,6 +455,7 @@ model Product {
   reorderThreshold  Int      @default(0)
   isVisibleInPos    Boolean  @default(true)
   onlineVisible     Boolean  @default(false)
+  priceOnRequest    Boolean  @default(false)
   isActive          Boolean  @default(true)
   customName        String?
   customDescription String?
@@ -422,6 +479,7 @@ model Product {
   giftTemplateItems  GiftTemplateItem[]
   stockReservations  StockReservation[]
   giftQuotationLines GiftQuotationLine[]
+  provisionalSources ProvisionalProduct[]
 
   @@unique([partnerId, variantId])
   @@index([partnerId, isActive, isVisibleInPos])
@@ -454,36 +512,40 @@ model PartnerCapabilityOverride {
 }
 
 model CustomOrder {
-  id               String             @id @default(uuid())
-  orderNumber      String             @unique
-  partnerId        Int
-  nicheId          Int?
-  clientId         Int?
-  addressId        Int?
-  confirmedOrderId Int?               @unique
-  customerName     String
-  customerPhone    String?
-  status           CustomOrderStatus  @default(DRAFT)
-  requiredAt       DateTime?
-  fulfillmentMode  FulfillmentMode    @default(PICKUP)
-  deliveryAddress  String?
-  note             String?
-  subtotal         Float              @default(0)
-  discount         Float              @default(0)
-  total            Float              @default(0)
-  version          Int                @default(1)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  partner          Partner            @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
-  niche            Niche?             @relation(fields: [nicheId], references: [id], onDelete: SetNull)
-  client           Client?            @relation("ClientGiftOrders", fields: [clientId], references: [userId], onDelete: SetNull)
-  address          Address?           @relation(fields: [addressId], references: [id], onDelete: SetNull)
-  confirmedOrder   Order?             @relation("GiftConfirmation", fields: [confirmedOrderId], references: [id], onDelete: SetNull)
-  gift             GiftSpecification?
-  lines            CustomOrderLine[]
-  quotations       GiftQuotation[]
-  tasks            ProductionTask[]
-  reservations     StockReservation[]
+  id                  String             @id @default(uuid())
+  orderNumber         String             @unique
+  partnerId           Int
+  nicheId             Int?
+  clientId            Int?
+  addressId           Int?
+  confirmedOrderId    Int?               @unique
+  customerName        String
+  customerPhone       String?
+  status              CustomOrderStatus  @default(DRAFT)
+  requestKind         OrderRequestKind   @default(GIFT)
+  requiredAt          DateTime?
+  proposedFor         DateTime?
+  confirmedFor        DateTime?
+  preparationStartsAt DateTime?
+  fulfillmentMode     FulfillmentMode    @default(PICKUP)
+  deliveryAddress     String?
+  note                String?
+  subtotal            Float              @default(0)
+  discount            Float              @default(0)
+  total               Float              @default(0)
+  version             Int                @default(1)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  partner             Partner            @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
+  niche               Niche?             @relation(fields: [nicheId], references: [id], onDelete: SetNull)
+  client              Client?            @relation("ClientGiftOrders", fields: [clientId], references: [userId], onDelete: SetNull)
+  address             Address?           @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  confirmedOrder      Order?             @relation("GiftConfirmation", fields: [confirmedOrderId], references: [id], onDelete: SetNull)
+  gift                GiftSpecification?
+  lines               CustomOrderLine[]
+  quotations          GiftQuotation[]
+  tasks               ProductionTask[]
+  reservations        StockReservation[]
 
   @@index([partnerId, status, requiredAt])
   @@index([partnerId, updatedAt])
@@ -529,6 +591,7 @@ model GiftQuotation {
   discount      Float               @default(0)
   total         Float
   validUntil    DateTime?
+  proposedFor   DateTime?
   note          String?
   version       Int                 @default(1)
   createdAt     DateTime            @default(now())
@@ -847,10 +910,10 @@ model AuditLog {
 }
 
 model ProductTemplate {
-  id          Int    @id @default(autoincrement())
-  name        String
-  name_ar     String @default("")
-  description String @default("")
+  id             Int    @id @default(autoincrement())
+  name           String
+  name_ar        String @default("")
+  description    String @default("")
   description_ar String @default("")
 
   category_id     Int
@@ -888,6 +951,7 @@ model ProductTemplateRequest {
   hasOrder              Boolean                      @default(false)
   posLocalId            String?
   posDeviceId           String?
+  submissionId          String?
   createdAt             DateTime                     @default(now())
   updatedAt             DateTime                     @updatedAt
 
@@ -899,12 +963,35 @@ model ProductTemplateRequest {
   variants            ProductTemplateRequestVariant[]
   categoryProposal    CatalogProposal?                @relation("RequestCategoryProposal", fields: [categoryProposalId], references: [id], onDelete: SetNull)
   productTypeProposal CatalogProposal?                @relation("RequestProductTypeProposal", fields: [productTypeProposalId], references: [id], onDelete: SetNull)
+  submission          CatalogSubmission?              @relation(fields: [submissionId], references: [id], onDelete: SetNull)
 
   @@unique([partnerId, posLocalId])
   @@index([partnerId, status])
   @@index([category_id])
   @@index([product_type_id])
   @@index([brand_id])
+  @@index([submissionId])
+}
+
+model CatalogSubmission {
+  id          String                  @id @default(uuid())
+  partnerId   Int
+  localId     String?
+  status      CatalogSubmissionStatus @default(DRAFT)
+  title       String?
+  adminNote   String?
+  submittedAt DateTime?
+  reviewedAt  DateTime?
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+
+  partner          Partner                  @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
+  catalogProposals CatalogProposal[]
+  productRequests  ProductTemplateRequest[]
+
+  @@unique([partnerId, localId])
+  @@index([status, createdAt])
+  @@index([partnerId, createdAt])
 }
 
 model CatalogProposal {
@@ -928,6 +1015,7 @@ model CatalogProposal {
   createdAt             DateTime                  @default(now())
   updatedAt             DateTime                  @updatedAt
   reviewedAt            DateTime?
+  submissionId          String?
 
   partner             Partner                  @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
   device              Device?                  @relation(fields: [deviceId], references: [id], onDelete: SetNull)
@@ -939,11 +1027,13 @@ model CatalogProposal {
   resolvedProductType ProductType?             @relation("CatalogProposalResolvedProductType", fields: [resolvedProductTypeId], references: [id])
   categoryRequests    ProductTemplateRequest[] @relation("RequestCategoryProposal")
   productTypeRequests ProductTemplateRequest[] @relation("RequestProductTypeProposal")
+  submission          CatalogSubmission?       @relation(fields: [submissionId], references: [id], onDelete: SetNull)
 
   @@unique([partnerId, localId])
   @@index([partnerId, status, createdAt])
   @@index([entityType, status, createdAt])
   @@index([parentProposalId])
+  @@index([submissionId])
 }
 
 model ProductTemplateRequestVariant {
@@ -962,17 +1052,44 @@ model ProductTemplateRequestVariant {
   localId           String?
   resolvedVariantId Int?
 
-  request ProductTemplateRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  request             ProductTemplateRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  provisionalProducts ProvisionalProduct[]
+}
+
+model ProvisionalProduct {
+  id                 String            @id @default(uuid())
+  partnerId          Int
+  requestVariantId   Int
+  canonicalProductId Int?
+  visibility         CatalogVisibility @default(INTERNAL)
+  name               String
+  nameAr             String            @default("")
+  price              Float             @default(0)
+  costPrice          Float?
+  stock              Int               @default(0)
+  trackInventory     Boolean           @default(true)
+  localId            String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  partner          Partner                       @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
+  requestVariant   ProductTemplateRequestVariant @relation(fields: [requestVariantId], references: [id], onDelete: Cascade)
+  canonicalProduct Product?                      @relation(fields: [canonicalProductId], references: [id], onDelete: SetNull)
+
+  @@unique([partnerId, requestVariantId])
+  @@unique([partnerId, localId])
+  @@index([partnerId, visibility, createdAt])
+  @@index([canonicalProductId])
 }
 
 // ---------- VARIANTS ----------
 model Variant {
-  id          Int     @id @default(autoincrement())
-  name        String? // e.g. "Banana flavor", "Red color"
-  name_ar     String?
-  description String?
+  id             Int     @id @default(autoincrement())
+  name           String? // e.g. "Banana flavor", "Red color"
+  name_ar        String?
+  description    String?
   description_ar String?
-  sku         String? @unique
+  sku            String? @unique
 
   productId Int
   product   ProductTemplate @relation(fields: [productId], references: [id])
@@ -1002,9 +1119,13 @@ model ProductImage {
 }
 
 model Order {
-  id   Int      @id @default(autoincrement())
-  date DateTime @default(now())
-  requestKey String? @unique
+  id          Int         @id @default(autoincrement())
+  date        DateTime    @default(now())
+  requestKey  String?     @unique
+  status      OrderStatus @default(REQUESTED)
+  kind        OrderKind   @default(STANDARD)
+  pricingMode PricingMode @default(FIXED)
+  version     Int         @default(1)
 
   deliveryTax     Int            @default(0)
   appTax          Int            @default(0)
@@ -1027,24 +1148,103 @@ model Order {
   clientId  Int
   addressId Int?
 
-  client  Client  @relation(fields: [clientId], references: [userId])
-  partner Partner @relation(fields: [partnerId], references: [userId])
+  client  Client   @relation(fields: [clientId], references: [userId])
+  partner Partner  @relation(fields: [partnerId], references: [userId])
   address Address? @relation(fields: [addressId], references: [id])
 
   createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  acceptedAt     DateTime?
+  readyAt        DateTime?
+  completedAt    DateTime?
+  cancelledAt    DateTime?
   items          OrderItem[]
   orderDispatchs OrderDispatch[]
   delivery       Delivery?
   sales          Sale[]
   giftRequest    CustomOrder?          @relation("GiftConfirmation")
   driverRequest  PartnerDriverRequest?
+  statusHistory  OrderStatusHistory[]
+  quotations     OrderQuotation[]
+
+  @@index([partnerId, status, createdAt])
+  @@index([clientId, status, createdAt])
+}
+
+model OrderQuotation {
+  id         String          @id @default(uuid())
+  orderId    Int
+  status     QuotationStatus @default(DRAFT)
+  subtotal   Float
+  discount   Float           @default(0)
+  total      Float
+  validUntil DateTime?
+  note       String?
+  version    Int             @default(1)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  order      Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  lines      OrderQuotationLine[]
+
+  @@index([orderId, createdAt])
+}
+
+model OrderQuotationLine {
+  id          String         @id @default(uuid())
+  quotationId String
+  orderItemId Int
+  name        String
+  quantity    Int
+  unitPrice   Float
+  total       Float
+  sortOrder   Int            @default(0)
+  quotation   OrderQuotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  @@index([quotationId, sortOrder])
+  @@index([orderItemId])
+}
+
+model OrderStatusHistory {
+  id        String       @id @default(uuid())
+  orderId   Int
+  from      OrderStatus?
+  to        OrderStatus
+  actorId   Int?
+  reason    String?
+  metadata  Json?
+  createdAt DateTime     @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([orderId, createdAt])
+  @@index([actorId, createdAt])
+}
+
+model OutboxEvent {
+  id             String       @id @default(uuid())
+  topic          String
+  aggregateType  String
+  aggregateId    String
+  idempotencyKey String       @unique
+  payload        Json
+  status         OutboxStatus @default(PENDING)
+  attempts       Int          @default(0)
+  availableAt    DateTime     @default(now())
+  processedAt    DateTime?
+  lastError      String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([status, availableAt])
+  @@index([aggregateType, aggregateId])
 }
 
 model PartnerDriverRequest {
-  id                   String   @id @default(uuid())
-  requestNumber        String   @unique
+  id                   String    @id @default(uuid())
+  requestNumber        String    @unique
   partnerId            Int
-  orderId              Int      @unique
+  orderId              Int       @unique
   recipientName        String
   recipientPhone       String
   packageDescription   String
@@ -1054,14 +1254,14 @@ model PartnerDriverRequest {
   destinationAddress   String
   destinationLatitude  Float
   destinationLongitude Float
-  cashToCollect        Float    @default(0)
+  cashToCollect        Float     @default(0)
   note                 String?
   assignedAt           DateTime?
   pickedUpAt           DateTime?
   deliveredAt          DateTime?
   canceledAt           DateTime?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   partner Partner @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -1111,13 +1311,16 @@ model DeliveryGroup {
 }
 
 model OrderItem {
-  id        Int     @id @default(autoincrement())
-  quantity  Int
-  price     Float
-  product   Product @relation(fields: [productId], references: [id])
-  order     Order   @relation(fields: [orderId], references: [id])
-  productId Int
-  orderId   Int
+  id              Int     @id @default(autoincrement())
+  quantity        Int
+  price           Float
+  product         Product @relation(fields: [productId], references: [id])
+  order           Order   @relation(fields: [orderId], references: [id])
+  productId       Int
+  orderId         Int
+  nameSnapshot    String  @default("")
+  variantSnapshot String?
+  skuSnapshot     String?
 }
 
 model OrderDispatch {

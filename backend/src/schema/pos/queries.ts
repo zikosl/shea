@@ -45,7 +45,7 @@ const Query = extendType({
         const enabledCapabilities = capabilities.filter((entry) => entry.enabled).map((entry) => entry.code)
         const hasCapability = (code: CapabilityCode) => enabledCapabilities.includes(code)
 
-        const [niches, categories, productTypes, brands, templates, products, proposals, productRequests, orders, openCashSession, customOrders, giftTemplates] = await Promise.all([
+        const [niches, categories, productTypes, brands, templates, products, proposals, productRequests, catalogSubmissions, provisionalProducts, orders, openCashSession, customOrders, giftTemplates] = await Promise.all([
           ctx.prisma.niche.findMany({ where: { id: { in: nicheIds } }, orderBy: { name: 'asc' } }),
           ctx.prisma.category.findMany({ where: catalogScope, orderBy: { name: 'asc' } }),
           ctx.prisma.productType.findMany({ where: { category: catalogScope }, orderBy: { name: 'asc' } }),
@@ -71,6 +71,17 @@ const Query = extendType({
             where: { partnerId, posLocalId: { not: null } },
             include: { variants: true },
             orderBy: { createdAt: 'desc' },
+          }),
+          ctx.prisma.catalogSubmission.findMany({
+            where: { partnerId },
+            include: { catalogProposals: true, productRequests: { include: { variants: true } } },
+            orderBy: { createdAt: 'desc' },
+            take: 100,
+          }),
+          ctx.prisma.provisionalProduct.findMany({
+            where: { partnerId, canonicalProductId: null },
+            orderBy: { createdAt: 'desc' },
+            take: 250,
           }),
           ctx.prisma.order.findMany({
             where: { partnerId },
@@ -104,7 +115,7 @@ const Query = extendType({
           generatedAt,
           offlineUntil,
           payload: JSON.stringify({
-            schemaVersion: 3,
+            schemaVersion: 4,
             partner: {
               userId: partner.userId,
               companyName: partner.companyName,
@@ -130,6 +141,8 @@ const Query = extendType({
             products,
             proposals,
             productRequests,
+            catalogSubmissions,
+            provisionalProducts,
             orders,
             openCashSession,
             extensions: {

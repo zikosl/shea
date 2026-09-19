@@ -108,6 +108,13 @@ export function getMenuList(pathname: string): Group[] {
           submenus: []
         },
         {
+          href: "/catalog-inbox",
+          label: "Catalog Inbox",
+          active: pathname.includes("/catalog-inbox"),
+          icon: ClipboardCheck,
+          submenus: []
+        },
+        {
           href: "/product-requests",
           label: "Product Requests",
           active: pathname.includes("/product-requests"),

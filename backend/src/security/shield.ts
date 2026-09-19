@@ -31,7 +31,7 @@ const isClient = hasRole('CLIENT')
 const isDriver = hasRole('DRIVER')
 
 const publicFields = (...fields: string[]) => Object.fromEntries(fields.map(field => [field, allow]))
-const storefrontProductFields = publicFields('id', 'name', 'name_ar', 'price', 'discount', 'available', 'stock', 'trackInventory', 'image', 'images', 'partnerId', 'variantId', 'variantName', 'variantNameAr', 'sku', 'isActive', 'onlineVisible')
+const storefrontProductFields = publicFields('id', 'name', 'name_ar', 'price', 'priceOnRequest', 'discount', 'available', 'stock', 'trackInventory', 'image', 'images', 'partnerId', 'variantId', 'variantName', 'variantNameAr', 'sku', 'isActive', 'onlineVisible')
 
 export const permissions = shield(
   {
@@ -53,6 +53,9 @@ export const permissions = shield(
       findOneProductPartner: allow,
       adminDashboardStats: isAdmin,
       adminDispatchBoard: isAdmin,
+      adminCatalogSubmissions: isAdmin,
+      myCatalogSubmissions: isPartner,
+      myProvisionalProducts: isPartner,
       getDriverRoute: isDriver,
       posBootstrap: isPartner,
       listDevices: isPartner,
@@ -125,6 +128,7 @@ export const permissions = shield(
       deleteProduct: isPartner,
       submitProductTemplateRequest: isPartner,
       submitCatalogProposal: isPartner,
+      createCatalogSubmission: isPartner,
       updatePartnerProfile: isPartner,
       updateDriverLocation: isDriver,
       partnerOrder: isPartner,
@@ -150,6 +154,8 @@ export const permissions = shield(
       revokeStoreTerminal: isPartner,
       configureStoreNetwork: isAdmin,
       createOrder: isClient,
+      createOrderQuotation: isPartner,
+      respondToOrderQuotation: isClient,
       deleteClientAccount: isClient,
       updateClientProfile: isClient,
       requestClientPhoneChange: isClient,

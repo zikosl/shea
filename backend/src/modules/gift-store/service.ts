@@ -5,13 +5,16 @@ import { requireCapability } from '../capabilities/service'
 import { DeliveryStatus, DeliveryType, LogSatus } from '../../types'
 import { calculatePartnerFee } from '../../utils/partner-fees'
 import { dispatchQueue } from '../../servers'
+import { createOrderOutboxEvent, transitionOrderStatus } from '../orders/workflow'
 
 const transitions: Record<CustomOrderStatus, CustomOrderStatus[]> = {
   DRAFT: ['REQUESTED', 'CANCELLED'],
   REQUESTED: ['QUOTED', 'CANCELLED'],
   QUOTED: ['AWAITING_CUSTOMER_APPROVAL', 'CANCELLED'],
   AWAITING_CUSTOMER_APPROVAL: ['CONFIRMED', 'CANCELLED'],
-  CONFIRMED: ['MATERIALS_RESERVED', 'IN_PREPARATION', 'CANCELLED'],
+  CONFIRMED: ['SCHEDULED', 'MATERIALS_RESERVED', 'IN_PREPARATION', 'CANCELLED'],
+  SCHEDULED: ['PREPARATION_DUE', 'CANCELLED'],
+  PREPARATION_DUE: ['MATERIALS_RESERVED', 'IN_PREPARATION', 'CANCELLED'],
   MATERIALS_RESERVED: ['IN_PREPARATION', 'CANCELLED'],
   IN_PREPARATION: ['READY', 'CANCELLED'],
   READY: ['FULFILLED', 'CANCELLED'],
@@ -152,6 +155,13 @@ export async function transitionGiftOrder(prisma: PrismaClient, partnerUserId: n
     if (updated.count !== 1) throw new GraphQLError('CUSTOM_ORDER_VERSION_CONFLICT')
     return tx.customOrder.findUnique({ where: { id }, include: giftOrderInclude })
   })
+  if (updatedOrder?.confirmedOrderId && (next === 'IN_PREPARATION' || next === 'READY' || next === 'FULFILLED')) {
+    const fulfillment = await prisma.order.findUnique({ where: { id: updatedOrder.confirmedOrderId }, select: { status: true, version: true } })
+    const target = next === 'IN_PREPARATION' ? 'PREPARING' : next === 'READY' ? 'READY' : 'COMPLETED'
+    if (fulfillment && fulfillment.status !== target) {
+      await transitionOrderStatus(prisma, { orderId: updatedOrder.confirmedOrderId, actorId: partnerUserId, target, expectedVersion: fulfillment.version })
+    }
+  }
   if (next === 'READY' && updatedOrder?.confirmedOrderId) {
     const delivery = await prisma.delivery.findUnique({ where: { orderId: updatedOrder.confirmedOrderId } })
     if (delivery?.type === DeliveryType.NORMAL) {
@@ -162,18 +172,39 @@ export async function transitionGiftOrder(prisma: PrismaClient, partnerUserId: n
   return updatedOrder
 }
 
-export async function createGiftQuotation(prisma: PrismaClient, partnerUserId: number, customOrderId: string, validUntil?: Date | null, note?: string | null) {
+export async function createGiftQuotation(prisma: PrismaClient, partnerUserId: number, input: any) {
   await requireCapability(prisma, partnerUserId, CapabilityCode.QUOTATIONS)
   const partnerId = partnerUserId
   return prisma.$transaction(async (tx) => {
-    const order = await tx.customOrder.findFirst({ where: { id: customOrderId, partnerId }, include: { lines: { orderBy: { sortOrder: 'asc' } } } })
+    const order = await tx.customOrder.findFirst({ where: { id: input.customOrderId, partnerId }, include: { lines: { orderBy: { sortOrder: 'asc' } } } })
     if (!order) throw new GraphQLError('CUSTOM_ORDER_NOT_FOUND')
+    if (['CANCELLED', 'FULFILLED'].includes(order.status)) throw new GraphQLError('CUSTOM_ORDER_NOT_QUOTABLE')
+    const proposedFor = input.proposedFor ?? order.requiredAt ?? null
+    if (proposedFor && proposedFor.getTime() <= Date.now()) throw new GraphQLError('GIFT_DATE_MUST_BE_IN_FUTURE')
+    if (input.validUntil && input.validUntil.getTime() <= Date.now()) throw new GraphQLError('QUOTE_EXPIRY_MUST_BE_IN_FUTURE')
+    if (input.preparationStartsAt && proposedFor && input.preparationStartsAt.getTime() > proposedFor.getTime()) {
+      throw new GraphQLError('PREPARATION_STARTS_AFTER_FULFILLMENT')
+    }
+    const sourceLines = input.lines?.length ? input.lines : order.lines
+    if (!sourceLines.length) throw new GraphQLError('QUOTATION_LINES_REQUIRED')
+    for (const line of sourceLines) {
+      if (!line.name?.trim() || !Number.isFinite(line.quantity) || line.quantity <= 0 || !Number.isFinite(line.unitPrice) || line.unitPrice < 0) {
+        throw new GraphQLError('INVALID_QUOTATION_LINE')
+      }
+    }
+    const subtotal = sourceLines.reduce((sum: number, line: any) => sum + line.quantity * line.unitPrice, 0)
+    const discount = Math.min(Math.max(input.discount ?? order.discount ?? 0, 0), subtotal)
+    await tx.giftQuotation.updateMany({ where: { customOrderId: order.id, status: 'SENT' }, data: { status: 'EXPIRED' } })
     const quote = await tx.giftQuotation.create({ data: {
-      quoteNumber: documentNumber('QUO'), customOrderId, status: 'SENT', subtotal: order.subtotal, discount: order.discount,
-      total: order.total, validUntil: validUntil ?? null, note: note?.trim() || null,
-      lines: { create: order.lines.map((line) => ({ productId: line.productId, name: line.name, description: line.description, quantity: line.quantity, unitPrice: line.unitPrice, total: line.total, sortOrder: line.sortOrder })) },
+      quoteNumber: documentNumber('QUO'), customOrderId: order.id, status: 'SENT', subtotal, discount,
+      total: subtotal - discount, validUntil: input.validUntil ?? null, proposedFor, note: input.note?.trim() || null,
+      lines: { create: sourceLines.map((line: any, index: number) => ({ productId: line.productId ?? null, name: line.name.trim(), description: line.description?.trim() || null, quantity: line.quantity, unitPrice: line.unitPrice, total: line.quantity * line.unitPrice, sortOrder: index })) },
     }, include: { lines: true } })
-    if (['DRAFT', 'REQUESTED', 'QUOTED'].includes(order.status)) await tx.customOrder.update({ where: { id: order.id }, data: { status: 'AWAITING_CUSTOMER_APPROVAL', version: { increment: 1 } } })
+    await tx.customOrder.update({ where: { id: order.id }, data: {
+      status: 'AWAITING_CUSTOMER_APPROVAL', proposedFor,
+      preparationStartsAt: input.preparationStartsAt ?? (proposedFor ? new Date(proposedFor.getTime() - 24 * 60 * 60 * 1000) : null),
+      subtotal, discount, total: subtotal - discount, version: { increment: 1 },
+    } })
     if (order.clientId) await tx.log.create({ data: {
       userId: order.clientId, type: LogSatus.ORDER_UPDATE,
       title: `Your gift quote is ready`, body: `Review quote ${quote.quoteNumber} and confirm when you are ready.`,
@@ -218,15 +249,20 @@ export async function respondToGiftQuotation(prisma: PrismaClient, clientId: num
       ...financials,
       partnerFeeType: financials.partnerFeeType as any,
       discount: quote.discount,
-      items: { create: quote.lines.map((line) => ({ productId: line.productId!, quantity: line.quantity, price: line.unitPrice })) },
-      delivery: { create: { type: order.fulfillmentMode === 'PICKUP' ? DeliveryType.PICKUP : DeliveryType.NORMAL, status: DeliveryStatus.PENDING, addressId: order.fulfillmentMode === 'PICKUP' ? null : resolvedAddressId, scheduledAt: order.requiredAt } },
+      status: 'CONFIRMED', kind: 'GIFT', pricingMode: 'QUOTE_REQUIRED',
+      items: { create: quote.lines.map((line) => ({ productId: line.productId!, quantity: line.quantity, price: line.unitPrice, nameSnapshot: line.name, variantSnapshot: line.description })) },
+      delivery: { create: { type: order.fulfillmentMode === 'PICKUP' ? DeliveryType.PICKUP : DeliveryType.NORMAL, status: DeliveryStatus.ACCEPTED, addressId: order.fulfillmentMode === 'PICKUP' ? null : resolvedAddressId, scheduledAt: quote.proposedFor ?? order.requiredAt } },
     } })
+    await tx.orderStatusHistory.create({ data: { orderId: fulfillmentOrder.id, to: 'CONFIRMED', actorId: clientId } })
+    await createOrderOutboxEvent(tx, fulfillmentOrder.id, 'CONFIRMED', { clientId, partnerId: order.partnerId, actorId: clientId })
     await tx.giftQuotation.update({ where: { id: quote.id }, data: { status: 'ACCEPTED' } })
     await tx.log.createMany({ data: [
       { userId: order.partnerId, type: LogSatus.ORDER_UPDATE, title: `Gift quote accepted`, body: `${order.orderNumber} is confirmed and ready for preparation.`, title_ar: 'تم قبول عرض الهدية', body_ar: `تم تأكيد ${order.orderNumber} وأصبح جاهزاً للتحضير.` },
       { userId: clientId, type: LogSatus.ORDER_UPDATE, title: `Gift order confirmed`, body: `Your gift order ${order.orderNumber} is now being prepared.`, title_ar: 'تم تأكيد طلب الهدية', body_ar: `طلب هديتك ${order.orderNumber} قيد التحضير الآن.` },
     ] })
-    return tx.customOrder.update({ where: { id: order.id }, data: { status: 'CONFIRMED', confirmedOrderId: fulfillmentOrder.id, addressId: resolvedAddressId, version: { increment: 1 } }, include: giftOrderInclude })
+    const confirmedFor = quote.proposedFor ?? order.requiredAt
+    const scheduled = !!confirmedFor && confirmedFor.getTime() > Date.now()
+    return tx.customOrder.update({ where: { id: order.id }, data: { status: scheduled ? 'SCHEDULED' : 'CONFIRMED', confirmedFor, confirmedOrderId: fulfillmentOrder.id, addressId: resolvedAddressId, version: { increment: 1 } }, include: giftOrderInclude })
   }, { isolationLevel: 'Serializable' })
 }
 
@@ -236,7 +272,7 @@ export async function reserveGiftMaterials(prisma: PrismaClient, partnerUserId: 
   return prisma.$transaction(async (tx) => {
     const order = await tx.customOrder.findFirst({ where: { id: customOrderId, partnerId }, include: { lines: true } })
     if (!order) throw new GraphQLError('CUSTOM_ORDER_NOT_FOUND')
-    if (order.status !== 'CONFIRMED') throw new GraphQLError('CUSTOM_ORDER_MUST_BE_CONFIRMED')
+    if (!['CONFIRMED', 'PREPARATION_DUE'].includes(order.status)) throw new GraphQLError('CUSTOM_ORDER_MUST_BE_READY_FOR_PREPARATION')
     for (const line of order.lines.filter((item) => item.productId)) {
       const product = await tx.product.findFirst({ where: { id: line.productId!, partnerId, isActive: true } })
       if (!product) throw new GraphQLError('PRODUCT_NOT_FOUND')

@@ -9,6 +9,7 @@ export const CheckoutPreview = objectType({
         t.nonNull.float('appTax')
         t.nonNull.float('deliveryTax')
         t.nonNull.float('total')
+        t.nonNull.field('pricingMode', { type: 'PricingMode' })
         t.nonNull.list.nonNull.field('items', { type: 'CheckoutLine' })
     },
 })
@@ -18,6 +19,7 @@ export const CheckoutLine = objectType({
         t.nonNull.int('productId')
         t.nonNull.int('quantity')
         t.nonNull.float('price')
+        t.nonNull.boolean('priceOnRequest')
     },
 })
 import { Context } from "../../context"

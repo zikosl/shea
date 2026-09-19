@@ -33,6 +33,7 @@ async function productSnapshots(prisma: PrismaLike, partnerId: number) {
     trackInventory: product.trackInventory,
     available: product.available,
     visibleInPos: product.isVisibleInPos,
+    priceOnRequest: product.priceOnRequest,
     updatedAt: product.updatedAt.toISOString(),
   }))
 }

@@ -244,6 +244,36 @@ enum CatalogProposalStatus {
   REJECTED
 }
 
+type CatalogSubmission {
+  adminNote: String
+  catalogProposals: [CatalogProposal!]!
+  createdAt: DateTime!
+  id: String!
+  localId: String
+  partner: Partner!
+  partnerId: Int!
+  productRequests: [ProductTemplateRequest!]!
+  reviewedAt: DateTime
+  status: CatalogSubmissionStatus!
+  submittedAt: DateTime
+  title: String
+  updatedAt: DateTime!
+}
+
+enum CatalogSubmissionStatus {
+  APPROVED
+  DRAFT
+  MERGED
+  PARTIALLY_APPROVED
+  PENDING
+  REJECTED
+}
+
+enum CatalogVisibility {
+  INTERNAL
+  PUBLIC
+}
+
 type Category {
   id: Int!
   image: String
@@ -261,6 +291,7 @@ type CategoryResult {
 
 type CheckoutLine {
   price: Float!
+  priceOnRequest: Boolean!
   productId: Int!
   quantity: Int!
 }
@@ -269,6 +300,7 @@ type CheckoutPreview {
   appTax: Float!
   deliveryTax: Float!
   items: [CheckoutLine!]!
+  pricingMode: PricingMode!
   subtotal: Float!
   total: Float!
 }
@@ -325,6 +357,7 @@ type CustomOrder {
   addressId: Int
   client: Client
   clientId: Int
+  confirmedFor: DateTime
   confirmedOrder: Order
   confirmedOrderId: Int
   createdAt: DateTime!
@@ -341,6 +374,8 @@ type CustomOrder {
   note: String
   orderNumber: String!
   partnerId: Int!
+  preparationStartsAt: DateTime
+  proposedFor: DateTime
   quotations: [GiftQuotation!]!
   requiredAt: DateTime
   status: CustomOrderStatus!
@@ -372,9 +407,11 @@ enum CustomOrderStatus {
   FULFILLED
   IN_PREPARATION
   MATERIALS_RESERVED
+  PREPARATION_DUE
   QUOTED
   READY
   REQUESTED
+  SCHEDULED
 }
 
 """
@@ -388,6 +425,7 @@ type Delivery {
   id: Int!
   orderId: Int
   price: Float
+  scheduledAt: DateTime
   status: DeliveryStatus
   type: DeliveryType
 }
@@ -489,6 +527,7 @@ type GiftQuotation {
   id: String!
   lines: [GiftQuotationLine!]!
   note: String
+  proposedFor: DateTime
   quoteNumber: String!
   status: QuotationStatus!
   subtotal: Float!
@@ -505,6 +544,14 @@ type GiftQuotationLine {
   productId: Int
   quantity: Float!
   total: Float!
+  unitPrice: Float!
+}
+
+input GiftQuotationLineInput {
+  description: String
+  name: String!
+  productId: Int
+  quantity: Float!
   unitPrice: Float!
 }
 
@@ -529,6 +576,7 @@ input InputProductVariant {
   isVisibleInPos: Boolean
   onlineVisible: Boolean
   price: Float!
+  priceOnRequest: Boolean
   reorderThreshold: Int
   stock: Int
   trackInventory: Boolean
@@ -566,18 +614,20 @@ type Mutation {
   configureStoreNetwork(cloudGatewayUrl: String, cloudSyncEnabled: Boolean!, localGatewayUrl: String, storeId: String!): Store!
   createAddress(address: String, label: String!, latitude: Float!, longitude: Float!): Address
   createBrand(image: String!, name: String!, name_ar: String, niche_id: Int): Brand
+  createCatalogSubmission(localId: String, productRequestIds: [Int!], proposalIds: [String!], title: String): CatalogSubmission!
   createCategory(image: String, name: String!, name_ar: String!, niche_id: Int): Category
   createClientGiftOrder(input: CreateGiftOrderInput!): CustomOrder!
   createDriver(email: String!, firstname: String!, lastname: String!): Driver
   createGiftOrder(input: CreateGiftOrderInput!): CustomOrder!
-  createGiftQuotation(customOrderId: String!, note: String, validUntil: DateTime): GiftQuotation!
+  createGiftQuotation(customOrderId: String!, discount: Float, lines: [GiftQuotationLineInput!], note: String, preparationStartsAt: DateTime, proposedFor: DateTime, validUntil: DateTime): GiftQuotation!
   createManyProducts(data: [InputProductVariant]): Boolean
   createNiche(image: String, name: String!, name_ar: String!): Niche
   createOrder(data: OrderInput!): Order
+  createOrderQuotation(expectedVersion: Int!, lines: OrderQuotationLinesInput!, note: String, orderId: Int!, validUntil: DateTime): OrderQuotation!
   createPartner(companyName: String!, driverRequestFee: Float, email: String!, feeRate: Float, feeType: PartnerFeeType, fixedFee: Float, niches: [Int!], primaryColor: String): Partner
   createPartnerDriverRequest(data: PartnerDriverRequestInput!): PartnerDriverRequest!
   createPartnerPosOrder(data: PartnerPosOrderInput!): Order
-  createProduct(available: Boolean, costPrice: Float, customDescription: String, customImages: ImagesList, customName: String, discount: Float, isActive: Boolean, isVisibleInPos: Boolean, notes: String, onlineVisible: Boolean, price: Float, reorderThreshold: Int, stock: Int, trackInventory: Boolean, variantId: Int!, vendorBarcode: String, vendorSku: String): Product
+  createProduct(available: Boolean, costPrice: Float, customDescription: String, customImages: ImagesList, customName: String, discount: Float, isActive: Boolean, isVisibleInPos: Boolean, notes: String, onlineVisible: Boolean, price: Float, priceOnRequest: Boolean, reorderThreshold: Int, stock: Int, trackInventory: Boolean, variantId: Int!, vendorBarcode: String, vendorSku: String): Product
   createProductTemplate(brand_id: Int!, category_id: Int!, description: String, description_ar: String, images: ImagesList, name: String!, name_ar: String, product_type_id: Int): ProductTemplate
   createProductType(category_id: Int!, name: String!, name_ar: String!): ProductType
   createSale(data: CreateSaleInput!): Sale
@@ -618,6 +668,7 @@ type Mutation {
   resetDriverAccessCode(id: Int!): Boolean!
   resetPartnerAccessCode(id: Int!): Boolean!
   respondToGiftQuotation(accept: Boolean!, addressId: Int, customOrderId: String!): CustomOrder!
+  respondToOrderQuotation(accepted: Boolean!, expectedOrderVersion: Int!, expectedQuoteVersion: Int!, quotationId: String!): Order!
   revokeStoreTerminal(terminalId: String!): StoreTerminal!
   sendOtp(phone: String!): Boolean
   setNicheCapability(capability: CapabilityCode!, enabled: Boolean!, nicheId: Int!): NicheCapability
@@ -627,6 +678,7 @@ type Mutation {
   submitCatalogProposal(categoryId: Int, description: String, deviceId: String, entityType: CatalogProposalEntityType!, image: String, localId: String!, name: String!, name_ar: String, nicheId: Int!, parentProposalId: String): CatalogProposal
   submitProductTemplateRequest(brand_id: Int, categoryProposalId: String, category_id: Int, description: String, images: ImagesList, name: String!, name_ar: String, posDeviceId: String, posLocalId: String, productTypeProposalId: String, product_type_id: Int, variants: [ProductTemplateRequestVariantInput]): ProductTemplateRequest
   transitionGiftOrder(expectedVersion: Int!, id: String!, status: CustomOrderStatus!): CustomOrder!
+  transitionOrderStatus(expectedVersion: Int!, id: Int!, reason: String, status: OrderStatus!): Order
   updateAddress(address: String, id: Int!, isDefault: Boolean, label: String, latitude: Float, longitude: Float): Address
   updateBrand(id: Int!, image: String, name: String, name_ar: String, niche_id: Int): Brand
   updateCategory(id: Int!, image: String, name: String, name_ar: String, niche_id: Int): Category
@@ -637,7 +689,7 @@ type Mutation {
   updateNiche(id: Int!, image: String, name: String, name_ar: String): Niche
   updatePartner(companyName: String, driverRequestFee: Float, email: String, feeRate: Float, feeType: PartnerFeeType, fixedFee: Float, id: Int!, niches: [Int!], primaryColor: String): Partner
   updatePartnerProfile(address: String, avatar: String, companyName: String, language: String, latitude: Float, longitude: Float, online: Boolean, primaryColor: String): AuthPayload
-  updateProduct(available: Boolean, costPrice: Float, customDescription: String, customImages: ImagesList, customName: String, discount: Float, id: Int!, isActive: Boolean, isVisibleInPos: Boolean, notes: String, onlineVisible: Boolean, price: Float, reorderThreshold: Int, stock: Int, trackInventory: Boolean, vendorBarcode: String, vendorSku: String): ProductView
+  updateProduct(available: Boolean, costPrice: Float, customDescription: String, customImages: ImagesList, customName: String, discount: Float, id: Int!, isActive: Boolean, isVisibleInPos: Boolean, notes: String, onlineVisible: Boolean, price: Float, priceOnRequest: Boolean, reorderThreshold: Int, stock: Int, trackInventory: Boolean, vendorBarcode: String, vendorSku: String): ProductView
   updateProductTemplate(brand_id: Int, category_id: Int, description: String, description_ar: String, id: Int!, name: String, name_ar: String, product_type_id: Int): ProductTemplate
   updateProductTemplateImages(id: Int!, images: ImagesList): [ProductImage]
   updateProductType(id: Int!, name: String, name_ar: String): ProductType
@@ -683,6 +735,7 @@ type Order {
   driverRequest: PartnerDriverRequest
   id: Int!
   items: [OrderItem]!
+  kind: OrderKind!
   note: String
   partner: Partner
   partnerFee: Float
@@ -694,10 +747,15 @@ type Order {
   partnerNet: Float
   paymentMethod: String
   price: Float
+  pricingMode: PricingMode!
+  quotations: [OrderQuotation!]!
   source: String
+  status: OrderStatus!
+  statusHistory: [OrderStatusHistory!]!
   storeTax: Float
   subtotal: Float
   total: Float
+  version: Int!
   walkInCustomerName: String
 }
 
@@ -726,11 +784,14 @@ input OrderInput {
 
 type OrderItem {
   id: Int!
+  nameSnapshot: String
   orderId: Int
   price: Float
   product: ProductView
   productId: Int
   quantity: Int
+  skuSnapshot: String
+  variantSnapshot: String
 }
 
 input OrderItemInput {
@@ -739,9 +800,71 @@ input OrderItemInput {
   quantity: Int
 }
 
+enum OrderKind {
+  DRIVER_REQUEST
+  GIFT
+  STANDARD
+}
+
+type OrderQuotation {
+  createdAt: DateTime!
+  discount: Float!
+  id: String!
+  lines: [OrderQuotationLine!]!
+  note: String
+  orderId: Int!
+  status: QuotationStatus!
+  subtotal: Float!
+  total: Float!
+  validUntil: DateTime
+  version: Int!
+}
+
+type OrderQuotationLine {
+  id: String!
+  name: String!
+  orderItemId: Int!
+  quantity: Int!
+  sortOrder: Int!
+  total: Float!
+  unitPrice: Float!
+}
+
+input OrderQuotationLineInput {
+  orderItemId: Int!
+  unitPrice: Float!
+}
+
+input OrderQuotationLinesInput {
+  lines: [OrderQuotationLineInput!]!
+}
+
 type OrderResult {
   orders: [Order!]!
   totalOrders: Int
+}
+
+enum OrderStatus {
+  AWAITING_CLIENT_APPROVAL
+  CANCELLED
+  COMPLETED
+  CONFIRMED
+  FULFILLMENT_STARTED
+  PARTNER_ACCEPTED
+  PARTNER_REJECTED
+  PREPARING
+  READY
+  REQUESTED
+}
+
+type OrderStatusHistory {
+  actorId: Int
+  createdAt: DateTime!
+  from: OrderStatus
+  id: String!
+  orderId: Int!
+  reason: String
+  to: OrderStatus!
 }
 
 type Partner {
@@ -935,6 +1058,11 @@ input PricingInput {
   price: Int!
 }
 
+enum PricingMode {
+  FIXED
+  QUOTE_REQUIRED
+}
+
 enum PricingName {
   APP_TAX
   DRIVER_REQUEST_FEE
@@ -963,6 +1091,7 @@ type Product {
   partner: Partner
   partnerId: Int
   price: Float
+  priceOnRequest: Boolean
   reorderThreshold: Int
   sku: String
   stock: Int
@@ -1029,6 +1158,7 @@ type ProductTemplatePartnerPreview {
   onlineVisible: Boolean!
   partnerId: Int!
   price: Float!
+  priceOnRequest: Boolean!
   product_id: Int!
   product_template_id: Int!
   product_type_id: Int
@@ -1172,6 +1302,7 @@ type ProductView {
   partner: Partner
   partnerId: Int
   price: Float
+  priceOnRequest: Boolean
   productType: ProductType
   product_template_id: Int
   product_type_id: Int
@@ -1209,7 +1340,23 @@ enum ProductionTaskStatus {
   TODO
 }
 
+type ProvisionalProduct {
+  canonicalProductId: Int
+  costPrice: Float
+  id: String!
+  localId: String
+  name: String!
+  nameAr: String!
+  partnerId: Int!
+  price: Float!
+  requestVariantId: Int!
+  stock: Int!
+  trackInventory: Boolean!
+  visibility: CatalogVisibility!
+}
+
 type Query {
+  adminCatalogSubmissions(status: CatalogSubmissionStatus): [CatalogSubmission!]!
   adminDashboardStats: AdminDashboardStats!
   adminDispatchBoard: AdminDispatchBoard!
   adminStoreNetworks(search: String): [Store!]!
@@ -1270,7 +1417,9 @@ type Query {
   listSales(limit: Int, page: Int, status: SaleStatus): [Sale!]!
   listStockMovements(limit: Int, page: Int, productId: Int, type: StockMovementType): [StockMovement!]!
   listSyncEvents(deviceId: String, limit: Int, page: Int, status: SyncEventStatus): [SyncEvent!]!
+  myCatalogSubmissions(status: CatalogSubmissionStatus): [CatalogSubmission!]!
   myPartnerProfile: Partner!
+  myProvisionalProducts: [ProvisionalProduct!]!
   myStores: [Store!]!
   nicheCapabilityDefaults(nicheId: Int): [NicheCapability!]!
   partnerCapabilityOverrides(partnerId: Int): [PartnerCapabilityOverride!]!

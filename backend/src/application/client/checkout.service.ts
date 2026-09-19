@@ -3,6 +3,7 @@ import { sendNotification } from '../../servers/firebase'
 import { GraphQLError } from 'graphql'
 import { DeliveryStatus, DeliveryType, PricingName } from '../../types'
 import { calculatePartnerFee } from '../../utils/partner-fees'
+import { createOrderOutboxEvent } from '../../modules/orders/workflow'
 
 type CheckoutInput = {
   partnerId?: number | null
@@ -31,22 +32,34 @@ export async function previewCheckout(tx: Prisma.TransactionClient, userId: numb
     if (!address) fail('ADDRESS_REQUIRED')
     if (!Number.isFinite(address!.latitude) || !Number.isFinite(address!.longitude) || (address!.latitude === 0 && address!.longitude === 0)) fail('LOCATION_REQUIRED')
   }
-  const products = await tx.product.findMany({ where: { id: { in: [...quantities.keys()] }, partnerId: input.partnerId! } })
+  const products = await tx.product.findMany({
+    where: { id: { in: [...quantities.keys()] }, partnerId: input.partnerId! },
+    include: { variant: { include: { product: true } } },
+  })
   if (products.length !== quantities.size) fail('PRODUCT_UNAVAILABLE')
   const items = products.map(product => {
     const quantity = quantities.get(product.id)!
     if (!product.available || !product.isActive || !product.onlineVisible) fail('PRODUCT_UNAVAILABLE')
     if (product.trackInventory && product.stock < quantity) fail('INSUFFICIENT_STOCK')
     if (!Number.isFinite(product.price) || product.price < 0) fail('INVALID_PRICE')
-    return { productId: product.id, quantity, price: money(product.price) }
+    return {
+      productId: product.id,
+      quantity,
+      price: product.priceOnRequest ? 0 : money(product.price),
+      priceOnRequest: product.priceOnRequest,
+      nameSnapshot: product.customName?.trim() || product.variant.product.name,
+      variantSnapshot: product.variant.name?.trim() || null,
+      skuSnapshot: product.vendorSku?.trim() || product.variant.sku?.trim() || null,
+    }
   })
   const deliveryName = input.deliveryType === DeliveryType.PICKUP ? PricingName.PICKUP_TAX : input.deliveryType === DeliveryType.GROUPED ? PricingName.GROUP_DELIVERY_TAX : PricingName.NORMAL_DELIVERY_TAX
   const pricing = await tx.pricing.findMany({ where: { name: { in: [PricingName.APP_TAX, PricingName.STORE_TAX, deliveryName] } } })
   const fee = (name: PricingName) => Math.max(0, pricing.find(p => p.name === name)?.price ?? 0)
   const subtotal = money(items.reduce((sum, item) => sum + item.price * item.quantity, 0))
+  const pricingMode = items.some(item => item.priceOnRequest) ? 'QUOTE_REQUIRED' as const : 'FIXED' as const
   const appTax = fee(PricingName.APP_TAX)
   const deliveryTax = fee(deliveryName)
-  return { partner: partner!, address, items, subtotal, appTax, deliveryTax, storeTax: fee(PricingName.STORE_TAX), total: money(subtotal + appTax + deliveryTax) }
+  return { partner: partner!, address, items, pricingMode, subtotal, appTax, deliveryTax, storeTax: fee(PricingName.STORE_TAX), total: money(subtotal + appTax + deliveryTax) }
 }
 
 export async function submitCheckout(prisma: PrismaClient, userId: number, input: CheckoutInput) {
@@ -61,15 +74,25 @@ export async function submitCheckout(prisma: PrismaClient, userId: number, input
       }
       const quote = await previewCheckout(tx, userId, input)
       if (input.expectedTotal != null && money(input.expectedTotal) !== quote.total) fail('PRICE_CHANGED')
-      if (input.items.some(item => item?.price != null && money(item.price) !== quote.items.find(line => line.productId === item.productId)?.price)) fail('PRICE_CHANGED')
+      if (input.items.some(item => {
+        const line = quote.items.find(entry => entry.productId === item?.productId)
+        return item?.price != null && !line?.priceOnRequest && money(item.price) !== line?.price
+      })) fail('PRICE_CHANGED')
       const financials = calculatePartnerFee(quote.subtotal, quote.partner)
       const order = await tx.order.create({ data: {
         requestKey, clientId: userId, partnerId: quote.partner.userId, addressId: quote.address?.id,
+        status: 'REQUESTED', kind: 'STANDARD', pricingMode: quote.pricingMode,
         deliveryTax: quote.deliveryTax, appTax: quote.appTax, storeTax: quote.storeTax,
         ...financials, partnerFeeType: financials.partnerFeeType as PartnerFeeType, paymentMethod: 'CASH',
-        items: { create: quote.items },
+        items: { create: quote.items.map(({ priceOnRequest: _priceOnRequest, ...item }) => item) },
         delivery: { create: { type: input.deliveryType, status: DeliveryStatus.PENDING, addressId: quote.address?.id } },
       } })
+      await tx.orderStatusHistory.create({ data: { orderId: order.id, to: 'REQUESTED', actorId: userId } })
+      await createOrderOutboxEvent(tx, order.id, 'REQUESTED', {
+        clientId: userId,
+        partnerId: quote.partner.userId,
+        actorId: userId,
+      })
       await tx.log.create({ data: { userId: quote.partner.userId, type: 0,
         title: `New order #${order.id}`, body: 'A customer placed an order.',
         title_ar: `طلب جديد #${order.id}`, body_ar: 'تم استلام طلب جديد من زبون.' } })

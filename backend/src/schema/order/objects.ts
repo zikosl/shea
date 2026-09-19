@@ -1,12 +1,49 @@
 // @ts-nocheck
 import { enumType, inputObjectType, objectType } from "nexus"
 
+const OrderStatus = enumType({
+    name: 'OrderStatus',
+    members: ['REQUESTED', 'PARTNER_ACCEPTED', 'PARTNER_REJECTED', 'AWAITING_CLIENT_APPROVAL', 'CONFIRMED', 'PREPARING', 'READY', 'FULFILLMENT_STARTED', 'COMPLETED', 'CANCELLED'],
+})
+
+const OrderKind = enumType({ name: 'OrderKind', members: ['STANDARD', 'GIFT', 'DRIVER_REQUEST'] })
+const PricingMode = enumType({ name: 'PricingMode', members: ['FIXED', 'QUOTE_REQUIRED'] })
+
+const OrderStatusHistory = objectType({
+    name: 'OrderStatusHistory',
+    definition(t) {
+        t.nonNull.string('id')
+        t.nonNull.int('orderId')
+        t.field('from', { type: 'OrderStatus' })
+        t.nonNull.field('to', { type: 'OrderStatus' })
+        t.int('actorId')
+        t.string('reason')
+        t.nonNull.field('createdAt', { type: 'DateTime' })
+    },
+})
+
+const OrderQuotationLine = objectType({ name: 'OrderQuotationLine', definition(t) {
+    t.nonNull.string('id'); t.nonNull.int('orderItemId'); t.nonNull.string('name'); t.nonNull.int('quantity')
+    t.nonNull.float('unitPrice'); t.nonNull.float('total'); t.nonNull.int('sortOrder')
+} })
+
+const OrderQuotation = objectType({ name: 'OrderQuotation', definition(t) {
+    t.nonNull.string('id'); t.nonNull.int('orderId'); t.nonNull.field('status', { type: 'QuotationStatus' })
+    t.nonNull.float('subtotal'); t.nonNull.float('discount'); t.nonNull.float('total'); t.field('validUntil', { type: 'DateTime' })
+    t.string('note'); t.nonNull.int('version'); t.nonNull.field('createdAt', { type: 'DateTime' })
+    t.nonNull.list.nonNull.field('lines', { type: 'OrderQuotationLine' })
+} })
+
 const Order = objectType({
     name: 'Order',
     definition(t) {
         t.nonNull.int('id')
         t.field('date', { type: "DateTime" })
         t.string('source')
+        t.nonNull.field('status', { type: 'OrderStatus' })
+        t.nonNull.field('kind', { type: 'OrderKind' })
+        t.nonNull.field('pricingMode', { type: 'PricingMode' })
+        t.nonNull.int('version')
         t.string('walkInCustomerName')
         t.string('note')
         t.string('paymentMethod')
@@ -78,6 +115,19 @@ const Order = objectType({
                 })
             }
         })
+        t.nonNull.list.nonNull.field('statusHistory', {
+            type: 'OrderStatusHistory',
+            resolve: (parent, _args, ctx) => ctx.prisma.orderStatusHistory.findMany({
+                where: { orderId: parent.id },
+                orderBy: { createdAt: 'asc' },
+            }),
+        })
+        t.nonNull.list.nonNull.field('quotations', {
+            type: 'OrderQuotation',
+            resolve: (parent, _args, ctx) => ctx.prisma.orderQuotation.findMany({
+                where: { orderId: parent.id }, include: { lines: { orderBy: { sortOrder: 'asc' } } }, orderBy: { createdAt: 'desc' },
+            }),
+        })
     },
 })
 
@@ -90,6 +140,9 @@ const OrderItem = objectType({
         t.float('price')
         t.int('productId')
         t.int('orderId')
+        t.string('nameSnapshot')
+        t.string('variantSnapshot')
+        t.string('skuSnapshot')
         t.field('product', {
             type: 'ProductView',
             resolve: async (parent, _args, ctx) => {
@@ -112,6 +165,7 @@ const Delivery = objectType({
         t.int('orderId')
         t.int('driverId')
         t.int('addressId')
+        t.field('scheduledAt', { type: 'DateTime' })
     }
 })
 
@@ -303,4 +357,12 @@ const OrderItemInput = inputObjectType({
         t.int('productId')
     }
 })
-export default { AdminDispatchBoard, AdminDispatchDriver, AdminDispatchLine, AdminDispatchOrder, DriverRoute, DeliveryStatus, DeliveryType, Delivery, OrderDispatch, DispatchStatus, OrderItemInput, OrderInput, PartnerPosOrderInput, OrderResult, Order, OrderItem }
+const OrderQuotationLineInput = inputObjectType({
+    name: 'OrderQuotationLineInput',
+    definition(t) { t.nonNull.int('orderItemId'); t.nonNull.float('unitPrice') },
+})
+const OrderQuotationLinesInput = inputObjectType({
+    name: 'OrderQuotationLinesInput',
+    definition(t) { t.nonNull.list.nonNull.field('lines', { type: 'OrderQuotationLineInput' }) },
+})
+export default { OrderStatus, OrderKind, PricingMode, OrderStatusHistory, OrderQuotation, OrderQuotationLine, OrderQuotationLineInput, OrderQuotationLinesInput, AdminDispatchBoard, AdminDispatchDriver, AdminDispatchLine, AdminDispatchOrder, DriverRoute, DeliveryStatus, DeliveryType, Delivery, OrderDispatch, DispatchStatus, OrderItemInput, OrderInput, PartnerPosOrderInput, OrderResult, Order, OrderItem }

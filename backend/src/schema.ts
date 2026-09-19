@@ -24,6 +24,7 @@ import Capability from './schema/capability'
 import GiftStore from './schema/gift-store'
 import StoreNetwork from './schema/store-network'
 import DriverRequest from './schema/driver-request'
+import CatalogSubmission from './schema/catalog-submission'
 
 import { DateTimeResolver } from 'graphql-scalars'
 import { permissions } from './security/shield'
@@ -53,6 +54,7 @@ const schemaWithoutPermissions = makeSchema({
     GiftStore,
     StoreNetwork,
     DriverRequest,
+    CatalogSubmission,
     Driver,
     Address
   ],

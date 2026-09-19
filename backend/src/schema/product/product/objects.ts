@@ -44,7 +44,9 @@ const Product = objectType({
     name: 'Product',
     definition(t) {
         t.nonNull.int('id')
-        t.float('price')
+        t.float('price', {
+            resolve: parent => parent.priceOnRequest ? 0 : parent.price,
+        })
         t.float('costPrice')
         t.float('discount')
         t.boolean('available')
@@ -59,6 +61,7 @@ const Product = objectType({
         t.int('reorderThreshold')
         t.boolean('isVisibleInPos')
         t.boolean('onlineVisible')
+        t.boolean('priceOnRequest')
         t.boolean('isActive')
         t.string('customName')
         t.string('customDescription')
@@ -218,7 +221,9 @@ const ProductView = objectType({
                 return variant?.name_ar ?? null
             },
         })
-        t.float('price')
+        t.float('price', {
+            resolve: parent => parent.priceOnRequest ? 0 : parent.price,
+        })
         t.float('costPrice')
         t.float('discount')
         t.int('stock')
@@ -232,6 +237,7 @@ const ProductView = objectType({
         t.boolean('available')
         t.boolean('isVisibleInPos')
         t.boolean('onlineVisible')
+        t.boolean('priceOnRequest')
         t.boolean('isActive')
         t.string('customName')
         t.string('customDescription')
@@ -369,7 +375,9 @@ const ProductTemplatePartnerPreview = objectType({
 
         // Product fields
         t.nonNull.int('product_id');
-        t.nonNull.float('price');
+        t.nonNull.float('price', {
+            resolve: parent => parent.priceOnRequest ? 0 : parent.price,
+        });
         t.float('costPrice');
         t.nonNull.float('discount');
         t.nonNull.boolean('available');
@@ -383,6 +391,7 @@ const ProductTemplatePartnerPreview = objectType({
         t.nonNull.int('reorderThreshold');
         t.nonNull.boolean('isVisibleInPos');
         t.nonNull.boolean('onlineVisible');
+        t.nonNull.boolean('priceOnRequest');
         t.nonNull.boolean('isActive');
         t.string('customName');
         t.string('customDescription');

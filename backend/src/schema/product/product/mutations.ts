@@ -18,6 +18,15 @@ export const ImagesList = inputObjectType({
         t.nonNull.list.nonNull.string("images")
     },
 })
+
+async function publishPartnerCatalog(ctx: Context, partnerId: number) {
+    const stores = await ctx.prisma.store.findMany({
+        where: { partnerId, cloudSyncEnabled: true, status: 'ACTIVE' },
+        select: { id: true },
+    })
+    await Promise.all(stores.map((store) => publishStoreProducts(ctx.prisma, store.id)))
+}
+
 const ProductMutation = extendType({
     type: 'Mutation',
     definition(t) {
@@ -35,6 +44,7 @@ const ProductMutation = extendType({
                 reorderThreshold: intArg(),
                 isVisibleInPos: booleanArg(),
                 onlineVisible: booleanArg(),
+                priceOnRequest: booleanArg(),
                 isActive: booleanArg(),
                 customName: stringArg(),
                 customDescription: stringArg(),
@@ -45,10 +55,12 @@ const ProductMutation = extendType({
             },
             resolve: async (_parent, data: any, ctx: Context) => {
                 const userId = getUserId(ctx);
-                return createProduct(ctx.prisma, userId, {
+                const product = await createProduct(ctx.prisma, userId, {
                     ...data,
                     customImages: data.customImages?.images,
                 })
+                await publishPartnerCatalog(ctx, userId)
+                return product
             },
         })
 
@@ -58,7 +70,9 @@ const ProductMutation = extendType({
             },
             resolve: async (_parent, { data }: { data?: any }, ctx: Context) => {
                 const userId = getUserId(ctx)
-                return createManyProducts(ctx.prisma, userId, data ?? [])
+                const created = await createManyProducts(ctx.prisma, userId, data ?? [])
+                await publishPartnerCatalog(ctx, userId)
+                return created
             },
         })
         t.field('updateProduct', {
@@ -74,6 +88,7 @@ const ProductMutation = extendType({
                 reorderThreshold: intArg(),
                 isVisibleInPos: booleanArg(),
                 onlineVisible: booleanArg(),
+                priceOnRequest: booleanArg(),
                 isActive: booleanArg(),
                 customName: stringArg(),
                 customDescription: stringArg(),
@@ -88,11 +103,7 @@ const ProductMutation = extendType({
                     ...data,
                     customImages: data.customImages?.images,
                 })
-                const stores = await ctx.prisma.store.findMany({
-                    where: { partnerId: userId, cloudSyncEnabled: true, status: 'ACTIVE' },
-                    select: { id: true },
-                })
-                await Promise.all(stores.map((store) => publishStoreProducts(ctx.prisma, store.id)))
+                await publishPartnerCatalog(ctx, userId)
                 return updated
             },
         })
@@ -118,6 +129,7 @@ const ProductMutation = extendType({
                 const deletedProduct = await ctx.prisma.product.delete({
                     where: { id },
                 })
+                await publishPartnerCatalog(ctx, userId)
                 return deletedProduct
             },
         })
@@ -203,6 +215,7 @@ const InputProductVariant = inputObjectType({
         t.int("reorderThreshold")
         t.boolean("isVisibleInPos")
         t.boolean("onlineVisible")
+        t.boolean("priceOnRequest")
         t.boolean("isActive")
     },
 })

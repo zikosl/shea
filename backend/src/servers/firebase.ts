@@ -11,7 +11,21 @@ interface NotificationPayload {
   data?: Record<string, string>
   androidChannelId?: string
   sound?: string
+  strict?: boolean
 }
+
+export type NotificationResult = {
+  sent: number
+  permanentFailureTokens: string[]
+  transientFailureTokens: string[]
+}
+
+const permanentMessagingErrors = new Set([
+  'messaging/invalid-argument',
+  'messaging/invalid-registration-token',
+  'messaging/registration-token-not-registered',
+  'messaging/mismatched-credential',
+])
 
 function resolveServiceAccountPath() {
   const configuredPath = env.firebaseServiceAccountPath
@@ -52,8 +66,10 @@ const messaging = initializeMessaging()
 
 export async function sendNotification(payload: NotificationPayload) {
   const tokens = (Array.isArray(payload.tokens) ? payload.tokens : [payload.tokens]).filter(Boolean)
-  if (!messaging || tokens.length === 0) {
-    return
+  if (tokens.length === 0) return { sent: 0, permanentFailureTokens: [], transientFailureTokens: [] }
+  if (!messaging) {
+    if (payload.strict) throw new Error('PUSH_NOT_CONFIGURED')
+    return { sent: 0, permanentFailureTokens: [], transientFailureTokens: tokens }
   }
 
   const message: MulticastMessage = {
@@ -81,14 +97,18 @@ export async function sendNotification(payload: NotificationPayload) {
 
   try {
     const response = await messaging.sendEachForMulticast(message)
-    if (response.failureCount > 0) {
-      response.responses.forEach((result, index) => {
-        if (!result.success) {
-          console.error(`Failed token[${index}]`, result.error)
-        }
-      })
-    }
+    const permanentFailureTokens: string[] = []
+    const transientFailureTokens: string[] = []
+    response.responses.forEach((result, index) => {
+      if (result.success) return
+      const code = result.error?.code ?? 'messaging/unknown-error'
+      ;(permanentMessagingErrors.has(code) ? permanentFailureTokens : transientFailureTokens).push(tokens[index])
+      console.error(`Failed token[${index}]`, result.error)
+    })
+    return { sent: response.successCount, permanentFailureTokens, transientFailureTokens }
   } catch (error) {
     console.error('Error sending notification:', error)
+    if (payload.strict) throw error
+    return { sent: 0, permanentFailureTokens: [], transientFailureTokens: tokens }
   }
 }

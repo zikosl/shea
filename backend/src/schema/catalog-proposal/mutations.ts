@@ -3,6 +3,7 @@ import { arg, extendType, intArg, nonNull, stringArg } from 'nexus'
 import { GraphQLError } from 'graphql'
 import { Context } from '../../context'
 import { getUserId } from '../../utils'
+import { refreshCatalogSubmissionStatus } from '../../modules/catalog/submissions'
 
 async function assertProposalDependencies(ctx: Context, input: any) {
   const niche = await ctx.prisma.niche.findUnique({ where: { id: input.nicheId }, select: { id: true } })
@@ -164,6 +165,7 @@ const Mutation = extendType({
           } else {
             await tx.productTemplateRequest.updateMany({ where: { productTypeProposalId: id }, data: { product_type_id: resolvedId } })
           }
+          if (proposal.submissionId) await refreshCatalogSubmissionStatus(tx, proposal.submissionId)
           return reviewed
         })
       },
@@ -196,6 +198,7 @@ const Mutation = extendType({
           },
         })
         await resolveDependents(ctx, id, proposal.entityType, targetId)
+        if (proposal.submissionId) await refreshCatalogSubmissionStatus(ctx.prisma, proposal.submissionId)
         return reviewed
       },
     })
@@ -207,10 +210,12 @@ const Mutation = extendType({
         const proposal = await ctx.prisma.catalogProposal.findUnique({ where: { id } })
         if (!proposal) throw new GraphQLError('CATALOG_PROPOSAL_NOT_FOUND')
         if (proposal.status !== 'PENDING') throw new GraphQLError('CATALOG_PROPOSAL_ALREADY_REVIEWED')
-        return ctx.prisma.catalogProposal.update({
+        const reviewed = await ctx.prisma.catalogProposal.update({
           where: { id },
           data: { status: 'REJECTED', rejectionReason: rejectionReason.trim(), adminNote: adminNote ?? null, reviewedAt: new Date() },
         })
+        if (proposal.submissionId) await refreshCatalogSubmissionStatus(ctx.prisma, proposal.submissionId)
+        return reviewed
       },
     })
   },

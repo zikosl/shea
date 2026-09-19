@@ -9,11 +9,52 @@ import { sendNotification } from "../../servers/firebase"
 import { ensurePartnerPosIdentity } from "./pos"
 import { calculatePartnerFee } from "../../utils/partner-fees"
 import { ORDER_DELAY } from "../../constants"
+import { syncLegacyDeliveryTransition, transitionOrderStatus } from '../../modules/orders/workflow'
+import { createOrderQuotation, respondToOrderQuotation } from '../../modules/orders/quotes'
 // import { DeliveryStatus } from "../../types"
 
 const Mutation = extendType({
     type: 'Mutation',
     definition(t) {
+        t.nonNull.field('createOrderQuotation', {
+            type: 'OrderQuotation',
+            args: {
+                orderId: nonNull(intArg()),
+                expectedVersion: nonNull(intArg()),
+                validUntil: arg({ type: 'DateTime' }),
+                note: stringArg(),
+                lines: nonNull(arg({ type: 'OrderQuotationLinesInput' })),
+            },
+            resolve: (_parent, args, ctx: Context) => createOrderQuotation(ctx.prisma, getUserId(ctx), { ...args, lines: args.lines.lines }),
+        })
+        t.nonNull.field('respondToOrderQuotation', {
+            type: 'Order',
+            args: {
+                quotationId: nonNull(stringArg()),
+                accepted: nonNull(booleanArg()),
+                expectedOrderVersion: nonNull(intArg()),
+                expectedQuoteVersion: nonNull(intArg()),
+            },
+            resolve: (_parent, args, ctx: Context) => respondToOrderQuotation(ctx.prisma, getUserId(ctx), args),
+        })
+        t.field('transitionOrderStatus', {
+            type: 'Order',
+            args: {
+                id: nonNull(intArg()),
+                status: nonNull(arg({ type: 'OrderStatus' })),
+                expectedVersion: nonNull(intArg()),
+                reason: stringArg(),
+            },
+            resolve: (_parent, { id, status, expectedVersion, reason }, ctx: Context) =>
+                transitionOrderStatus(ctx.prisma, {
+                    orderId: id,
+                    actorId: getUserId(ctx),
+                    target: status,
+                    expectedVersion,
+                    reason,
+                }),
+        })
+
         t.field('createOrder', {
             type: 'Order',
             args: {
@@ -163,6 +204,7 @@ const Mutation = extendType({
                                 }
                             })
                         })
+                        await syncLegacyDeliveryTransition(ctx.prisma, { orderId: order.orderId!, actorId: userId, deliveryStatus: DeliveryStatus.PICKED })
                         await sendNotification({
                             tokens: order.order.driverRequest
                                 ? order.order.partner.user.pushTokens[0]?.token ?? ''
@@ -246,6 +288,7 @@ const Mutation = extendType({
                                 }
                             })
                         })
+                        await syncLegacyDeliveryTransition(ctx.prisma, { orderId: order.orderId!, actorId: userId, deliveryStatus: DeliveryStatus.DELIVERED })
                         if (order.order.driverRequest) {
                             await sendNotification({
                                 tokens: order.order.partner.user.pushTokens[0]?.token ?? '',
@@ -292,6 +335,7 @@ const Mutation = extendType({
                             userId: order.order.clientId
                         }
                     })
+                    await syncLegacyDeliveryTransition(ctx.prisma, { orderId: id, actorId: partnerId, deliveryStatus: status })
                     return order?.order
                 }
 
@@ -317,6 +361,7 @@ const Mutation = extendType({
                             userId: order.order.clientId
                         }
                     })
+                    await syncLegacyDeliveryTransition(ctx.prisma, { orderId: id, actorId: partnerId, deliveryStatus: status, reason: 'Rejected by partner' })
                     return order.order
                 }
 
@@ -342,11 +387,12 @@ const Mutation = extendType({
                             userId: order.order.clientId
                         }
                     })
+                    await syncLegacyDeliveryTransition(ctx.prisma, { orderId: id, actorId: partnerId, deliveryStatus: status })
                     return order.order
                 }
                 if (status == DeliveryStatus.READY) {
 
-                    const res = ctx.prisma.$transaction(async (tx) => {
+                    const res = await ctx.prisma.$transaction(async (tx) => {
                         const delivery = await tx.delivery.update({
                             where: {
                                 orderId: id
@@ -371,57 +417,33 @@ const Mutation = extendType({
                             });
                         }
                         if (delivery.type === DeliveryType.GROUPED) {
-                            const res = tx.prisma.$transaction(async (tx: Context) => {
-                                const schedules = await tx.partnerDeliverySchedule.findMany({
-                                    where: {
-                                        partnerId,
-                                        isActive: true
-                                    }
-                                })
-                                const schedule = pickSchedule(schedules)
+                            const schedules = await tx.partnerDeliverySchedule.findMany({
+                                where: { isActive: true },
+                            })
+                            const schedule = pickSchedule(schedules)
+                            if (!schedule) throw new GraphQLError('NO_ACTIVE_DELIVERY_SCHEDULE')
 
-                                if (!schedule)
-                                    throw 'No schedule yet'
+                            const scheduledAt = todayAt(schedule.time)
+                            let group = await tx.deliveryGroup.findFirst({
+                                where: { scheduledAt, status: 0 },
+                            })
+                            if (!group) {
+                                group = await tx.deliveryGroup.create({ data: { scheduledAt } })
+                            }
 
-                                const scheduledAt = todayAt(schedule.time)
-
-                                let group = await tx.deliveryGroup.findFirst({
-                                    where: {
-                                        partnerId,
-                                        scheduledAt,
-                                        status: 0 // OPEN
-                                    }
-                                })
-
-                                if (!group) {
-                                    group = await tx.deliveryGroup.create({
-                                        data: {
-                                            partnerId,
-                                            scheduledAt
-                                        }
-                                    })
-                                }
-
-
-                                await ctx.prisma.log.create({
-                                    data: {
-                                        title: `Order #${delivery.orderId} has been Accepted`,
-                                        body: `Order (ID: ${delivery.orderId}) has been accepted and scheduled for group delivery on ${scheduledAt}.`,
-                                        title_ar: `تم قبول الطلب رقم #${delivery.orderId}`,
-                                        body_ar: `تم قبول الطلب (رقم: ${delivery.orderId}) وجدولته للتوصيل الجماعي يوم ${scheduledAt}.`,
-                                        type: LogSatus.ORDER_UPDATE,
-                                        userId: delivery.order.clientId,
-                                    },
-                                });
-                                await tx.delivery.update({
-                                    where: {
-                                        id: delivery.id
-                                    },
-                                    date: {
-                                        deliveryGroupId: group.id,
-                                        scheduledAt
-                                    }
-                                })
+                            await tx.log.create({
+                                data: {
+                                    title: `Order #${delivery.orderId} is scheduled`,
+                                    body: `Order (ID: ${delivery.orderId}) is scheduled for grouped delivery on ${scheduledAt}.`,
+                                    title_ar: `تمت جدولة الطلب رقم #${delivery.orderId}`,
+                                    body_ar: `تمت جدولة الطلب (رقم: ${delivery.orderId}) للتوصيل الجماعي يوم ${scheduledAt}.`,
+                                    type: LogSatus.ORDER_UPDATE,
+                                    userId: delivery.order.clientId,
+                                },
+                            })
+                            await tx.delivery.update({
+                                where: { id: delivery.id },
+                                data: { deliveryGroupId: group.id, scheduledAt },
                             })
                         }
 
@@ -429,10 +451,11 @@ const Mutation = extendType({
                             await ctx.dispatchQueue.add('dispatch-order', {
                                 orderId: delivery.orderId,
                                 attempt: 1,
-                            });
+                            }, { jobId: `dispatch:${delivery.orderId}:1` });
                         }
                         return delivery.order
                     });
+                    await syncLegacyDeliveryTransition(ctx.prisma, { orderId: id, actorId: partnerId, deliveryStatus: status })
                     return res
                 }
                 if ([DeliveryStatus.ACCEPTED, DeliveryStatus.READY, DeliveryStatus.CANCELED, DeliveryStatus.DELIVERED].includes(status)) {
@@ -521,6 +544,7 @@ const Mutation = extendType({
                         where: { userId: partnerId },
                     })
                     const financials = calculatePartnerFee(saleSubtotal, partner)
+                    const completedAt = new Date()
                     const order = await tx.order.create({
                         data: {
                             partnerId,
@@ -531,18 +555,39 @@ const Mutation = extendType({
                             storeTax: 0,
                             discount: data.discount ?? 0,
                             ...financials,
+                            status: 'COMPLETED',
+                            kind: 'STANDARD',
+                            pricingMode: 'FIXED',
+                            acceptedAt: completedAt,
+                            readyAt: completedAt,
+                            completedAt,
                             source: "POS",
                             walkInCustomerName: data.customerName ?? null,
                             note: data.note ?? null,
                             paymentMethod: data.paymentMethod ?? null,
                             items: {
-                                create: data.items.map((item: any) => ({
-                                    productId: item.productId,
-                                    quantity: item.quantity,
-                                    price: item.price,
-                                })),
+                                create: data.items.map((item: any) => {
+                                    const product = products.find((entry: any) => entry.id === item.productId)
+                                    return {
+                                        productId: item.productId,
+                                        quantity: item.quantity,
+                                        price: item.price ?? product?.price ?? 0,
+                                        nameSnapshot: product?.customName?.trim() || product?.variant?.product?.name || `Product #${item.productId}`,
+                                        variantSnapshot: product?.variant?.name?.trim() || null,
+                                        skuSnapshot: product?.vendorSku?.trim() || product?.variant?.sku?.trim() || null,
+                                    }
+                                }),
                             },
                         },
+                    })
+                    await tx.orderStatusHistory.create({
+                        data: { orderId: order.id, to: 'COMPLETED', actorId: partnerId, reason: 'Completed at point of sale' },
+                    })
+                    await createOrderOutboxEvent(tx, order.id, 'COMPLETED', {
+                        clientId: identity.user.id,
+                        partnerId,
+                        actorId: partnerId,
+                        source: 'POS',
                     })
 
                     const paymentMethod = ['CASH', 'CARD', 'MIXED', 'OTHER'].includes(String(data.paymentMethod ?? '').toUpperCase())

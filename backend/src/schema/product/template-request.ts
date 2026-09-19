@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { arg, enumType, extendType, floatArg, inputObjectType, intArg, list, nonNull, objectType, stringArg } from 'nexus'
 import { getUserId } from '../../utils'
+import { refreshCatalogSubmissionStatus } from '../../modules/catalog/submissions'
 import { Context } from '../../context'
 
 export const ProductTemplateRequestStatusEnum = enumType({
@@ -266,12 +267,13 @@ export const ProductTemplateRequestMutation = extendType({
             where: { id: requestVariant.id },
             data: { resolvedVariantId: variant.id },
           })
-          await ctx.prisma.product.upsert({
+          const partnerProduct = await ctx.prisma.product.upsert({
             where: { partnerId_variantId: { partnerId: request.partnerId, variantId: variant.id } },
             create: {
               partnerId: request.partnerId,
               variantId: variant.id,
               price: requestVariant.price ?? 0,
+              priceOnRequest: requestVariant.price == null,
               costPrice: requestVariant.costPrice ?? 0,
               stock: requestVariant.stock ?? 0,
               reorderThreshold: requestVariant.reorderThreshold ?? 0,
@@ -282,9 +284,13 @@ export const ProductTemplateRequestMutation = extendType({
             },
             update: {},
           })
+          await ctx.prisma.provisionalProduct.updateMany({
+            where: { partnerId: request.partnerId, requestVariantId: requestVariant.id },
+            data: { canonicalProductId: partnerProduct.id, visibility: 'PUBLIC' },
+          })
         }
 
-        return ctx.prisma.productTemplateRequest.update({
+        const reviewed = await ctx.prisma.productTemplateRequest.update({
           where: { id },
           data: {
             status: 'APPROVED',
@@ -292,6 +298,8 @@ export const ProductTemplateRequestMutation = extendType({
             adminNote: adminNote ?? null,
           },
         })
+        if (request.submissionId) await refreshCatalogSubmissionStatus(ctx.prisma, request.submissionId)
+        return reviewed
       },
     })
 
@@ -302,8 +310,8 @@ export const ProductTemplateRequestMutation = extendType({
         rejectionReason: stringArg(),
         adminNote: stringArg(),
       },
-      resolve: (_parent, { id, rejectionReason, adminNote }, ctx: Context) => {
-        return ctx.prisma.productTemplateRequest.update({
+      resolve: async (_parent, { id, rejectionReason, adminNote }, ctx: Context) => {
+        const reviewed = await ctx.prisma.productTemplateRequest.update({
           where: { id },
           data: {
             status: 'REJECTED',
@@ -311,6 +319,8 @@ export const ProductTemplateRequestMutation = extendType({
             adminNote: adminNote ?? null,
           },
         })
+        if (reviewed.submissionId) await refreshCatalogSubmissionStatus(ctx.prisma, reviewed.submissionId)
+        return reviewed
       },
     })
 
@@ -351,12 +361,13 @@ export const ProductTemplateRequestMutation = extendType({
             where: { id: requestVariant.id },
             data: { resolvedVariantId: targetVariant.id },
           })
-          await ctx.prisma.product.upsert({
+          const partnerProduct = await ctx.prisma.product.upsert({
             where: { partnerId_variantId: { partnerId: request.partnerId, variantId: targetVariant.id } },
             create: {
               partnerId: request.partnerId,
               variantId: targetVariant.id,
               price: requestVariant.price ?? 0,
+              priceOnRequest: requestVariant.price == null,
               costPrice: requestVariant.costPrice ?? 0,
               stock: requestVariant.stock ?? 0,
               reorderThreshold: requestVariant.reorderThreshold ?? 0,
@@ -367,9 +378,13 @@ export const ProductTemplateRequestMutation = extendType({
             },
             update: {},
           })
+          await ctx.prisma.provisionalProduct.updateMany({
+            where: { partnerId: request.partnerId, requestVariantId: requestVariant.id },
+            data: { canonicalProductId: partnerProduct.id, visibility: 'PUBLIC' },
+          })
         }
 
-        return ctx.prisma.productTemplateRequest.update({
+        const reviewed = await ctx.prisma.productTemplateRequest.update({
           where: { id },
           data: {
             status: 'MERGED',
@@ -377,6 +392,8 @@ export const ProductTemplateRequestMutation = extendType({
             adminNote: adminNote ?? null,
           },
         })
+        if (request.submissionId) await refreshCatalogSubmissionStatus(ctx.prisma, request.submissionId)
+        return reviewed
       },
     })
   },

@@ -23,6 +23,10 @@ export const dispatchQueue = new Queue('dispatch-queue', {
     connection: redis,
 });
 
+export const workflowQueue = new Queue('workflow-queue', {
+    connection: redis,
+});
+
 
 // import { RedisPubSub } from 'graphql-redis-subscriptions';
 // import Redis from 'ioredis';

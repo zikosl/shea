@@ -16,6 +16,7 @@ export async function createProduct(
     reorderThreshold?: number | null
     isVisibleInPos?: boolean | null
     onlineVisible?: boolean | null
+    priceOnRequest?: boolean | null
     isActive?: boolean | null
     customName?: string | null
     customDescription?: string | null
@@ -38,6 +39,7 @@ export async function createProduct(
       reorderThreshold: input.reorderThreshold ?? undefined,
       isVisibleInPos: input.isVisibleInPos ?? undefined,
       onlineVisible: input.onlineVisible ?? undefined,
+      priceOnRequest: input.priceOnRequest ?? undefined,
       isActive: input.isActive ?? undefined,
       customName: input.customName ?? undefined,
       customDescription: input.customDescription ?? undefined,
@@ -90,6 +92,7 @@ export async function createManyProducts(
     reorderThreshold?: number | null
     isVisibleInPos?: boolean | null
     onlineVisible?: boolean | null
+    priceOnRequest?: boolean | null
     isActive?: boolean | null
   }>,
 ) {
@@ -109,6 +112,7 @@ export async function createManyProducts(
       reorderThreshold: product.reorderThreshold ?? 0,
       isVisibleInPos: product.isVisibleInPos ?? true,
       onlineVisible: product.onlineVisible ?? false,
+      priceOnRequest: product.priceOnRequest ?? false,
       isActive: product.isActive ?? true,
     })),
     skipDuplicates: true,
@@ -142,6 +146,7 @@ export async function updateProduct(
     reorderThreshold?: number | null
     isVisibleInPos?: boolean | null
     onlineVisible?: boolean | null
+    priceOnRequest?: boolean | null
     isActive?: boolean | null
     customName?: string | null
     customDescription?: string | null
@@ -177,6 +182,7 @@ export async function updateProduct(
         reorderThreshold: input.reorderThreshold ?? undefined,
         isVisibleInPos: input.isVisibleInPos ?? undefined,
         onlineVisible: input.onlineVisible ?? undefined,
+        priceOnRequest: input.priceOnRequest ?? undefined,
         isActive: input.isActive ?? undefined,
         customName: input.customName ?? undefined,
         customDescription: input.customDescription ?? undefined,

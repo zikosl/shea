@@ -14,6 +14,7 @@ import { redis } from './servers'
 import { createRequestBudget, rateLimitMiddleware } from './security/request-budget'
 import { queryBudgetRule } from './security/query-budget'
 import './jobs/queue'
+import './jobs/workflow'
 
 const app = express()
 app.disable('x-powered-by')
