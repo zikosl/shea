@@ -59,9 +59,11 @@ npm ci
 npm run dist:win
 ```
 
-The generated installer is in `installer/output`. Its configuration wizard asks for the PostgreSQL URL, cloud URL, Store ID, one-time token, and a POS pairing code. It then deploys Prisma migrations and installs an automatically starting Windows service.
+The generated installer is in `installer/output`. It includes a small native **Shea Store Gateway** control panel rather than a browser or Electron runtime. The control panel asks for the PostgreSQL URL, LAN port, cloud URL, Store ID, one-time token, and a POS pairing code. It tests connections, deploys Prisma migrations, installs an automatically starting Windows service, and creates a Private-network-only firewall rule.
 
-Only `DATABASE_URL` is stored in `gateway.env`. Store and cloud settings are stored separately in `gateway.config.json` under `%PROGRAMDATA%\Shea\Local Gateway`.
+The control panel remains available from the Start menu for changing URLs, generating a pairing code, starting or restarting the service, viewing filtered logs, and exporting a sanitized diagnostics bundle. It displays the exact LAN URL to enter in Shea POS.
+
+Only `DATABASE_URL` is stored in `gateway.env`. Store and cloud settings are stored separately in `gateway.config.json` under `%PROGRAMDATA%\Shea\Local Gateway`. The control panel restricts this directory to Local System and Administrators. Logs are structured, redact credentials, rotate at 10 MB, and expire after 14 days.
 
 For source development on macOS or Linux, run `npm run configure -- ...` from `gateways/local-gateway`. Development configuration is written to the ignored `gateways/local-gateway/.data` directory rather than `/etc`.
 

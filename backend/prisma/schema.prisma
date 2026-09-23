@@ -1414,6 +1414,7 @@ view ProductView {
   available           Boolean
   isVisibleInPos      Boolean
   onlineVisible       Boolean
+  priceOnRequest      Boolean
   isActive            Boolean
   customName          String?
   customDescription   String?
@@ -1473,6 +1474,7 @@ view ProductTemplatePartnerPreview {
   reorderThreshold  Int
   isVisibleInPos    Boolean
   onlineVisible     Boolean
+  priceOnRequest    Boolean
   isActive          Boolean
   customName        String?
   customDescription String?

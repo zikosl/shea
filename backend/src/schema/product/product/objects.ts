@@ -61,7 +61,9 @@ const Product = objectType({
         t.int('reorderThreshold')
         t.boolean('isVisibleInPos')
         t.boolean('onlineVisible')
-        t.boolean('priceOnRequest')
+        t.boolean('priceOnRequest', {
+            resolve: parent => parent.priceOnRequest ?? false,
+        })
         t.boolean('isActive')
         t.string('customName')
         t.string('customDescription')
@@ -237,7 +239,9 @@ const ProductView = objectType({
         t.boolean('available')
         t.boolean('isVisibleInPos')
         t.boolean('onlineVisible')
-        t.boolean('priceOnRequest')
+        t.boolean('priceOnRequest', {
+            resolve: parent => parent.priceOnRequest ?? false,
+        })
         t.boolean('isActive')
         t.string('customName')
         t.string('customDescription')
@@ -391,7 +395,9 @@ const ProductTemplatePartnerPreview = objectType({
         t.nonNull.int('reorderThreshold');
         t.nonNull.boolean('isVisibleInPos');
         t.nonNull.boolean('onlineVisible');
-        t.nonNull.boolean('priceOnRequest');
+        t.nonNull.boolean('priceOnRequest', {
+            resolve: parent => parent.priceOnRequest ?? false,
+        });
         t.nonNull.boolean('isActive');
         t.string('customName');
         t.string('customDescription');

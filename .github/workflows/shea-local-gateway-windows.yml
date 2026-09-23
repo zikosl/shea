@@ -24,6 +24,30 @@ jobs:
       - name: Build shared protocol
         working-directory: packages/pos-protocol
         run: npm ci && npm run build
+      - name: Validate Windows control panel scripts
+        working-directory: gateways/local-gateway
+        shell: pwsh
+        run: |
+          $failed = $false
+          Get-ChildItem installer -Filter *.ps1 | ForEach-Object {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              $_.FullName,
+              [ref]$tokens,
+              [ref]$errors
+            ) | Out-Null
+
+            if ($errors.Count -gt 0) {
+              Write-Error "PowerShell syntax errors in $($_.Name):"
+              $errors | ForEach-Object { Write-Error $_.Message }
+              $failed = $true
+            }
+          }
+
+          if ($failed) {
+            exit 1
+          }
       - name: Build Windows installer
         working-directory: gateways/local-gateway
         run: npm ci && npm run dist:win

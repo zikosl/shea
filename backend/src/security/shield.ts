@@ -182,7 +182,7 @@ export const permissions = shield(
       ...publicFields('product_template_id', 'product_type_id', 'category_id', 'brand_id'),
     },
     ProductViewResult: publicFields('products', 'totalProducts'),
-    ProductTemplatePartnerPreview: publicFields('product_template_id', 'product_id', 'partnerId', 'name', 'name_ar', 'description', 'description_ar', 'price', 'discount', 'stock', 'trackInventory', 'available', 'brand_id', 'category_id', 'variantId', 'variant_name', 'variant_name_ar', 'variant_sku', 'product_type_id', 'image', 'images', 'products', 'isActive', 'onlineVisible'),
+    ProductTemplatePartnerPreview: publicFields('product_template_id', 'product_id', 'partnerId', 'name', 'name_ar', 'description', 'description_ar', 'price', 'priceOnRequest', 'discount', 'stock', 'trackInventory', 'available', 'brand_id', 'category_id', 'variantId', 'variant_name', 'variant_name_ar', 'variant_sku', 'product_type_id', 'image', 'images', 'products', 'isActive', 'onlineVisible'),
     ProductTemplatePartnerPreviewResult: publicFields('productPartners', 'totalProductPartners'),
     ProductImage: publicFields('id', 'url', 'altText', 'variantId', 'product_template_id'),
     AuthPayload: {

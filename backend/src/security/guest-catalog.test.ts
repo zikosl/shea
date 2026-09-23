@@ -23,11 +23,12 @@ test('guests can read niches and their translated names', async () => {
   assert.equal((result.data?.findManyNiches as any).niches[0].name, 'Perfumes')
 })
 
-test('guests can read catalog cards, images and product variants', async () => {
-  const result = await run('{ findManyProductPartners(page:1,limit:10) { totalProductPartners productPartners { product_id name price trackInventory images { url } products { id name price stock trackInventory } } } }', {
-    findManyProductPartners: () => ({ totalProductPartners: 1, productPartners: [{ product_id: 7, name: 'Perfume', price: 200, trackInventory: false, images: [{ url: '/image.jpg' }], products: [{ id: 7, name: '50ml', price: 200, stock: 0, trackInventory: false }] }] }),
+test('guests can read catalog cards, pricing mode, images and product variants', async () => {
+  const result = await run('{ findManyProductPartners(page:1,limit:10) { totalProductPartners productPartners { product_id name price priceOnRequest trackInventory images { url } products { id name price priceOnRequest stock trackInventory } } } }', {
+    findManyProductPartners: () => ({ totalProductPartners: 1, productPartners: [{ product_id: 7, name: 'Perfume', price: 0, priceOnRequest: true, trackInventory: false, images: [{ url: '/image.jpg' }], products: [{ id: 7, name: '50ml', price: 0, priceOnRequest: true, stock: 0, trackInventory: false }] }] }),
   })
   assert.equal(result.errors, undefined)
+  assert.equal((result.data?.findManyProductPartners as any).productPartners[0].priceOnRequest, true)
 })
 
 test('guests can open a product but cannot read its internal costs', async () => {
