@@ -23,12 +23,13 @@ test('guests can read niches and their translated names', async () => {
   assert.equal((result.data?.findManyNiches as any).niches[0].name, 'Perfumes')
 })
 
-test('guests can read catalog cards, pricing mode, images and product variants', async () => {
-  const result = await run('{ findManyProductPartners(page:1,limit:10) { totalProductPartners productPartners { product_id name price priceOnRequest trackInventory images { url } products { id name price priceOnRequest stock trackInventory } } } }', {
-    findManyProductPartners: () => ({ totalProductPartners: 1, productPartners: [{ product_id: 7, name: 'Perfume', price: 0, priceOnRequest: true, trackInventory: false, images: [{ url: '/image.jpg' }], products: [{ id: 7, name: '50ml', price: 0, priceOnRequest: true, stock: 0, trackInventory: false }] }] }),
+test('guests can read catalog cards, store identity, pricing mode, images and product variants', async () => {
+  const result = await run('{ findManyProductPartners(page:1,limit:10) { totalProductPartners productPartners { product_id name price priceOnRequest trackInventory partner { id companyName avatar } images { url } products { id name price priceOnRequest stock trackInventory } } } }', {
+    findManyProductPartners: () => ({ totalProductPartners: 1, productPartners: [{ product_id: 7, name: 'Perfume', price: 0, priceOnRequest: true, trackInventory: false, partner: { id: 2, companyName: 'Shea Store', avatar: '/store.jpg' }, images: [{ url: '/image.jpg' }], products: [{ id: 7, name: '50ml', price: 0, priceOnRequest: true, stock: 0, trackInventory: false }] }] }),
   })
   assert.equal(result.errors, undefined)
   assert.equal((result.data?.findManyProductPartners as any).productPartners[0].priceOnRequest, true)
+  assert.equal((result.data?.findManyProductPartners as any).productPartners[0].partner.companyName, 'Shea Store')
 })
 
 test('guests can open a product but cannot read its internal costs', async () => {

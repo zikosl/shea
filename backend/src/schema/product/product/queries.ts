@@ -4,6 +4,15 @@ import { getOptionalUserId } from "../../../utils"
 import { Context } from "../../../context"
 import { partnerUserIdsWithCapability } from '../../../modules/capabilities/service'
 
+async function attachCatalogPartners(ctx: Context, products: Array<Record<string, unknown>>) {
+    const partnerIds = [...new Set(products.map(product => Number(product.partnerId)).filter(Number.isFinite))]
+    if (partnerIds.length === 0) return products
+
+    const partners = await ctx.prisma.partner.findMany({ where: { userId: { in: partnerIds } } })
+    const partnersByUserId = new Map(partners.map(partner => [partner.userId, partner]))
+    return products.map(product => ({ ...product, partner: partnersByUserId.get(Number(product.partnerId)) ?? null }))
+}
+
 export const ProductQuery = extendType({
     type: 'Query',
     definition(t) {
@@ -26,12 +35,15 @@ export const ProductQuery = extendType({
                 partnerId: nonNull(intArg()),
             },
             resolve: async (_parent, { id, partnerId }, ctx: Context) => {
-                return ctx.prisma.productTemplatePartnerPreview.findFirst({
+                const product = await ctx.prisma.productTemplatePartnerPreview.findFirst({
                     where: {
                         product_template_id: id, partnerId,
                         ...(!getOptionalUserId(ctx) ? { isActive: true } : {}),
                     },
                 })
+                if (!product) return null
+                const [result] = await attachCatalogPartners(ctx, [product])
+                return result
             },
         })
 
@@ -194,9 +206,10 @@ export const ProductQuery = extendType({
                         product_template_id: order
                     }
                 const productPartners = await ctx.prisma.productTemplatePartnerPreview.findMany(args);
+                const productPartnersWithStores = await attachCatalogPartners(ctx, productPartners);
 
                 return {
-                    productPartners,
+                    productPartners: productPartnersWithStores,
                     totalProductPartners,
                 };
             },

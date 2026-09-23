@@ -1156,6 +1156,7 @@ type ProductTemplatePartnerPreview {
   name_ar: String!
   notes: String
   onlineVisible: Boolean!
+  partner: Partner
   partnerId: Int!
   price: Float!
   priceOnRequest: Boolean!

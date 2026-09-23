@@ -351,6 +351,14 @@ const ProductTemplatePartnerPreview = objectType({
         // Composite identity (logical ID, not GraphQL ID)
         t.nonNull.int('product_template_id');
         t.nonNull.int('partnerId');
+        t.field('partner', {
+            type: 'Partner',
+            resolve: async (parent, _args, ctx) => {
+                const attachedPartner = (parent as typeof parent & { partner?: unknown }).partner
+                if (attachedPartner) return attachedPartner
+                return ctx.prisma.partner.findUnique({ where: { userId: parent.partnerId } })
+            },
+        });
 
         // ProductTemplate fields
         t.nonNull.string('name');
