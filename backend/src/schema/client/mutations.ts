@@ -33,9 +33,27 @@ const Mutation = extendType({
       args: {
         phone: nonNull(stringArg()),
         code: nonNull(stringArg()),
+        deviceKey: stringArg(),
+        deviceName: stringArg(),
+        platform: stringArg(),
+        appVersion: stringArg(),
       },
-      resolve: async (_parent, { phone, code }, context: Context) => {
-        return verifyOtp(context.prisma, phone, code)
+      resolve: async (_parent, { phone, code, deviceKey, deviceName, platform, appVersion }, context: Context) => {
+        const headers = context.req.headers
+        const readHeader = (name: string) => {
+          if (!headers) return undefined
+          if ('get' in headers && typeof headers.get === 'function') return headers.get(name) ?? undefined
+          const value = (headers as Record<string, string | string[] | undefined>)[name.toLowerCase()]
+          return Array.isArray(value) ? value[0] : value
+        }
+        return verifyOtp(context.prisma, phone, code, {
+          deviceKey,
+          deviceName,
+          platform,
+          appVersion,
+          userAgent: readHeader('user-agent'),
+          ipAddress: readHeader('x-forwarded-for')?.split(',')[0]?.trim() || readHeader('x-real-ip'),
+        })
       },
     })
 

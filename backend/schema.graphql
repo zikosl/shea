@@ -2,6 +2,18 @@
 ### Do not make changes to this file directly
 
 
+type AccountSession {
+  appVersion: String
+  createdAt: DateTime!
+  deviceName: String
+  expiresAt: DateTime!
+  id: String!
+  ipAddress: String
+  lastSeenAt: DateTime!
+  platform: String
+  userAgent: String
+}
+
 type Address {
   address: String
   id: Int!
@@ -648,7 +660,7 @@ type Mutation {
   deleteVariant(id: Int!): Variant
   deliverOrder(id: Int!): OrderDispatch
   driverOrder(id: Int!, status: DispatchStatus!): OrderDispatch
-  logout: Boolean
+  logout(tokenId: String): Boolean
   mergeCatalogProposal(adminNote: String, id: String!, targetId: Int!): CatalogProposal
   mergeProductTemplateRequest(adminNote: String, id: Int!, targetTemplateId: Int!): ProductTemplateRequest
   openCashSession(deviceId: String, note: String, openingAmount: Float): CashSession
@@ -669,12 +681,14 @@ type Mutation {
   resetPartnerAccessCode(id: Int!): Boolean!
   respondToGiftQuotation(accept: Boolean!, addressId: Int, customOrderId: String!): CustomOrder!
   respondToOrderQuotation(accepted: Boolean!, expectedOrderVersion: Int!, expectedQuoteVersion: Int!, quotationId: String!): Order!
+  revokeOtherSessions(currentTokenId: String!): Boolean!
+  revokeSession(tokenId: String!): Boolean!
   revokeStoreTerminal(terminalId: String!): StoreTerminal!
   sendOtp(phone: String!): Boolean
   setNicheCapability(capability: CapabilityCode!, enabled: Boolean!, nicheId: Int!): NicheCapability
   setPartnerCapabilityOverride(capability: CapabilityCode!, effect: CapabilityOverrideEffect, partnerId: Int!): PartnerCapabilityOverride
   setStoreDeploymentMode(mode: StoreDeploymentMode!, storeId: String!): Store!
-  signIn(email: String!, password: String!): AuthPayload
+  signIn(appVersion: String, deviceKey: String, deviceName: String, email: String!, password: String!, platform: String): AuthPayload
   submitCatalogProposal(categoryId: Int, description: String, deviceId: String, entityType: CatalogProposalEntityType!, image: String, localId: String!, name: String!, name_ar: String, nicheId: Int!, parentProposalId: String): CatalogProposal
   submitProductTemplateRequest(brand_id: Int, categoryProposalId: String, category_id: Int, description: String, images: ImagesList, name: String!, name_ar: String, posDeviceId: String, posLocalId: String, productTypeProposalId: String, product_type_id: Int, variants: [ProductTemplateRequestVariantInput]): ProductTemplateRequest
   transitionGiftOrder(expectedVersion: Int!, id: String!, status: CustomOrderStatus!): CustomOrder!
@@ -698,7 +712,7 @@ type Mutation {
   uploadFile(file: File!): FileUploadResponse
   upsertPricing(name: PricingName!, price: Int!): Pricing
   verifyClientPhoneChange(code: String!, phone: String!): AuthPayload
-  verifyOtp(code: String!, phone: String!): AuthPayload
+  verifyOtp(appVersion: String, code: String!, deviceKey: String, deviceName: String, phone: String!, platform: String): AuthPayload
 }
 
 type Niche {
@@ -1421,6 +1435,7 @@ type Query {
   myCatalogSubmissions(status: CatalogSubmissionStatus): [CatalogSubmission!]!
   myPartnerProfile: Partner!
   myProvisionalProducts: [ProvisionalProduct!]!
+  mySessions: [AccountSession!]!
   myStores: [Store!]!
   nicheCapabilityDefaults(nicheId: Int): [NicheCapability!]!
   partnerCapabilityOverrides(partnerId: Int): [PartnerCapabilityOverride!]!

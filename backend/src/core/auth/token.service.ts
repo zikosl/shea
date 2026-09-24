@@ -4,13 +4,14 @@ import { env } from '../config/env'
 
 export interface TokenPayload {
   sub: string
+  sid?: string
 }
 
 export const getAccessExpiry = () => dayjs().add(1, 'day').toDate()
 export const getRefreshExpiry = () => dayjs().add(30, 'day').toDate()
 
-export function signAccessToken(sub: number, user: unknown) {
-  return sign({ sub, user, isSecondFactorAuthenticated: false }, env.jwtAccessSecret, {
+export function signAccessToken(sub: number, user: unknown, sessionId?: string) {
+  return sign({ sub, sid: sessionId, user, isSecondFactorAuthenticated: false }, env.jwtAccessSecret, {
     expiresIn: '1d',
   })
 }

@@ -295,9 +295,20 @@ model Token {
   userId       Int
   refreshToken String
   expiresAt    DateTime
+  deviceKey    String?
+  deviceName   String?
+  platform     String?
+  appVersion   String?
+  ipAddress    String?
+  userAgent    String?
+  lastSeenAt   DateTime @default(now())
+  revokedAt    DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt, expiresAt])
+  @@index([userId, deviceKey])
 }
 
 model Client {

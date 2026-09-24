@@ -31,6 +31,21 @@ export const AuthPayload = objectType({
     },
 });
 
+export const AccountSession = objectType({
+    name: 'AccountSession',
+    definition(t) {
+        t.nonNull.string('id')
+        t.string('deviceName')
+        t.string('platform')
+        t.string('appVersion')
+        t.string('ipAddress')
+        t.string('userAgent')
+        t.nonNull.field('createdAt', { type: 'DateTime' })
+        t.nonNull.field('lastSeenAt', { type: 'DateTime' })
+        t.nonNull.field('expiresAt', { type: 'DateTime' })
+    },
+});
+
 // Role enum
 export const Role = enumType({
     name: 'Role',
@@ -151,6 +166,7 @@ export default {
     Partner,
     Driver,
     AuthPayload,
+    AccountSession,
     User,
     Role,
     ThemePreference

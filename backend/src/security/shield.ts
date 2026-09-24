@@ -1,11 +1,22 @@
 import { allow, rule, shield } from 'graphql-shield'
 import { getUserId } from '../utils'
 import { createForbiddenError, createUnauthorizedError } from '../core/errors/app-error'
+import { getOptionalSessionIdFromRequest } from '../core/auth/current-user'
+
+async function hasActiveSession(ctx: any, userId: number) {
+  const sessionId = getOptionalSessionIdFromRequest(ctx.req)
+  // Backward compatibility for access tokens issued before session binding.
+  if (!sessionId) return true
+  return Boolean(await ctx.prisma.token.findFirst({
+    where: { id: sessionId, userId, revokedAt: null, expiresAt: { gt: new Date() } },
+    select: { id: true },
+  }))
+}
 
 const isAuthenticated = rule({ cache: 'contextual' })(async (_parent, _args, ctx) => {
   try {
-    getUserId(ctx)
-    return true
+    const userId = getUserId(ctx)
+    return await hasActiveSession(ctx, userId) || createUnauthorizedError('SESSION_REVOKED')
   } catch (error) {
     return createUnauthorizedError('EXPIRED TOKEN')
   }
@@ -15,6 +26,7 @@ const hasRole = (role: 'ADMIN' | 'CLIENT' | 'PARTNER' | 'DRIVER') =>
   rule({ cache: 'contextual' })(async (_parent, _args, ctx) => {
     try {
       const id = getUserId(ctx)
+      if (!(await hasActiveSession(ctx, id))) return createUnauthorizedError('SESSION_REVOKED')
       const user = await ctx.prisma.user.findUnique({
         where: { id },
         select: { role: true },

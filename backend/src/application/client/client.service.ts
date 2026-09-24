@@ -1,6 +1,6 @@
 import { PrismaClient, ThemePreference } from '@prisma/client'
 import { createBadRequestError, createNotFoundError } from '../../core/errors/app-error'
-import { createSession } from '../auth/auth.service'
+import { createSession, type SessionMetadata } from '../auth/auth.service'
 import { sendOtpViaPhoneServer } from '../../utils/phone'
 import { env } from '../../core/config/env'
 import { promises as fs } from 'node:fs'
@@ -99,7 +99,7 @@ export async function sendOtp(prisma: PrismaClient, phone: string) {
   return true
 }
 
-export async function verifyOtp(prisma: PrismaClient, phone: string, code: string) {
+export async function verifyOtp(prisma: PrismaClient, phone: string, code: string, metadata: SessionMetadata = {}) {
   if (isAppReviewOtp(phone, code)) {
     const expiresAt = new Date(Date.now() + 3 * 60 * 1000)
 
@@ -150,7 +150,7 @@ export async function verifyOtp(prisma: PrismaClient, phone: string, code: strin
     create: { userId: user.id },
   })
 
-  return createSession(user, prisma)
+  return createSession(user, prisma, metadata)
 }
 
 export async function requestClientPhoneChange(

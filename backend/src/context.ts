@@ -6,6 +6,7 @@ interface RequestLike {
   headers?:
     | {
         authorization?: string
+        [key: string]: string | string[] | undefined
       }
     | Headers
 }

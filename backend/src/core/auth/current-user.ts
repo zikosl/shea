@@ -52,6 +52,12 @@ export function getRequiredUserIdFromRequest(req: { headers?: RequestHeaders }) 
   return userId
 }
 
+export function getOptionalSessionIdFromRequest(req: { headers?: RequestHeaders }) {
+  const token = getBearerToken(getAuthorizationHeader(req.headers))
+  if (!token) return undefined
+  return verifyAccessToken(token).sid
+}
+
 export function getUserIdFromRefreshToken(token: string) {
   const payload = verifyRefreshToken(token)
   return Number(payload.sub)
