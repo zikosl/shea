@@ -36,13 +36,23 @@ export const Query = extendType({
             args: {
                 search: stringArg(),
                 niche_id: intArg(),
+                partnerId: intArg(),
                 page: nonNull(intArg()),
                 limit: nonNull(intArg()),
                 isFull: booleanArg(),
             },
-            resolve: async (_parent, { search, niche_id, page, limit, isFull = false }, ctx: Context) => {
+            resolve: async (_parent, { search, niche_id, partnerId, page, limit, isFull = false }, ctx: Context) => {
                 const where: Prisma.BrandWhereInput = {
                     ...(niche_id ? { niche_id } : {}),
+                    ...(partnerId ? {
+                        productTemplates: {
+                            some: {
+                                variants: {
+                                    some: { products: { some: { partnerId, isActive: true, onlineVisible: true } } },
+                                },
+                            },
+                        },
+                    } : {}),
                     ...(search
                         ? {
                             OR: [

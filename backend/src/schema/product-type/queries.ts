@@ -23,16 +23,18 @@ export const Query = extendType({
                 niche_id: intArg(),
                 category_id: intArg(),
                 brand_id: intArg(),
+                partnerId: intArg(),
                 search: stringArg(),
                 page: nonNull(intArg()),
                 limit: nonNull(intArg()),
                 isFull: booleanArg(),
             },
             resolve: async (_parent, args, ctx: Context) => {
-                const { niche_id, category_id, brand_id, search, page, limit, isFull = false } = args as {
+                const { niche_id, category_id, brand_id, partnerId, search, page, limit, isFull = false } = args as {
                     niche_id?: number | null;
                     category_id?: number | null;
                     brand_id?: number | null;
+                    partnerId?: number | null;
                     search?: string | null;
                     page: number;
                     limit: number;
@@ -53,8 +55,17 @@ export const Query = extendType({
                 if (category_id) {
                     where.category_id = category_id
                 }
-                if (brand_id) {
-                    where.products = { some: { brand_id } }
+                if (brand_id || partnerId) {
+                    where.products = {
+                        some: {
+                            ...(brand_id ? { brand_id } : {}),
+                            ...(partnerId ? {
+                                variants: {
+                                    some: { products: { some: { partnerId, isActive: true, onlineVisible: true } } },
+                                },
+                            } : {}),
+                        },
+                    }
                 }
                 const findManyArgs: Prisma.ProductTypeFindManyArgs = isFull ? { where } : {
                     where,

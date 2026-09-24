@@ -26,15 +26,25 @@ export const Query = extendType({
             type: 'CategoryResult',
             args: {
                 niche_id: intArg(),
+                partnerId: intArg(),
                 search: stringArg(),
                 page: nonNull(intArg()),
                 limit: nonNull(intArg()),
                 isFull: booleanArg(),
             },
-            resolve: async (_parent, { search, page, limit, isFull = false, niche_id }, ctx: Context) => {
+            resolve: async (_parent, { search, page, limit, isFull = false, niche_id, partnerId }, ctx: Context) => {
 
                 const where: Prisma.CategoryWhereInput = {
                     ...(niche_id ? { niche_id } : {}),
+                    ...(partnerId ? {
+                        productTemplates: {
+                            some: {
+                                variants: {
+                                    some: { products: { some: { partnerId, isActive: true, onlineVisible: true } } },
+                                },
+                            },
+                        },
+                    } : {}),
                     ...(search
                         ? {
                             OR: [

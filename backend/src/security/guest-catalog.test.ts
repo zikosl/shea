@@ -23,6 +23,22 @@ test('guests can read niches and their translated names', async () => {
   assert.equal((result.data?.findManyNiches as any).niches[0].name, 'Perfumes')
 })
 
+test('guests can scope catalog filters to a store', async () => {
+  const result = await run(`{
+    categories: findManyCategories(partnerId: 12, page: 1, limit: 10) { totalCategories }
+    brands: findManyBrands(partnerId: 12, page: 1, limit: 10) { totalBrands }
+    productTypes: findManyProductTypes(partnerId: 12, category_id: 4, page: 1, limit: 10) { totalProductTypes }
+  }`, {
+    findManyCategories: ({ partnerId }: { partnerId: number }) => ({ totalCategories: partnerId === 12 ? 1 : 0, categories: [] }),
+    findManyBrands: ({ partnerId }: { partnerId: number }) => ({ totalBrands: partnerId === 12 ? 1 : 0, brands: [] }),
+    findManyProductTypes: ({ partnerId }: { partnerId: number }) => ({ totalProductTypes: partnerId === 12 ? 1 : 0, productTypes: [] }),
+  })
+  assert.equal(result.errors, undefined)
+  assert.equal((result.data?.categories as any).totalCategories, 1)
+  assert.equal((result.data?.brands as any).totalBrands, 1)
+  assert.equal((result.data?.productTypes as any).totalProductTypes, 1)
+})
+
 test('guests can read catalog cards, store identity, pricing mode, images and product variants', async () => {
   const result = await run('{ findManyProductPartners(page:1,limit:10) { totalProductPartners productPartners { product_id name price priceOnRequest trackInventory partner { id companyName avatar } images { url } products { id name price priceOnRequest stock trackInventory } } } }', {
     findManyProductPartners: () => ({ totalProductPartners: 1, productPartners: [{ product_id: 7, name: 'Perfume', price: 0, priceOnRequest: true, trackInventory: false, partner: { id: 2, companyName: 'Shea Store', avatar: '/store.jpg' }, images: [{ url: '/image.jpg' }], products: [{ id: 7, name: '50ml', price: 0, priceOnRequest: true, stock: 0, trackInventory: false }] }] }),
