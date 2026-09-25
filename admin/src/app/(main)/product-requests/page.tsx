@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { resolvePublicAssetUrl } from "@/constant";
 import { getCatalogFilterOptions } from "@/lib/catalog-filter-options";
 
-import { approveRequest, getProductTemplateRequests, mergeRequest, rejectRequest } from "./actions";
+import { approveRequest, getProductTemplateMergeCandidates, getProductTemplateRequests, mergeRequest, rejectRequest } from "./actions";
 
 export const metadata = {
   title: "Dashboard: Product Requests",
@@ -20,7 +20,7 @@ type SearchParams = { search?: string; niche_id?: string; category_id?: string; 
 export default async function ProductRequestsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const params = await searchParams;
   const numberParam = (value?: string) => value && Number.isInteger(Number(value)) ? Number(value) : undefined;
-  const [result, options] = await Promise.all([
+  const [result, options, mergeCandidates] = await Promise.all([
     getProductTemplateRequests({
       search: params.search?.trim() || undefined,
       niche_id: numberParam(params.niche_id),
@@ -28,6 +28,7 @@ export default async function ProductRequestsPage({ searchParams }: { searchPara
       product_type_id: numberParam(params.product_type_id),
     }),
     getCatalogFilterOptions(),
+    getProductTemplateMergeCandidates(),
   ]);
   const { requests, totalRequests } = result;
 
@@ -104,6 +105,9 @@ export default async function ProductRequestsPage({ searchParams }: { searchPara
           <div className="grid gap-4">
             {requests.map((request) => {
             const image = resolvePublicAssetUrl(request.images?.[0] || request.variants?.find((variant) => variant.image)?.image);
+            const scopedCandidates = mergeCandidates
+              .filter((candidate) => !request.category?.id || candidate.category_id === request.category.id)
+              .slice(0, 100);
 
             return (
               <Card key={request.id} className="overflow-hidden">
@@ -165,10 +169,15 @@ export default async function ProductRequestsPage({ searchParams }: { searchPara
                         Reject
                       </Button>
                     </form>
-                    <form action={mergeRequest} className="flex gap-2">
+                    <form action={mergeRequest} className="grid gap-2">
                       <input type="hidden" name="id" value={request.id} />
-                      <input name="targetTemplateId" type="number" min="1" required placeholder="Template ID" className="h-10 min-w-0 flex-1 rounded-md border bg-background px-3 text-sm" />
-                      <Button variant="outline" type="submit">Merge</Button>
+                      <select name="targetTemplateId" required className="h-10 min-w-0 rounded-md border bg-background px-3 text-sm">
+                        <option value="">Choose matching product</option>
+                        {scopedCandidates.map((candidate) => (
+                          <option key={candidate.id} value={candidate.id}>{candidate.name}{candidate.name_ar ? ` / ${candidate.name_ar}` : ""}</option>
+                        ))}
+                      </select>
+                      <Button variant="outline" type="submit" disabled={!scopedCandidates.length}>Merge into selected</Button>
                     </form>
                   </div>
                 </CardContent>

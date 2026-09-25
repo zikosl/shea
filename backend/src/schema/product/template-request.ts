@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { randomUUID } from 'node:crypto'
 import { arg, enumType, extendType, floatArg, inputObjectType, intArg, list, nonNull, objectType, stringArg } from 'nexus'
 import { getUserId } from '../../utils'
 import { refreshCatalogSubmissionStatus } from '../../modules/catalog/submissions'
@@ -176,15 +177,29 @@ export const ProductTemplateRequestMutation = extendType({
           }
         }
 
-        const submittedVariants = data.variants?.length ? data.variants : [{ name: 'Default', tags: [] }]
+        const images = Array.from(new Set((data.images?.images ?? []).map((image: string) => image.trim()).filter(Boolean)))
+        if (!images.length) throw new Error('PRODUCT_IMAGE_REQUIRED')
+        const requestName = data.name.trim()
+        if (requestName.length < 2) throw new Error('PRODUCT_NAME_REQUIRED')
+
+        const submittedVariants = data.variants?.length ? data.variants : []
+        if (!submittedVariants.length) throw new Error('PRODUCT_VARIANT_REQUIRED')
         const variants = submittedVariants.map((variant: any) => {
           const name = variant?.name?.trim() || null
           const tags = Array.from(new Set((variant?.tags ?? []).map((tag: string) => tag.trim()).filter(Boolean)))
-          if (!name && !tags.length) throw new Error('VARIANT_NAME_OR_TAG_REQUIRED')
+          if (!name) throw new Error('VARIANT_NAME_REQUIRED')
+          if (!tags.length) throw new Error('VARIANT_TAG_REQUIRED')
+          const generatedSkuBase = [requestName, ...tags]
+            .join('-')
+            .normalize('NFKD')
+            .toUpperCase()
+            .replace(/[^\p{L}\p{N}]+/gu, '-')
+            .replace(/^-|-$/g, '')
+            .slice(0, 72) || 'VARIANT'
           return {
             name,
             description: variant?.description?.trim() || null,
-            sku: variant?.sku?.trim() || null,
+            sku: variant?.sku?.trim() || `${generatedSkuBase}-${randomUUID().slice(0, 7).toUpperCase()}`,
             image: variant?.image?.trim() || null,
             tags,
             price: variant?.price ?? null,
@@ -195,12 +210,14 @@ export const ProductTemplateRequestMutation = extendType({
             localId: variant?.localId?.trim() || null,
           }
         })
+        const submittedSkus = variants.map((variant) => variant.sku)
+        if (new Set(submittedSkus).size !== submittedSkus.length) throw new Error('DUPLICATE_VARIANT_SKU')
         return ctx.prisma.productTemplateRequest.create({
           data: {
-            name: data.name.trim(),
+            name: requestName,
             name_ar: data.name_ar?.trim() ?? '',
             description: data.description?.trim() ?? '',
-            images: data.images?.images ?? [],
+            images,
             category_id: resolvedCategoryId,
             categoryProposalId: data.categoryProposalId ?? null,
             product_type_id: data.product_type_id ?? productTypeProposal?.resolvedProductTypeId ?? null,
@@ -232,6 +249,11 @@ export const ProductTemplateRequestMutation = extendType({
         if (request.status !== 'PENDING') throw new Error('Product request already reviewed')
         if (!request.category_id) throw new Error('CATEGORY_PROPOSAL_MUST_BE_RESOLVED_FIRST')
         if (request.productTypeProposalId && !request.product_type_id) throw new Error('PRODUCT_TYPE_PROPOSAL_MUST_BE_RESOLVED_FIRST')
+        const requestSkus = request.variants.map((variant) => variant.sku).filter((sku): sku is string => Boolean(sku))
+        const existingSku = requestSkus.length
+          ? await ctx.prisma.variant.findFirst({ where: { sku: { in: requestSkus } }, select: { sku: true } })
+          : null
+        if (existingSku) throw new Error(`SKU_ALREADY_EXISTS_USE_MERGE:${existingSku.sku}`)
 
         const template = await ctx.prisma.productTemplate.create({
           data: {

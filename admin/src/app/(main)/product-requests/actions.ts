@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { APPROVE_PRODUCT_TEMPLATE_REQUEST, MERGE_PRODUCT_TEMPLATE_REQUEST, REJECT_PRODUCT_TEMPLATE_REQUEST } from "@/api/mutations/product-template-request";
 import { FIND_MANY_PRODUCT_TEMPLATE_REQUESTS } from "@/api/queries/product-template-request";
+import { FIND_MANY_PRODUCT_TEMPLATES } from "@/api/queries/productTemplate";
 import { requestServerGraphQL } from "@/lib/server-request";
 
 export type ProductTemplateRequestItem = {
@@ -32,6 +33,15 @@ export type ProductTemplateRequestItem = {
   }>;
 };
 
+export type ProductTemplateMergeCandidate = {
+  id: number;
+  name: string;
+  name_ar?: string | null;
+  category_id?: number | null;
+  product_type_id?: number | null;
+  brand_id?: number | null;
+};
+
 export async function getProductTemplateRequests(filters: { search?: string; niche_id?: number; category_id?: number; product_type_id?: number } = {}) {
   const response = await requestServerGraphQL<{
     findManyProductTemplateRequests: {
@@ -46,6 +56,16 @@ export async function getProductTemplateRequests(filters: { search?: string; nic
   });
 
   return response.findManyProductTemplateRequests;
+}
+
+export async function getProductTemplateMergeCandidates() {
+  const response = await requestServerGraphQL<{
+    findManyProductTemplates: { productTemplates: ProductTemplateMergeCandidate[] };
+  }>(FIND_MANY_PRODUCT_TEMPLATES, {
+    search: undefined, niche_id: undefined, category_id: undefined, product_type_id: undefined,
+    brand_id: undefined, page: 1, limit: 500, isFull: true,
+  });
+  return response.findManyProductTemplates.productTemplates;
 }
 
 export async function approveRequest(formData: FormData) {
