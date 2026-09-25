@@ -1,5 +1,4 @@
 import { Prisma, PrismaClient, PartnerFeeType } from '@prisma/client'
-import { sendNotification } from '../../servers/firebase'
 import { GraphQLError } from 'graphql'
 import { DeliveryStatus, DeliveryType, PricingName } from '../../types'
 import { calculatePartnerFee } from '../../utils/partner-fees'
@@ -65,7 +64,6 @@ export async function previewCheckout(tx: Prisma.TransactionClient, userId: numb
 export async function submitCheckout(prisma: PrismaClient, userId: number, input: CheckoutInput) {
   if (input.requestKey && !/^[a-zA-Z0-9_-]{8,120}$/.test(input.requestKey)) fail('INVALID_ORDER')
   const requestKey = input.requestKey ? `${userId}:${input.requestKey}` : null
-  let created = false
   try {
     const result = await prisma.$transaction(async tx => {
       if (requestKey) {
@@ -93,21 +91,8 @@ export async function submitCheckout(prisma: PrismaClient, userId: number, input
         partnerId: quote.partner.userId,
         actorId: userId,
       })
-      await tx.log.create({ data: { userId: quote.partner.userId, type: 0,
-        title: `New order #${order.id}`, body: 'A customer placed an order.',
-        title_ar: `طلب جديد #${order.id}`, body_ar: 'تم استلام طلب جديد من زبون.' } })
-      created = true
       return order
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable })
-    if (created) {
-      // Notification failure must never turn an already committed order into a failed checkout.
-      void prisma.pushToken.findMany({ where: { userId: result.partnerId, isActive: true } }).then(tokens =>
-        Promise.all(tokens.map(token => sendNotification({ tokens: token.token,
-          title: `New order #${result.id}`, body: 'A customer placed an order.',
-          data: { event: 'NEW_ORDER', orderId: String(result.id) },
-        }))),
-      ).catch(error => console.error('Order notification failed', error))
-    }
     return result
   } catch (error) {
     if (requestKey && error instanceof Prisma.PrismaClientKnownRequestError && ['P2002', 'P2034'].includes(error.code)) {

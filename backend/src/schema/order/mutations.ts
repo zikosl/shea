@@ -205,19 +205,6 @@ const Mutation = extendType({
                             })
                         })
                         await syncLegacyDeliveryTransition(ctx.prisma, { orderId: order.orderId!, actorId: userId, deliveryStatus: DeliveryStatus.PICKED })
-                        await sendNotification({
-                            tokens: order.order.driverRequest
-                                ? order.order.partner.user.pushTokens[0]?.token ?? ''
-                                : order.order.client.user.pushTokens[0]?.token ?? '',
-                            title: order.order.driverRequest ? 'Driver request picked up' : `Order #${order.orderId} picked up`,
-                            body: order.order.driverRequest
-                                ? `${order.order.driverRequest.requestNumber} is on its way to the recipient.`
-                                : 'Your order was picked up and is on its way.',
-                            data: {
-                                event: "ORDER_PICKED_UP",
-                                orderId: `${order.orderId}`,
-                            }
-                        })
                     }
                     return order;
                 }
@@ -289,14 +276,6 @@ const Mutation = extendType({
                             })
                         })
                         await syncLegacyDeliveryTransition(ctx.prisma, { orderId: order.orderId!, actorId: userId, deliveryStatus: DeliveryStatus.DELIVERED })
-                        if (order.order.driverRequest) {
-                            await sendNotification({
-                                tokens: order.order.partner.user.pushTokens[0]?.token ?? '',
-                                title: 'Delivery completed',
-                                body: `${order.order.driverRequest.requestNumber} was confirmed as delivered by the driver.`,
-                                data: { event: 'ORDER_DELIVERED', orderId: String(order.orderId) },
-                            })
-                        }
                     }
                     return order;
                 }

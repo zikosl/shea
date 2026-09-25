@@ -10,7 +10,12 @@ const Log = objectType({
     t.boolean('read')
     t.string('body_ar')
     t.field('type', { type: 'LogStatus' })
-    t.field('date', { type: 'DateTime', resolve: () => new Date() })
+    t.field('date', { type: 'DateTime', resolve: (parent) => parent.createdAt })
+    t.field('readAt', { type: 'DateTime' })
+    t.string('entityType')
+    t.string('entityId')
+    t.string('action')
+    t.nonNull.string('priority')
     t.int('userId')
     t.field('user', {
       type: 'User',

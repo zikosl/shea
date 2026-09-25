@@ -10,7 +10,7 @@ function fixture() {
     customName: null, vendorSku: null,
     variant: { name: '50 ml', sku: 'SKU-7', product: { name: 'Test product' } },
   }
-  const state = { created: 0, addressReads: 0, existing: null as any }
+  const state = { created: 0, addressReads: 0, existing: null as any, notifications: [] as any[] }
   const db: any = {
     partner: { findUnique: async () => ({ userId: 2, online: true }) },
     address: { findFirst: async () => { state.addressReads++; return { id: 3, latitude: 36, longitude: 7 } } },
@@ -22,7 +22,10 @@ function fixture() {
     },
     orderStatusHistory: { create: async () => ({}) },
     outboxEvent: { upsert: async () => ({}) },
-    log: { create: async () => ({}) },
+    log: {
+      create: async () => ({}),
+      upsert: async ({ create }: any) => { state.notifications.push(create); return create },
+    },
     pushToken: { findMany: async () => [] },
     $transaction: async (callback: any) => callback(db),
   }
@@ -50,6 +53,9 @@ test('request-priced products hide catalog prices and create a quotation workflo
   await submitCheckout(db, 1, { ...input, expectedTotal: preview.total, items: preview.items })
   assert.equal(state.existing.pricingMode, 'QUOTE_REQUIRED')
   assert.equal(state.existing.items.create[0].price, 0)
+  assert.equal(state.notifications[0].userId, 2)
+  assert.equal(state.notifications[0].entityId, '9')
+  assert.equal(state.notifications[0].action, 'VIEW_ORDER')
 })
 
 test('pickup does not require or read a delivery address', async () => {

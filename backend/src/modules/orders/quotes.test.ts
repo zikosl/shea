@@ -21,6 +21,7 @@ function fixture() {
   }
   let quotation: any = null
   const history: any[] = []
+  const notifications: any[] = []
   const db: any = {
     order: {
       findFirst: async ({ where }: any) => where.id === order.id && where.partnerId === order.partnerId ? order : null,
@@ -57,13 +58,14 @@ function fixture() {
     } },
     orderStatusHistory: { create: async ({ data }: any) => { history.push(data); return data } },
     outboxEvent: { upsert: async ({ create }: any) => create },
+    log: { upsert: async ({ create }: any) => { notifications.push(create); return create } },
     $transaction: async (callback: any) => callback(db),
   }
-  return { db, order, history, getQuotation: () => quotation }
+  return { db, order, history, notifications, getQuotation: () => quotation }
 }
 
 test('partner quotation prices every item and waits for client approval', async () => {
-  const { db, order, history, getQuotation } = fixture()
+  const { db, order, history, notifications, getQuotation } = fixture()
   const quote = await createOrderQuotation(db, 2, {
     orderId: order.id,
     expectedVersion: 1,
@@ -77,6 +79,9 @@ test('partner quotation prices every item and waits for client approval', async 
   assert.deepEqual(order.items.map((item: any) => item.price), [125, 50])
   assert.equal(getQuotation().status, 'SENT')
   assert.equal(history[0].to, 'AWAITING_CLIENT_APPROVAL')
+  assert.equal(notifications[0].userId, 3)
+  assert.equal(notifications[0].action, 'REVIEW_QUOTE')
+  assert.equal(notifications[0].priority, 'HIGH')
 })
 
 test('only the owning client can accept the active quotation once', async () => {

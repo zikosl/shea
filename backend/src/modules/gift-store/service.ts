@@ -205,11 +205,32 @@ export async function createGiftQuotation(prisma: PrismaClient, partnerUserId: n
       preparationStartsAt: input.preparationStartsAt ?? (proposedFor ? new Date(proposedFor.getTime() - 24 * 60 * 60 * 1000) : null),
       subtotal, discount, total: subtotal - discount, version: { increment: 1 },
     } })
-    if (order.clientId) await tx.log.create({ data: {
-      userId: order.clientId, type: LogSatus.ORDER_UPDATE,
-      title: `Your gift quote is ready`, body: `Review quote ${quote.quoteNumber} and confirm when you are ready.`,
-      title_ar: 'عرض سعر هديتك جاهز', body_ar: `راجع عرض السعر ${quote.quoteNumber} وأكده عندما تكون جاهزاً.`,
-    } })
+    if (order.clientId) {
+      await tx.log.upsert({
+        where: { userId_eventKey: { userId: order.clientId, eventKey: `gift:${order.id}:quote:${quote.id}:user:${order.clientId}` } },
+        create: {
+          userId: order.clientId, type: LogSatus.ORDER_UPDATE,
+          eventKey: `gift:${order.id}:quote:${quote.id}:user:${order.clientId}`,
+          entityType: 'CUSTOM_ORDER', entityId: order.id, action: 'REVIEW_GIFT_QUOTE', priority: 'HIGH',
+          title: 'Your gift quote is ready', body: `Review quote ${quote.quoteNumber} and confirm when you are ready.`,
+          title_ar: 'عرض سعر هديتك جاهز', body_ar: `راجع عرض السعر ${quote.quoteNumber} وأكده عندما تكون جاهزاً.`,
+          metadata: { quoteId: quote.id, quoteNumber: quote.quoteNumber },
+        },
+        update: {},
+      })
+      await tx.outboxEvent.upsert({
+        where: { idempotencyKey: `gift:${order.id}:quote:${quote.id}:ready` },
+        create: {
+          topic: 'gift.quote.ready', aggregateType: 'CustomOrder', aggregateId: order.id,
+          idempotencyKey: `gift:${order.id}:quote:${quote.id}:ready`,
+          payload: {
+            customOrderId: order.id, clientId: order.clientId, partnerId, actorId: partnerId,
+            quoteId: quote.id, quoteNumber: quote.quoteNumber, status: 'AWAITING_CUSTOMER_APPROVAL',
+          },
+        },
+        update: {},
+      })
+    }
     return quote
   })
 }

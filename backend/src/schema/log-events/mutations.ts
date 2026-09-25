@@ -1,4 +1,4 @@
-import { extendType, intArg, nonNull } from 'nexus'
+import { extendType, intArg, nonNull, stringArg } from 'nexus'
 import { Context } from '../../context'
 import { getUserId } from '../../utils'
 
@@ -12,16 +12,17 @@ const Mutation = extendType({
       resolve: async (_parent, { id }, ctx: Context) => {
         const userId = getUserId(ctx)
         try {
-          await ctx.prisma.log.updateMany({
+          const result = await ctx.prisma.log.updateMany({
             where: {
               userId,
               id,
             },
             data: {
               read: true,
+              readAt: new Date(),
             },
           })
-          return true
+          return result.count > 0
         } catch {
           return false
         }
@@ -35,15 +36,31 @@ const Mutation = extendType({
           await ctx.prisma.log.updateMany({
             where: {
               userId: id,
+              read: false,
             },
             data: {
               read: true,
+              readAt: new Date(),
             },
           })
           return true
         } catch {
           return false
         }
+      },
+    })
+    t.nonNull.int('readLogsByEntity', {
+      args: {
+        entityType: nonNull(stringArg()),
+        entityId: nonNull(stringArg()),
+      },
+      resolve: async (_parent, { entityType, entityId }, ctx: Context) => {
+        const userId = getUserId(ctx)
+        const result = await ctx.prisma.log.updateMany({
+          where: { userId, entityType, entityId, read: false },
+          data: { read: true, readAt: new Date() },
+        })
+        return result.count
       },
     })
   },

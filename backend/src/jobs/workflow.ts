@@ -1,20 +1,9 @@
 import { Job, Worker } from 'bullmq'
+import { OrderStatus } from '@prisma/client'
 import { dispatchQueue, prisma, redis, workflowQueue } from '../servers'
-import { sendNotification } from '../servers/firebase'
+import { getExpoPushReceipts, sendNotification } from '../servers/firebase'
 import { DeliveryStatus, DeliveryType } from '../types'
-
-const statusCopy: Record<string, { title: string; body: string }> = {
-  REQUESTED: { title: 'New order', body: 'A new order is waiting for review.' },
-  PARTNER_ACCEPTED: { title: 'Order accepted', body: 'The store accepted your order.' },
-  AWAITING_CLIENT_APPROVAL: { title: 'Approval needed', body: 'A store offer is ready for your review.' },
-  CONFIRMED: { title: 'Order confirmed', body: 'Your order has been confirmed.' },
-  PREPARING: { title: 'Order in preparation', body: 'The store is preparing your order.' },
-  READY: { title: 'Order ready', body: 'Your order is ready for fulfillment.' },
-  FULFILLMENT_STARTED: { title: 'Order on the way', body: 'Fulfillment of your order has started.' },
-  COMPLETED: { title: 'Order completed', body: 'Your order has been completed.' },
-  CANCELLED: { title: 'Order cancelled', body: 'Your order was cancelled.' },
-  PARTNER_REJECTED: { title: 'Order unavailable', body: 'The store could not accept your order.' },
-}
+import { getOrderPushCopy } from '../modules/notifications/order'
 
 async function processGiftSchedule() {
   const due = await prisma.customOrder.findMany({
@@ -71,28 +60,77 @@ async function processOutbox() {
       const status = String(payload.status ?? '')
       const clientId = Number(payload.clientId)
       const partnerId = Number(payload.partnerId)
+      const actorId = Number(payload.actorId)
+      const deliveredUserIds = new Set(
+        Array.isArray(payload.deliveredUserIds)
+          ? payload.deliveredUserIds.map(Number).filter(Number.isSafeInteger)
+          : [],
+      )
       const isGiftPreparation = event.topic === 'gift.preparation.due'
-      const recipientIds = isGiftPreparation ? [partnerId] : status === 'REQUESTED' ? [partnerId] : [clientId, partnerId]
+      const isGiftQuote = event.topic === 'gift.quote.ready'
+      const recipientIds = (isGiftPreparation ? [partnerId] : isGiftQuote ? [clientId] : status === 'REQUESTED' ? [partnerId] : [clientId, partnerId])
+        .filter((id) => !Number.isSafeInteger(actorId) || id !== actorId)
+        .filter((id) => !deliveredUserIds.has(id))
       const userIds = [...new Set(recipientIds.filter(Number.isSafeInteger))]
-      const tokens = await prisma.pushToken.findMany({ where: { userId: { in: userIds }, isActive: true }, select: { token: true } })
-      const copy = isGiftPreparation
-        ? { title: 'Gift preparation is due', body: `${String(payload.orderNumber ?? 'A scheduled gift')} should enter preparation now.` }
-        : statusCopy[status] ?? { title: 'Order updated', body: 'Your order status has changed.' }
-      const deliveryResult = await sendNotification({
-        tokens: tokens.map((entry) => entry.token), title: copy.title, body: copy.body,
-        data: isGiftPreparation
-          ? { event: 'GIFT_PREPARATION_DUE', customOrderId: String(payload.customOrderId ?? event.aggregateId), status }
-          : { event: 'ORDER_STATUS_CHANGED', orderId: String(payload.orderId ?? event.aggregateId), status },
-        strict: true,
+      const recipients = await prisma.user.findMany({
+        where: { id: { in: userIds } },
+        select: {
+          id: true,
+          client: { select: { language: true } },
+          partner: { select: { language: true } },
+          pushTokens: { where: { isActive: true }, select: { token: true } },
+        },
       })
-      if (deliveryResult.permanentFailureTokens.length) {
+      const deliveryResults = await Promise.all(recipients.map(async (recipient) => {
+        const language = recipient.client?.language ?? recipient.partner?.language ?? 'en'
+        const copy = isGiftPreparation
+          ? language.toLowerCase().startsWith('ar')
+            ? { title: 'حان وقت تحضير الهدية', body: `يجب بدء تحضير ${String(payload.orderNumber ?? 'الهدية المجدولة')} الآن.` }
+            : { title: 'Gift preparation is due', body: `${String(payload.orderNumber ?? 'A scheduled gift')} should enter preparation now.` }
+          : isGiftQuote
+            ? language.toLowerCase().startsWith('ar')
+              ? { title: 'عرض سعر هديتك جاهز', body: `راجع عرض السعر ${String(payload.quoteNumber ?? '')} وأكده للمتابعة.` }
+              : { title: 'Your gift quote is ready', body: `Review quote ${String(payload.quoteNumber ?? '')} and confirm it to continue.` }
+          : getOrderPushCopy(status as OrderStatus, Number(payload.orderId ?? event.aggregateId), language)
+        const result = await sendNotification({
+          tokens: recipient.pushTokens.map((entry) => entry.token), title: copy.title, body: copy.body,
+          data: isGiftPreparation
+            ? { event: 'GIFT_PREPARATION_DUE', customOrderId: String(payload.customOrderId ?? event.aggregateId), status }
+            : isGiftQuote
+              ? { event: 'GIFT_QUOTE_READY', customOrderId: String(payload.customOrderId ?? event.aggregateId), quoteId: String(payload.quoteId ?? ''), status }
+            : { event: 'ORDER_STATUS_CHANGED', orderId: String(payload.orderId ?? event.aggregateId), status },
+        })
+        return { userId: recipient.id, result }
+      }))
+      const permanentFailureTokens = deliveryResults.flatMap(({ result }) => result.permanentFailureTokens)
+      const transientFailureTokens = deliveryResults.flatMap(({ result }) => result.transientFailureTokens)
+      const expoReceipts = deliveryResults.flatMap(({ userId, result }) => result.expoTickets.map((ticket) => ({
+        ticketId: ticket.id,
+        token: ticket.token,
+        userId,
+        outboxEventId: event.id,
+        availableAt: new Date(Date.now() + 15 * 60_000),
+      })))
+      if (expoReceipts.length) {
+        await prisma.pushReceipt.createMany({ data: expoReceipts, skipDuplicates: true })
+      }
+      deliveryResults.forEach(({ userId, result }) => {
+        if (result.transientFailureTokens.length === 0) deliveredUserIds.add(userId)
+      })
+      if (permanentFailureTokens.length) {
         await prisma.pushToken.updateMany({
-          where: { token: { in: deliveryResult.permanentFailureTokens } },
+          where: { token: { in: permanentFailureTokens } },
           data: { isActive: false },
         })
       }
-      if (deliveryResult.transientFailureTokens.length) throw new Error('PUSH_DELIVERY_TEMPORARILY_FAILED')
-      if (!isGiftPreparation && status === 'READY') {
+      if (transientFailureTokens.length) {
+        await prisma.outboxEvent.update({
+          where: { id: event.id },
+          data: { payload: { ...payload, deliveredUserIds: [...deliveredUserIds] } },
+        })
+        throw new Error('PUSH_DELIVERY_TEMPORARILY_FAILED')
+      }
+      if (!isGiftPreparation && !isGiftQuote && status === 'READY') {
         const orderId = Number(payload.orderId ?? event.aggregateId)
         const delivery = Number.isSafeInteger(orderId)
           ? await prisma.delivery.findUnique({ where: { orderId }, select: { type: true, status: true } })
@@ -112,9 +150,95 @@ async function processOutbox() {
   }
 }
 
+async function processPushReceipts() {
+  const receipts = await prisma.pushReceipt.findMany({
+    where: {
+      status: { in: ['PENDING', 'FAILED'] },
+      attempts: { lt: 10 },
+      availableAt: { lte: new Date() },
+    },
+    orderBy: { createdAt: 'asc' },
+    take: 1000,
+  })
+  if (!receipts.length) return
+
+  try {
+    const results = await getExpoPushReceipts(receipts.map((receipt) => receipt.ticketId))
+    const byTicketId = new Map(receipts.map((receipt) => [receipt.ticketId, receipt]))
+    for (const result of results) {
+      const receipt = byTicketId.get(result.ticketId)
+      if (!receipt) continue
+      if (result.status === 'DELIVERED') {
+        await prisma.pushReceipt.update({
+          where: { id: receipt.id },
+          data: { status: 'DELIVERED', deliveredAt: new Date(), lastError: null },
+        })
+        continue
+      }
+      if (result.status === 'PERMANENT_FAILURE') {
+        await prisma.$transaction([
+          prisma.pushReceipt.update({
+            where: { id: receipt.id },
+            data: { status: 'FAILED', attempts: 10, lastError: result.error ?? 'PERMANENT_PUSH_FAILURE' },
+          }),
+          ...(result.error === 'DeviceNotRegistered'
+            ? [prisma.pushToken.updateMany({ where: { token: receipt.token }, data: { isActive: false } })]
+            : []),
+        ])
+        continue
+      }
+      const attempts = receipt.attempts + 1
+      const exhausted = attempts >= 10
+      await prisma.pushReceipt.update({
+        where: { id: receipt.id },
+        data: {
+          status: exhausted || result.status === 'TRANSIENT_FAILURE' ? 'FAILED' : 'PENDING',
+          attempts: { increment: 1 },
+          lastError: result.error ?? (exhausted ? 'EXPO_RECEIPT_NOT_AVAILABLE' : null),
+          availableAt: new Date(Date.now() + Math.min(60 * 60_000, 2 ** attempts * 60_000)),
+        },
+      })
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message.slice(0, 1000) : String(error).slice(0, 1000)
+    await Promise.all(receipts.map((receipt) => prisma.pushReceipt.update({
+      where: { id: receipt.id },
+      data: {
+        status: 'FAILED',
+        attempts: { increment: 1 },
+        lastError: message,
+        availableAt: new Date(Date.now() + Math.min(60 * 60_000, 2 ** (receipt.attempts + 1) * 60_000)),
+      },
+    })))
+  }
+}
+
+async function processNotificationCleanup() {
+  const now = Date.now()
+  const [exhaustedReceipts] = await Promise.all([
+    prisma.pushReceipt.count({ where: { status: 'FAILED', attempts: { gte: 10 } } }),
+    prisma.pushReceipt.deleteMany({
+      where: {
+        OR: [
+          { status: 'DELIVERED', updatedAt: { lt: new Date(now - 30 * 24 * 60 * 60_000) } },
+          { status: 'FAILED', attempts: { gte: 10 }, updatedAt: { lt: new Date(now - 90 * 24 * 60 * 60_000) } },
+        ],
+      },
+    }),
+    prisma.pushToken.deleteMany({ where: { isActive: false, updatedAt: { lt: new Date(now - 180 * 24 * 60 * 60_000) } } }),
+    prisma.log.deleteMany({ where: { read: true, createdAt: { lt: new Date(now - 365 * 24 * 60 * 60_000) } } }),
+    prisma.outboxEvent.deleteMany({ where: { status: 'DELIVERED', processedAt: { lt: new Date(now - 30 * 24 * 60 * 60_000) } } }),
+  ])
+  if (exhaustedReceipts > 0) {
+    console.error(`[notification-health] ${exhaustedReceipts} push receipt(s) exhausted all retries`)
+  }
+}
+
 const workflowWorker = new Worker('workflow-queue', async (job: Job) => {
   if (job.name === 'gift-scheduler') return processGiftSchedule()
   if (job.name === 'outbox-pump') return processOutbox()
+  if (job.name === 'push-receipts') return processPushReceipts()
+  if (job.name === 'notification-cleanup') return processNotificationCleanup()
 }, { connection: redis })
 
 workflowWorker.on('error', (error) => console.error('[workflow-worker]', error))
@@ -123,3 +247,7 @@ void workflowQueue.upsertJobScheduler('gift-scheduler', { every: 60_000 }, { nam
   .catch((error) => console.error('[gift-scheduler]', error))
 void workflowQueue.upsertJobScheduler('outbox-pump', { every: 15_000 }, { name: 'outbox-pump' })
   .catch((error) => console.error('[outbox-pump]', error))
+void workflowQueue.upsertJobScheduler('push-receipts', { every: 2 * 60_000 }, { name: 'push-receipts' })
+  .catch((error) => console.error('[push-receipts]', error))
+void workflowQueue.upsertJobScheduler('notification-cleanup', { every: 24 * 60 * 60_000 }, { name: 'notification-cleanup' })
+  .catch((error) => console.error('[notification-cleanup]', error))

@@ -1366,16 +1366,26 @@ model Otp {
 }
 
 model Log {
-  id        Int      @id @default(autoincrement())
-  title     String
-  body      String
-  title_ar  String
-  body_ar   String
-  type      Int
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
-  user      User?    @relation(fields: [userId], references: [id])
-  userId    Int?
+  id         Int       @id @default(autoincrement())
+  title      String
+  body       String
+  title_ar   String
+  body_ar    String
+  type       Int
+  read       Boolean   @default(false)
+  readAt     DateTime?
+  eventKey   String?
+  entityType String?
+  entityId   String?
+  action     String?
+  priority   String     @default("NORMAL")
+  metadata   Json?
+  createdAt  DateTime   @default(now())
+  user       User?      @relation(fields: [userId], references: [id])
+  userId     Int?
+
+  @@unique([userId, eventKey])
+  @@index([userId, read, id])
 }
 
 model Pricing {
@@ -1400,6 +1410,31 @@ model PushToken {
 
   @@index([userId])
   @@index([platform])
+}
+
+model PushReceipt {
+  id            String   @id @default(cuid())
+  ticketId      String   @unique
+  token         String
+  userId        Int?
+  outboxEventId String?
+  status        PushReceiptStatus @default(PENDING)
+  attempts      Int      @default(0)
+  availableAt   DateTime @default(now())
+  deliveredAt   DateTime?
+  lastError     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status, availableAt])
+  @@index([token])
+  @@index([outboxEventId])
+}
+
+enum PushReceiptStatus {
+  PENDING
+  DELIVERED
+  FAILED
 }
 
 enum Platform {

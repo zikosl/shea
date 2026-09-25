@@ -596,11 +596,16 @@ input InputProductVariant {
 }
 
 type Log {
+  action: String
   body: String
   body_ar: String
   date: DateTime
+  entityId: String
+  entityType: String
   id: Int!
+  priority: String!
   read: Boolean
+  readAt: DateTime
   title: String
   title_ar: String
   type: LogStatus
@@ -669,6 +674,7 @@ type Mutation {
   provisionStoreGateway(storeId: String!): StoreGatewayCredential!
   readAllLogs: Boolean
   readLog(id: Int!): Boolean
+  readLogsByEntity(entityId: String!, entityType: String!): Int!
   recordSyncEvent(action: SyncEventAction!, deviceId: String, entity: String!, idempotencyKey: String!, payload: String!): SyncEvent
   refreshToken(data: String!): AuthPayload
   registerDevice(appVersion: String, deviceKey: String!, name: String, platform: Platform!, storeId: String): Device
@@ -693,6 +699,7 @@ type Mutation {
   submitProductTemplateRequest(brand_id: Int, categoryProposalId: String, category_id: Int, description: String, images: ImagesList, name: String!, name_ar: String, posDeviceId: String, posLocalId: String, productTypeProposalId: String, product_type_id: Int, variants: [ProductTemplateRequestVariantInput]): ProductTemplateRequest
   transitionGiftOrder(expectedVersion: Int!, id: String!, status: CustomOrderStatus!): CustomOrder!
   transitionOrderStatus(expectedVersion: Int!, id: Int!, reason: String, status: OrderStatus!): Order
+  unregisterPushToken(token: String!): Boolean!
   updateAddress(address: String, id: Int!, isDefault: Boolean, label: String, latitude: Float, longitude: Float): Address
   updateBrand(id: Int!, image: String, name: String, name_ar: String, niche_id: Int): Brand
   updateCategory(id: Int!, image: String, name: String, name_ar: String, niche_id: Int): Category
@@ -1381,7 +1388,7 @@ type Query {
   findManyCatalogProposals(entityType: CatalogProposalEntityType, limit: Int!, page: Int!, partnerId: Int, search: String, status: CatalogProposalStatus): CatalogProposalResult
   findManyCategories(isFull: Boolean, limit: Int!, niche_id: Int, page: Int!, partnerId: Int, search: String): CategoryResult
   findManyDrivers(isFull: Boolean, limit: Int!, page: Int!, search: String): DriverResult
-  findManyLogs: [Log]
+  findManyLogs(beforeId: Int, limit: Int = 30): [Log]
   findManyNiches(isFull: Boolean, limit: Int!, page: Int!, search: String): NicheResult
   findManyOrders: [Order]!
   findManyPartnerNiches: [PartnerNiche]!
@@ -1443,6 +1450,7 @@ type Query {
   partnerStatistics: PartnerStatisticsResult!
   posBootstrap(deviceKey: String!): PosBootstrap!
   previewCheckout(data: OrderInput!): CheckoutPreview!
+  unreadLogCount: Int!
 }
 
 enum QueryOrder {

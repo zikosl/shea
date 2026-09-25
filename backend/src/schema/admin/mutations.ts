@@ -2,6 +2,7 @@ import { arg, intArg, nonNull, booleanArg, objectType, stringArg } from "nexus"
 import { Context } from "../../context"
 import { getUserId, handleSignIn } from "../../utils"
 import { createBadRequestError } from "../../core/errors/app-error"
+import { Prisma } from '@prisma/client'
 
 
 
@@ -21,25 +22,44 @@ const Mutation = objectType({
                     throw new Error('Unauthorized');
                 }
 
-                await ctx.prisma.pushToken.upsert({
-                    where: { token },
-                    update: {
-                        userId: userId,
-                        platform,
-                        deviceId,
-                        isActive: true,
-                        lastUsedAt: new Date(),
-                    },
-                    create: {
-                        token,
-                        userId: userId,
-                        platform,
-                        deviceId,
-                        lastUsedAt: new Date(),
-                    },
+                await ctx.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+                    if (deviceId) {
+                        await tx.pushToken.updateMany({
+                            where: { userId, deviceId, token: { not: token }, isActive: true },
+                            data: { isActive: false },
+                        });
+                    }
+                    await tx.pushToken.upsert({
+                        where: { token },
+                        update: {
+                            userId,
+                            platform,
+                            deviceId,
+                            isActive: true,
+                            lastUsedAt: new Date(),
+                        },
+                        create: {
+                            token,
+                            userId,
+                            platform,
+                            deviceId,
+                            lastUsedAt: new Date(),
+                        },
+                    });
                 });
 
                 return true;
+            },
+        })
+        t.nonNull.boolean('unregisterPushToken', {
+            args: { token: nonNull(stringArg()) },
+            async resolve(_, { token }, ctx) {
+                const userId = getUserId(ctx)
+                await ctx.prisma.pushToken.updateMany({
+                    where: { token, userId },
+                    data: { isActive: false },
+                })
+                return true
             },
         })
         t.field('upsertPricing', {

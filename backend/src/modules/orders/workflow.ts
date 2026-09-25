@@ -1,6 +1,7 @@
 import { OrderStatus, Prisma, PrismaClient, Role } from '@prisma/client'
 import { GraphQLError } from 'graphql'
 import { DeliveryStatus } from '../../types'
+import { createOrderInboxNotifications } from '../notifications/order'
 
 type Database = PrismaClient | Prisma.TransactionClient
 
@@ -51,7 +52,7 @@ function deliveryStatusFor(target: OrderStatus): number | undefined {
 
 export async function transitionOrderStatus(
   prisma: PrismaClient,
-  input: { orderId: number; actorId: number; target: OrderStatus; expectedVersion: number; reason?: string | null },
+  input: { orderId: number; actorId: number; target: OrderStatus; expectedVersion: number; reason?: string | null; persistInbox?: boolean },
 ) {
   if (!Number.isSafeInteger(input.expectedVersion) || input.expectedVersion < 1) {
     throw new GraphQLError('INVALID_EXPECTED_VERSION')
@@ -91,7 +92,7 @@ export async function transitionOrderStatus(
       clientId: order.clientId,
       partnerId: order.partnerId,
       actorId: input.actorId,
-    })
+    }, input.persistInbox !== false)
     return tx.order.findUniqueOrThrow({ where: { id: order.id }, include: { statusHistory: { orderBy: { createdAt: 'asc' } } } })
   }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable })
 }
@@ -101,7 +102,20 @@ export async function createOrderOutboxEvent(
   orderId: number,
   status: OrderStatus,
   payload: Record<string, unknown>,
+  persistInbox = true,
 ) {
+  const clientId = Number(payload.clientId)
+  const partnerId = Number(payload.partnerId)
+  const actorId = Number(payload.actorId)
+  if (persistInbox && Number.isSafeInteger(clientId) && Number.isSafeInteger(partnerId)) {
+    await createOrderInboxNotifications(tx, {
+      orderId,
+      status,
+      clientId,
+      partnerId,
+      actorId: Number.isSafeInteger(actorId) ? actorId : undefined,
+    })
+  }
   return tx.outboxEvent.upsert({
     where: { idempotencyKey: `order:${orderId}:status:${status}` },
     create: {
@@ -134,5 +148,6 @@ export async function syncLegacyDeliveryTransition(
   return transitionOrderStatus(prisma, {
     orderId: input.orderId, actorId: input.actorId, target, expectedVersion: order.version,
     reason: input.reason ?? (target === 'CANCELLED' ? 'Cancelled through legacy fulfillment flow' : undefined),
+    persistInbox: false,
   })
 }
