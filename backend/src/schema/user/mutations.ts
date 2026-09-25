@@ -19,7 +19,10 @@ function header(context: Context, name: string) {
 
 function requestMetadata(context: Context, input: { deviceKey?: string | null; deviceName?: string | null; platform?: string | null; appVersion?: string | null }) {
   return {
-    ...input,
+    deviceKey: input.deviceKey,
+    deviceName: input.deviceName,
+    platform: input.platform,
+    appVersion: input.appVersion,
     userAgent: header(context, 'user-agent'),
     ipAddress: header(context, 'x-forwarded-for')?.split(',')[0]?.trim() || header(context, 'x-real-ip'),
   }

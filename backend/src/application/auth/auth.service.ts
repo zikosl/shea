@@ -17,10 +17,24 @@ export type SessionMetadata = {
   userAgent?: string | null
 }
 
-function compactMetadata(metadata: SessionMetadata) {
-  return Object.fromEntries(
-    Object.entries(metadata).filter(([, value]) => typeof value === 'string' && value.trim()),
-  ) as SessionMetadata
+const SESSION_METADATA_LIMITS: Record<keyof SessionMetadata, number> = {
+  deviceKey: 191,
+  deviceName: 191,
+  platform: 64,
+  appVersion: 64,
+  ipAddress: 64,
+  userAgent: 512,
+}
+
+export function sanitizeSessionMetadata(metadata: SessionMetadata): SessionMetadata {
+  const clean: SessionMetadata = {}
+  for (const key of Object.keys(SESSION_METADATA_LIMITS) as (keyof SessionMetadata)[]) {
+    const value = metadata[key]
+    if (typeof value !== 'string') continue
+    const normalized = value.trim()
+    if (normalized) clean[key] = normalized.slice(0, SESSION_METADATA_LIMITS[key])
+  }
+  return clean
 }
 
 export async function createSession(
@@ -32,7 +46,7 @@ export async function createSession(
   const refreshToken = signRefreshToken(user.id, user)
   const refreshTokenHash = await hash(refreshToken, 10)
   const now = new Date()
-  const cleanMetadata = compactMetadata(metadata)
+  const cleanMetadata = sanitizeSessionMetadata(metadata)
 
   await prisma.token.deleteMany({
     where: { userId: user.id, OR: [{ expiresAt: { lte: now } }, { revokedAt: { not: null } }] },

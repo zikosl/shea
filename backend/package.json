@@ -7,6 +7,7 @@
     "clean": "rm -rf dist",
     "build": "tsc -p tsconfig.json",
     "test:credentials": "npm run build && node --test dist/utils/password.test.js",
+    "test:auth-session": "npm run build && node --test dist/application/auth/auth.service.test.js",
     "test:checkout": "npm run build && node --test dist/application/client/checkout.service.test.js",
     "test:guest-catalog": "npm run build && node --test dist/security/guest-catalog.test.js",
     "test:scraping": "npm run build && node --test dist/security/scraping-protection.test.js",
