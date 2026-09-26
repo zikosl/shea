@@ -188,6 +188,7 @@ enum CapabilityOverrideEffect {
 }
 
 enum CapabilitySource {
+  GLOBAL_DEFAULT
   NICHE_DEFAULT
   PARTNER_OVERRIDE
 }
@@ -577,6 +578,13 @@ type GiftSpecification {
   wrappingNote: String
 }
 
+type GlobalCapabilitySetting {
+  capability: CapabilityCode!
+  enabled: Boolean!
+  id: Int!
+  updatedAt: DateTime!
+}
+
 input ImagesList {
   images: [String!]!
 }
@@ -691,7 +699,11 @@ type Mutation {
   revokeSession(tokenId: String!): Boolean!
   revokeStoreTerminal(terminalId: String!): StoreTerminal!
   sendOtp(phone: String!): Boolean
-  setNicheCapability(capability: CapabilityCode!, enabled: Boolean!, nicheId: Int!): NicheCapability
+  setGlobalCapabilities(enabled: [CapabilityCode!]!): [GlobalCapabilitySetting!]!
+  setGlobalCapability(capability: CapabilityCode!, enabled: Boolean!): GlobalCapabilitySetting!
+  setNicheCapabilities(disabled: [CapabilityCode!]!, enabled: [CapabilityCode!]!, nicheId: Int!): [NicheCapability!]!
+  setNicheCapability(capability: CapabilityCode!, enabled: Boolean, nicheId: Int!): NicheCapability
+  setPartnerCapabilities(disabled: [CapabilityCode!]!, enabled: [CapabilityCode!]!, partnerId: Int!): [PartnerCapabilityOverride!]!
   setPartnerCapabilityOverride(capability: CapabilityCode!, effect: CapabilityOverrideEffect, partnerId: Int!): PartnerCapabilityOverride
   setStoreDeploymentMode(mode: StoreDeploymentMode!, storeId: String!): Store!
   signIn(appVersion: String, deviceKey: String, deviceName: String, email: String!, password: String!, platform: String): AuthPayload
@@ -1424,6 +1436,8 @@ type Query {
   getOrderDispatch(id: Int!): OrderDispatch
   getOrderDispatchByOrder(orderId: Int!): OrderDispatch
   getSale(id: String!): Sale
+  globalCapabilitySettings: [GlobalCapabilitySetting!]!
+  inheritedCapabilities(partnerId: Int): [EffectiveCapability!]!
   listActiveDriverDeliveries: [Delivery]!
   listActiveDriverOrders: [OrderDispatch]!
   listCashSessions(deviceId: String, isOpen: Boolean): [CashSession!]!

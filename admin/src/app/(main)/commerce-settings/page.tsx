@@ -12,7 +12,7 @@ export default async function CommerceSettingsPage() {
 
   return (
     <ContentLayout title="Commerce Settings" description="Control the amounts and delivery times used across Shea checkout workflows.">
-      <SettingsManager pricing={settings.pricing} schedules={settings.schedules} />
+      <SettingsManager pricing={settings.pricing} schedules={settings.schedules} globalCapabilities={settings.globalCapabilities} />
     </ContentLayout>
   );
 }

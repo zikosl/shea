@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { FileUploader } from "@/components/ui/file-upload";
+import { BusinessModuleSelector } from "@/components/capabilities/business-module-selector";
+import { businessModuleCapabilities, businessModuleOrder, modulesFromCapabilities } from "@/lib/business-modules";
 
 import { createItem, saveNicheCapabilities, updateItem } from "../actions";
 import { Item, name_plural, title_singular } from "../_constant";
@@ -46,13 +48,26 @@ export default function ItemForm({
   pageTitle,
 }: {
   initialData: Item | null;
-  capabilityConfig: { catalog: CapabilityCode[]; enabled: CapabilityCode[] } | null;
+  capabilityConfig: {
+    catalog: CapabilityCode[];
+    inherited: CapabilityCode[];
+    overrides: Array<{ capability: CapabilityCode; enabledByDefault: boolean }>;
+  } | null;
   pageTitle: string;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState(() => resolvePublicAssetUrl(initialData?.image));
-  const [enabledCapabilities, setEnabledCapabilities] = useState<CapabilityCode[]>(capabilityConfig?.enabled ?? []);
+  const inheritedModules = modulesFromCapabilities(capabilityConfig?.inherited ?? []);
+  const overrideMap = new Map(capabilityConfig?.overrides.map((item) => [item.capability, item.enabledByDefault]) ?? []);
+  const [moduleChoices, setModuleChoices] = useState(() => Object.fromEntries(
+    businessModuleOrder.map((module) => {
+      const values = businessModuleCapabilities[module]
+        .map((capability) => overrideMap.get(capability))
+        .filter((value) => value !== undefined);
+      return [module, values.some(Boolean) ? "ENABLE" : values.length ? "DISABLE" : "INHERIT"];
+    }),
+  ) as Record<BusinessModuleCode, BusinessModuleChoice>);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -84,11 +99,11 @@ export default function ItemForm({
     try {
       if (initialData) {
         await updateItem(initialData.id, values);
-        await saveNicheCapabilities(initialData.id, enabledCapabilities);
+        await saveNicheCapabilities(initialData.id, moduleChoices);
       } else {
         const niche = await createItem(values);
-        if (niche?.id && enabledCapabilities.length) {
-          await saveNicheCapabilities(niche.id, enabledCapabilities);
+        if (niche?.id) {
+          await saveNicheCapabilities(niche.id, moduleChoices);
         }
         form.reset();
       }
@@ -142,34 +157,12 @@ export default function ItemForm({
               )}
             />
             {capabilityConfig?.catalog.length ? (
-              <section className="space-y-3 rounded-2xl border bg-muted/20 p-4">
-                <div>
-                  <FormLabel>Default capabilities</FormLabel>
-                  <FormDescription>
-                    Partners assigned to this niche inherit these modules unless explicitly overridden.
-                  </FormDescription>
-                </div>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {capabilityConfig.catalog.map((code) => {
-                    const selected = enabledCapabilities.includes(code);
-                    return (
-                      <button
-                        key={code}
-                        type="button"
-                        onClick={() => setEnabledCapabilities((current) => selected
-                          ? current.filter((item) => item !== code)
-                          : [...current, code])}
-                        className="flex items-center justify-between rounded-xl border bg-background px-3 py-2 text-left text-sm transition-colors hover:bg-muted"
-                      >
-                        <span className="capitalize">{code.replaceAll("_", " ").toLowerCase()}</span>
-                        <span className={`flex h-5 w-5 items-center justify-center rounded border ${selected ? "border-foreground bg-foreground text-background" : "text-transparent"}`}>
-                          <Check className="h-3 w-3" />
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </section>
+              <BusinessModuleSelector
+                values={moduleChoices}
+                onChange={setModuleChoices}
+                allowInheritance
+                inherited={Object.fromEntries(businessModuleOrder.map((module) => [module, inheritedModules.has(module)]))}
+              />
             ) : null}
             <FormField
               control={form.control}

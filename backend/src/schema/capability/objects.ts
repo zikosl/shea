@@ -6,7 +6,7 @@ const CapabilityCode = enumType({
   members: ['CUSTOM_ORDERS', 'QUOTATIONS', 'GIFT_BUILDER', 'GIFT_TEMPLATES', 'PRODUCTION', 'PRODUCTION_TASKS', 'DELIVERY_PICKUP', 'GIFT_GALLERY', 'GIFT_REPORTS'],
 })
 const CapabilityOverrideEffect = enumType({ name: 'CapabilityOverrideEffect', members: ['ENABLE', 'DISABLE'] })
-const CapabilitySource = enumType({ name: 'CapabilitySource', members: ['NICHE_DEFAULT', 'PARTNER_OVERRIDE'] })
+const CapabilitySource = enumType({ name: 'CapabilitySource', members: ['GLOBAL_DEFAULT', 'NICHE_DEFAULT', 'PARTNER_OVERRIDE'] })
 const EffectiveCapability = objectType({
   name: 'EffectiveCapability',
   definition(t) {
@@ -24,6 +24,15 @@ const NicheCapability = objectType({
     t.nonNull.boolean('enabledByDefault')
   },
 })
+const GlobalCapabilitySetting = objectType({
+  name: 'GlobalCapabilitySetting',
+  definition(t) {
+    t.nonNull.int('id')
+    t.nonNull.field('capability', { type: 'CapabilityCode' })
+    t.nonNull.boolean('enabled')
+    t.nonNull.field('updatedAt', { type: 'DateTime' })
+  },
+})
 const PartnerCapabilityOverride = objectType({
   name: 'PartnerCapabilityOverride',
   definition(t) {
@@ -33,4 +42,4 @@ const PartnerCapabilityOverride = objectType({
     t.nonNull.field('effect', { type: 'CapabilityOverrideEffect' })
   },
 })
-export default { CapabilityCode, CapabilityOverrideEffect, CapabilitySource, EffectiveCapability, NicheCapability, PartnerCapabilityOverride }
+export default { CapabilityCode, CapabilityOverrideEffect, CapabilitySource, EffectiveCapability, NicheCapability, GlobalCapabilitySetting, PartnerCapabilityOverride }

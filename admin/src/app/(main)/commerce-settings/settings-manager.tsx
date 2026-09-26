@@ -10,8 +10,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { BusinessModuleSelector } from "@/components/capabilities/business-module-selector";
+import { businessModuleOrder, BusinessModuleChoice, modulesFromCapabilities } from "@/lib/business-modules";
 
-import { addSchedule, PricingItem, PricingName, removeSchedule, savePricing, ScheduleItem } from "./actions";
+import { addSchedule, PricingItem, PricingName, removeSchedule, saveGlobalBusinessModules, savePricing, ScheduleItem } from "./actions";
 
 const pricingDefinitions: Array<{ name: PricingName; label: string; description: string }> = [
   { name: "APP_TAX", label: "Platform fee", description: "Application fee added to an order." },
@@ -22,13 +24,17 @@ const pricingDefinitions: Array<{ name: PricingName; label: string; description:
   { name: "PICKUP_TAX", label: "Pickup", description: "Fee applied when the customer collects an order." },
 ];
 
-export default function SettingsManager({ pricing, schedules }: { pricing: PricingItem[]; schedules: ScheduleItem[] }) {
+export default function SettingsManager({ pricing, schedules, globalCapabilities }: { pricing: PricingItem[]; schedules: ScheduleItem[]; globalCapabilities: CapabilityCode[] }) {
   const [isPending, startTransition] = useTransition();
   const [editingPrice, setEditingPrice] = useState<(typeof pricingDefinitions)[number] | null>(null);
   const [price, setPrice] = useState("");
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [time, setTime] = useState("");
   const [deletingSchedule, setDeletingSchedule] = useState<ScheduleItem | null>(null);
+  const initialModules = modulesFromCapabilities(globalCapabilities);
+  const [moduleChoices, setModuleChoices] = useState(() => Object.fromEntries(
+    businessModuleOrder.map((module) => [module, initialModules.has(module) ? "ENABLE" : "DISABLE"]),
+  ) as Record<BusinessModuleCode, BusinessModuleChoice>);
 
   function run(action: () => Promise<void>, success: string, close?: () => void) {
     startTransition(async () => {
@@ -49,6 +55,21 @@ export default function SettingsManager({ pricing, schedules }: { pricing: Prici
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(340px,.65fr)]">
+      <div className="xl:col-span-2">
+        <BusinessModuleSelector values={moduleChoices} onChange={setModuleChoices} />
+        <div className="mt-3 flex justify-end">
+          <Button
+            type="button"
+            disabled={isPending}
+            onClick={() => run(
+              () => saveGlobalBusinessModules(businessModuleOrder.filter((module) => moduleChoices[module] === "ENABLE")),
+              "Global business modules updated",
+            )}
+          >
+            {isPending && <Loader2 className="animate-spin" />} Save module defaults
+          </Button>
+        </div>
+      </div>
       <Card>
         <CardHeader className="border-b"><div className="flex items-start gap-3"><div className="rounded-lg border bg-muted p-2"><Coins className="h-4 w-4" /></div><div><CardTitle className="text-base">Order pricing</CardTitle><CardDescription className="mt-1">Flat amounts used by checkout and order calculations.</CardDescription></div></div></CardHeader>
         <CardContent className="p-0">

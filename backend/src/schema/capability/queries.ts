@@ -10,6 +10,10 @@ export default extendType({
       type: 'CapabilityCode',
       resolve: () => capabilityCatalog,
     })
+    t.nonNull.list.nonNull.field('globalCapabilitySettings', {
+      type: 'GlobalCapabilitySetting',
+      resolve: (_root, _args, ctx) => ctx.prisma.globalCapabilitySetting.findMany({ orderBy: { capability: 'asc' } }),
+    })
     t.nonNull.list.nonNull.field('effectiveCapabilities', {
       type: 'EffectiveCapability',
       args: { partnerId: intArg() },
@@ -22,6 +26,20 @@ export default extendType({
           : actorId
         if (!partnerUserId) throw new Error('PARTNER_REQUIRED')
         return effectiveCapabilities(ctx.prisma, partnerUserId)
+      },
+    })
+    t.nonNull.list.nonNull.field('inheritedCapabilities', {
+      type: 'EffectiveCapability',
+      args: { partnerId: intArg() },
+      resolve: async (_root, { partnerId }, ctx) => {
+        const actorId = getUserId(ctx)
+        const actor = await ctx.prisma.user.findUnique({ where: { id: actorId }, select: { role: true } })
+        if (partnerId && actor?.role !== 'ADMIN') throw new Error('ADMIN_ROLE_REQUIRED')
+        const partnerUserId = partnerId
+          ? (await ctx.prisma.partner.findUnique({ where: { id: partnerId }, select: { userId: true } }))?.userId
+          : actorId
+        if (!partnerUserId) throw new Error('PARTNER_REQUIRED')
+        return effectiveCapabilities(ctx.prisma, partnerUserId, { includePartnerOverrides: false })
       },
     })
     t.nonNull.list.nonNull.field('nicheCapabilityDefaults', {

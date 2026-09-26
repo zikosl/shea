@@ -15,10 +15,13 @@ type Partner = {
 
 type CapabilityCode = "CUSTOM_ORDERS" | "QUOTATIONS" | "GIFT_BUILDER" | "GIFT_TEMPLATES" | "PRODUCTION" | "PRODUCTION_TASKS" | "DELIVERY_PICKUP" | "GIFT_GALLERY" | "GIFT_REPORTS";
 type CapabilityOverrideEffect = "ENABLE" | "DISABLE";
+type BusinessModuleCode = "CUSTOM_SALES" | "GIFT_STUDIO" | "PRODUCTION_WORKFLOW";
+type BusinessModuleChoice = "INHERIT" | "ENABLE" | "DISABLE";
 
 type PartnerCapabilityConfig = {
     catalog: CapabilityCode[];
-    effective: Array<{ code: CapabilityCode; enabled: boolean; source: "NICHE_DEFAULT" | "PARTNER_OVERRIDE" }>;
+    effective: Array<{ code: CapabilityCode; enabled: boolean; source: "GLOBAL_DEFAULT" | "NICHE_DEFAULT" | "PARTNER_OVERRIDE" }>;
+    inherited: Array<{ code: CapabilityCode; enabled: boolean; source: "GLOBAL_DEFAULT" | "NICHE_DEFAULT" }>;
     overrides: Array<{ capability: CapabilityCode; effect: CapabilityOverrideEffect }>;
 }
 

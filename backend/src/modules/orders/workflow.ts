@@ -85,6 +85,18 @@ export async function transitionOrderStatus(
     if (deliveryStatus !== undefined && order.delivery) {
       await tx.delivery.update({ where: { id: order.delivery.id }, data: { status: deliveryStatus } })
     }
+    if (order.source === 'GIFT' && (input.target === 'COMPLETED' || input.target === 'CANCELLED')) {
+      await tx.customOrder.updateMany({
+        where: {
+          confirmedOrderId: order.id,
+          status: { notIn: ['FULFILLED', 'CANCELLED'] },
+        },
+        data: {
+          status: input.target === 'COMPLETED' ? 'FULFILLED' : 'CANCELLED',
+          version: { increment: 1 },
+        },
+      })
+    }
     await tx.orderStatusHistory.create({
       data: { orderId: order.id, from: order.status, to: input.target, actorId: input.actorId, reason: input.reason?.trim() || null },
     })

@@ -15,7 +15,11 @@ type ItemViewPageProps = {
 export default async function ItemViewPage({ itemId }: ItemViewPageProps) {
   let item = null;
   let pageTitle = `Create New ${title_singular}`;
-  let capabilityConfig: { catalog: CapabilityCode[]; enabled: CapabilityCode[] } | null = null;
+  let capabilityConfig: {
+    catalog: CapabilityCode[];
+    inherited: CapabilityCode[];
+    overrides: Array<{ capability: CapabilityCode; enabledByDefault: boolean }>;
+  } | null = null;
 
   if (itemId !== "new") {
     item = await getItemById(itemId);
@@ -23,8 +27,8 @@ export default async function ItemViewPage({ itemId }: ItemViewPageProps) {
       notFound();
     }
     pageTitle = `Edit ${title_singular}`;
-    capabilityConfig = await getNicheCapabilities(itemId);
   }
+  capabilityConfig = await getNicheCapabilities(itemId === "new" ? undefined : itemId);
 
   return <Form initialData={item} capabilityConfig={capabilityConfig} pageTitle={pageTitle} />;
 }

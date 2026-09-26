@@ -509,6 +509,13 @@ model NicheCapability {
   @@index([capability])
 }
 
+model GlobalCapabilitySetting {
+  id         Int            @id @default(autoincrement())
+  capability CapabilityCode @unique
+  enabled    Boolean        @default(false)
+  updatedAt  DateTime       @updatedAt
+}
+
 model PartnerCapabilityOverride {
   id         Int                      @id @default(autoincrement())
   partnerId  Int

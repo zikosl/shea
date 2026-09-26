@@ -78,6 +78,7 @@ async function createGiftOrderForPartner(prisma: PrismaClient, partnerId: number
     data: {
       orderNumber: input.orderNumber || documentNumber('GFT'), partnerId, nicheId: input.nicheId ?? null, clientId: clientId ?? null,
       addressId: input.addressId ?? null,
+      status: 'REQUESTED',
       customerName: input.customerName.trim(), customerPhone: input.customerPhone?.trim() || null,
       requiredAt: input.requiredAt ?? null, fulfillmentMode: input.fulfillmentMode,
       deliveryAddress: input.deliveryAddress?.trim() || null, note: input.note?.trim() || null,
@@ -150,6 +151,9 @@ export async function transitionGiftOrder(prisma: PrismaClient, partnerUserId: n
     if (!order) throw new GraphQLError('CUSTOM_ORDER_NOT_FOUND')
     if (order.version !== expectedVersion) throw new GraphQLError('CUSTOM_ORDER_VERSION_CONFLICT')
     if (!transitions[order.status].includes(next)) throw new GraphQLError(`INVALID_CUSTOM_ORDER_TRANSITION:${order.status}:${next}`)
+    if (next === 'FULFILLED' && order.fulfillmentMode === 'DELIVERY') {
+      throw new GraphQLError('DELIVERY_COMPLETION_REQUIRES_DRIVER')
+    }
     if (next === 'CANCELLED') await tx.stockReservation.updateMany({ where: { customOrderId: id, releasedAt: null, consumedAt: null }, data: { releasedAt: new Date() } })
     const updated = await tx.customOrder.updateMany({ where: { id, partnerId, version: expectedVersion }, data: { status: next, version: { increment: 1 } } })
     if (updated.count !== 1) throw new GraphQLError('CUSTOM_ORDER_VERSION_CONFLICT')

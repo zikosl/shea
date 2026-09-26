@@ -28,7 +28,13 @@ import {
   EMAIL_ALREADY_IN_USE_MESSAGE,
 } from '@/lib/form-errors';
 import { ResetAccessCode } from '@/components/accounts/reset-access-code';
-import { CapabilityInfo } from '@/components/capabilities/capability-info';
+import { BusinessModuleSelector } from '@/components/capabilities/business-module-selector';
+import {
+  businessModuleOrder,
+  capabilityOverridesFromModuleChoices,
+  moduleChoicesFromOverrides,
+  modulesFromCapabilities,
+} from '@/lib/business-modules';
 
 
 const formSchema = z.object({
@@ -61,14 +67,10 @@ export default function ItemForm({
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const inherited = new Map(capabilities?.effective.map((item) => [item.code, item.enabled]) ?? []);
-  const initialOverrides = Object.fromEntries(
-    (capabilities?.catalog ?? []).map((code) => [
-      code,
-      capabilities?.overrides.find((item) => item.capability === code)?.effect ?? null,
-    ]),
-  ) as Record<CapabilityCode, CapabilityOverrideEffect | null>;
-  const [capabilityOverrides, setCapabilityOverrides] = useState(initialOverrides);
+  const inheritedModules = modulesFromCapabilities(
+    capabilities?.inherited.filter((item) => item.enabled).map((item) => item.code) ?? [],
+  );
+  const [moduleChoices, setModuleChoices] = useState(() => moduleChoicesFromOverrides(capabilities?.overrides ?? []));
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -100,11 +102,11 @@ export default function ItemForm({
       }
 
       if (initialData) {
-        await savePartnerCapabilities(initialData.id, capabilityOverrides)
+        await savePartnerCapabilities(initialData.id, capabilityOverridesFromModuleChoices(capabilities?.catalog ?? [], moduleChoices))
       }
       else {
-        if (result.item?.id && Object.keys(capabilityOverrides).length) {
-          await savePartnerCapabilities(result.item.id, capabilityOverrides)
+        if (result.item?.id && capabilities?.catalog.length) {
+          await savePartnerCapabilities(result.item.id, capabilityOverridesFromModuleChoices(capabilities.catalog, moduleChoices))
         }
         form.reset()
       }
@@ -389,60 +391,12 @@ export default function ItemForm({
             />
 
             {capabilities?.catalog.length ? (
-              <section className="space-y-4 rounded-2xl border bg-muted/20 p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <FormLabel>Business capabilities</FormLabel>
-                    <FormDescription>
-                      Inherit niche defaults or override individual modules for this partner.
-                    </FormDescription>
-                  </div>
-                  <Badge variant="secondary" className="rounded-full">
-                    {capabilities.catalog.filter((code) => {
-                      const override = capabilityOverrides[code];
-                      return override ? override === "ENABLE" : inherited.get(code);
-                    }).length} enabled
-                  </Badge>
-                </div>
-                <div className="grid gap-3 md:grid-cols-2">
-                  {capabilities.catalog.map((code) => {
-                    const override = capabilityOverrides[code];
-                    const isEnabled = override ? override === "ENABLE" : Boolean(inherited.get(code));
-                    return (
-                      <div key={code} className="flex items-center justify-between gap-4 rounded-xl border bg-background p-3">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <p className="truncate text-sm font-medium">{code.replaceAll("_", " ").toLowerCase()}</p>
-                            <CapabilityInfo
-                              code={code}
-                              enabled={isEnabled}
-                              source={override ? "override" : "inherited"}
-                            />
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            {override ? `Forced ${override.toLowerCase()}` : `Inherited ${isEnabled ? "on" : "off"}`}
-                          </p>
-                        </div>
-                        <select
-                          aria-label={`${code} capability`}
-                          value={override ?? "INHERIT"}
-                          onChange={(event) => setCapabilityOverrides((current) => ({
-                            ...current,
-                            [code]: event.target.value === "INHERIT"
-                              ? null
-                              : event.target.value as CapabilityOverrideEffect,
-                          }))}
-                          className="h-9 rounded-md border border-input bg-background px-2 text-xs capitalize"
-                        >
-                          <option value="INHERIT">Inherit</option>
-                          <option value="ENABLE">Enabled</option>
-                          <option value="DISABLE">Disabled</option>
-                        </select>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
+              <BusinessModuleSelector
+                values={moduleChoices}
+                onChange={setModuleChoices}
+                allowInheritance
+                inherited={Object.fromEntries(businessModuleOrder.map((module) => [module, inheritedModules.has(module)]))}
+              />
             ) : null}
             {initialData ? (
               <ResetAccessCode

@@ -124,6 +124,11 @@ const PARTNER_CAPABILITIES = gql`
       enabled
       source
     }
+    inheritedCapabilities(partnerId: $partnerId) {
+      code
+      enabled
+      source
+    }
     partnerCapabilityOverrides(partnerId: $partnerId) {
       capability
       effect
@@ -131,16 +136,16 @@ const PARTNER_CAPABILITIES = gql`
   }
 `;
 
-const SET_PARTNER_CAPABILITY_OVERRIDE = gql`
-  mutation SetPartnerCapabilityOverride(
+const SET_PARTNER_CAPABILITIES = gql`
+  mutation SetPartnerCapabilities(
     $partnerId: Int!
-    $capability: CapabilityCode!
-    $effect: CapabilityOverrideEffect
+    $enabled: [CapabilityCode!]!
+    $disabled: [CapabilityCode!]!
   ) {
-    setPartnerCapabilityOverride(
+    setPartnerCapabilities(
       partnerId: $partnerId
-      capability: $capability
-      effect: $effect
+      enabled: $enabled
+      disabled: $disabled
     ) {
       capability
       effect
@@ -152,12 +157,14 @@ export async function getPartnerCapabilities(partnerId: string): Promise<Partner
   const response = await requestServerGraphQL<{
     capabilityCatalog: CapabilityCode[];
     effectiveCapabilities: PartnerCapabilityConfig["effective"];
+    inheritedCapabilities: PartnerCapabilityConfig["inherited"];
     partnerCapabilityOverrides: PartnerCapabilityConfig["overrides"];
   }>(PARTNER_CAPABILITIES, { partnerId: Number(partnerId) });
 
   return {
     catalog: response.capabilityCatalog,
     effective: response.effectiveCapabilities,
+    inherited: response.inheritedCapabilities,
     overrides: response.partnerCapabilityOverrides,
   };
 }
@@ -166,13 +173,9 @@ export async function savePartnerCapabilities(
   partnerId: string,
   overrides: Record<CapabilityCode, CapabilityOverrideEffect | null>,
 ) {
-  await Promise.all(
-    Object.entries(overrides).map(([capability, effect]) =>
-      requestServerGraphQL(SET_PARTNER_CAPABILITY_OVERRIDE, {
-        partnerId: Number(partnerId),
-        capability,
-        effect,
-      }),
-    ),
-  );
+  await requestServerGraphQL(SET_PARTNER_CAPABILITIES, {
+    partnerId: Number(partnerId),
+    enabled: Object.entries(overrides).filter(([, effect]) => effect === "ENABLE").map(([capability]) => capability),
+    disabled: Object.entries(overrides).filter(([, effect]) => effect === "DISABLE").map(([capability]) => capability),
+  });
 }
