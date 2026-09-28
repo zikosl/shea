@@ -13,7 +13,16 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout gateways
+        uses: actions/checkout@v4
+        with:
+          repository: zikosl/shea-gateway
+          path: gateways
+      - name: Checkout shared protocol
+        uses: actions/checkout@v4
+        with:
+          repository: zikosl/pos-protocol
+          path: packages/pos-protocol
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -23,7 +32,26 @@ jobs:
             gateways/local-gateway/package-lock.json
       - name: Build shared protocol
         working-directory: packages/pos-protocol
-        run: npm ci && npm run build
+        run: npm ci && npm run typecheck && npm run test:contracts
+      - name: Verify release version
+        if: github.ref_type == 'tag'
+        working-directory: gateways/local-gateway
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $expectedTag = "local-gateway-v$version"
+          if ($env:GITHUB_REF_NAME -ne $expectedTag) {
+            throw "Release tag '$env:GITHUB_REF_NAME' must match package version '$expectedTag'."
+          }
+      - name: Verify code-signing configuration
+        shell: pwsh
+        env:
+          WINDOWS_CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
+          WINDOWS_CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:WINDOWS_CSC_LINK) -or [string]::IsNullOrWhiteSpace($env:WINDOWS_CSC_KEY_PASSWORD)) {
+            throw "WINDOWS_CSC_LINK and WINDOWS_CSC_KEY_PASSWORD are required for production releases."
+          }
       - name: Validate Windows control panel scripts
         working-directory: gateways/local-gateway
         shell: pwsh
@@ -51,8 +79,30 @@ jobs:
       - name: Build Windows installer
         working-directory: gateways/local-gateway
         run: npm ci && npm run dist:win
+      - name: Sign installer and create checksum
+        shell: pwsh
+        env:
+          WINDOWS_CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
+          WINDOWS_CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
+        run: |
+          $certificate = Join-Path $env:RUNNER_TEMP "shea-signing.p12"
+          [IO.File]::WriteAllBytes($certificate, [Convert]::FromBase64String($env:WINDOWS_CSC_LINK))
+          $installer = Get-ChildItem gateways/local-gateway/installer/output/*.exe | Select-Object -First 1
+          if (!$installer) { throw "Gateway installer was not produced." }
+          $signTool = (Get-Command signtool.exe -ErrorAction SilentlyContinue).Source
+          if (!$signTool) {
+            $signTool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin" -Filter signtool.exe -Recurse |
+              Where-Object { $_.FullName -match '\\x64\\' } | Select-Object -Last 1 -ExpandProperty FullName
+          }
+          if (!$signTool) { throw "Windows signtool.exe was not found." }
+          & $signTool sign /f $certificate /p $env:WINDOWS_CSC_KEY_PASSWORD /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 $installer.FullName
+          if ($LASTEXITCODE -ne 0) { throw "Gateway installer signing failed." }
+          "$(Get-FileHash $installer.FullName -Algorithm SHA256 | Select-Object -ExpandProperty Hash)  $($installer.Name)" | Set-Content gateways/local-gateway/installer/output/SHA256SUMS.txt
+          Remove-Item $certificate -Force
       - uses: actions/upload-artifact@v4
         with:
           name: shea-local-gateway-windows
-          path: gateways/local-gateway/installer/output/*.exe
+          path: |
+            gateways/local-gateway/installer/output/*.exe
+            gateways/local-gateway/installer/output/SHA256SUMS.txt
           if-no-files-found: error

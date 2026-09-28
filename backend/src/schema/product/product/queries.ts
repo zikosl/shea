@@ -51,6 +51,7 @@ export const ProductQuery = extendType({
             type: 'ProductViewResult',
             args: {
                 partnerId: intArg(),
+                niche_id: intArg(),
                 category_id: intArg(),
                 brand_id: intArg(),
                 product_type_id: intArg(),
@@ -60,7 +61,7 @@ export const ProductQuery = extendType({
                 isFull: booleanArg(),
                 order: arg({ type: "QueryOrder" })
             },
-            resolve: async (_parent, { search, page, limit, isFull = false, category_id, brand_id, product_type_id, partnerId, order }: any, ctx: Context) => {
+            resolve: async (_parent, { search, page, limit, isFull = false, niche_id, category_id, brand_id, product_type_id, partnerId, order }: any, ctx: Context) => {
 
 
                 const userId = getOptionalUserId(ctx);
@@ -90,6 +91,13 @@ export const ProductQuery = extendType({
                         ...where,
                         brand_id: brand_id,
                     }
+                }
+                if (niche_id && !category_id && !product_type_id) {
+                    const categories = await ctx.prisma.category.findMany({
+                        where: { niche_id },
+                        select: { id: true },
+                    })
+                    where.category_id = { in: categories.map(category => category.id) }
                 }
                 if (product_type_id) {
                     where = {

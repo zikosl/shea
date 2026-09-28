@@ -16,7 +16,7 @@ Admin -> SaaS Backend (control plane) ---> Cloud Gateway internal API
 
 - The SaaS backend database owns partners, stores, subscriptions, deployment mode, and configured gateway URLs.
 - The cloud gateway database owns cloud POS replicas, gateway credentials, sales, sync events, and cursors.
-- A multi-POS store's local PostgreSQL owns live shared stock and sales.
+- A multi-POS store's local PostgreSQL owns live shared stock, sales, and refunds.
 - Every terminal retains SQLite for its local read model, printing, images, and operator state.
 - No POS process connects directly to PostgreSQL.
 
@@ -72,14 +72,15 @@ For source development on macOS or Linux, run `npm run configure -- ...` from `g
 - Restrict LAN port `3510` to the store's trusted VLAN.
 - Never expose PostgreSQL port `5432` to terminals or the internet.
 - Multi-POS checkout stops when the local gateway is unavailable to prevent overselling.
+- Multi-POS refunds also stop when the local gateway is unavailable. Sale, return quantities, and restored stock commit atomically and retry with an idempotency key.
 - Internet loss does not stop store operations; the local gateway outbox retries later.
 - Rotate provisioning and pairing credentials after setup.
 - Back up local and cloud PostgreSQL independently.
-- Run `prisma migrate deploy` before starting a new gateway release.
+- Run `prisma migrate deploy` for both gateways before starting a matching POS release. Deploy cloud gateway first, local gateway second, and POS terminals last.
 
 ## Shared protocol
 
-`packages/pos-protocol` is compiled into Shea POS and both gateways. It validates sales, stock changes, terminal pairing, event envelopes, cursors, and protocol versions. It contains no database or transport implementation.
+`packages/pos-protocol` is compiled into Shea POS and both gateways. It validates cash sales, idempotent refunds, stock changes, terminal pairing, event envelopes, cursors, and protocol versions. It contains no database or transport implementation.
 
 ## Current support boundary
 

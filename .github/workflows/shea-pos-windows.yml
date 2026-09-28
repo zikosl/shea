@@ -19,30 +19,55 @@ jobs:
       CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
       CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout POS
+        uses: actions/checkout@v4
+        with:
+          repository: zikosl/shea-pos
+          path: shea-pos
+      - name: Checkout shared protocol
+        uses: actions/checkout@v4
+        with:
+          repository: zikosl/pos-protocol
+          path: packages/pos-protocol
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: shea-pos/package-lock.json
+      - name: Build shared protocol
+        working-directory: packages/pos-protocol
+        run: npm ci && npm run typecheck && npm run test:contracts
       - run: npm ci
+      - name: Verify release version
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $expectedTag = "shea-pos-v$version"
+          if ($env:GITHUB_REF_NAME -ne $expectedTag) {
+            throw "Release tag '$env:GITHUB_REF_NAME' must match package version '$expectedTag'."
+          }
+      - name: Verify code-signing configuration
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:CSC_LINK) -or [string]::IsNullOrWhiteSpace($env:CSC_KEY_PASSWORD)) {
+            throw "WINDOWS_CSC_LINK and WINDOWS_CSC_KEY_PASSWORD are required for production releases."
+          }
       - run: npm run typecheck
       - run: npm run test:integration
       - run: npm run dist:win
+      - name: Create checksums
+        shell: pwsh
+        run: |
+          Get-ChildItem release -File | Where-Object { $_.Extension -in '.exe', '.yml', '.blockmap' } | ForEach-Object {
+            "$(Get-FileHash $_.FullName -Algorithm SHA256 | Select-Object -ExpandProperty Hash)  $($_.Name)"
+          } | Set-Content release/SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
           name: shea-pos-windows
-          path: shea-pos/release/*.exe
+          path: |
+            shea-pos/release/*.exe
+            shea-pos/release/latest.yml
+            shea-pos/release/*.blockmap
+            shea-pos/release/SHA256SUMS.txt
           if-no-files-found: error
-*** Add File: /Users/zakaria/Desktop/cosmetica/shea/shea-pos/RELEASE.md
-# Release checklist
-
-1. Deploy the backend migration with `yarn prisma migrate deploy` from `backend`.
-2. Deploy the backend and admin together. Confirm `/health`, partner sign-in, `/catalog-requests`, and one POS bootstrap request.
-3. Add GitHub repository secrets `WINDOWS_CSC_LINK` and `WINDOWS_CSC_KEY_PASSWORD` for the Windows code-signing certificate.
-4. Run the `Shea POS Windows` workflow manually for a candidate build.
-5. Activate a test partner register, complete a tracked and unlimited-stock sale, disconnect networking, print a receipt, reconnect, and verify the sale and stock movement on the server.
-6. Revoke the test device server-side and confirm it cannot synchronize or renew its offline lease.
-7. Tag the approved commit as `shea-pos-v0.1.0`; the workflow produces the signed NSIS installer artifact.
-
-Do not distribute an unsigned installer to production registers. Windows reputation and update integrity depend on a stable code-signing identity.

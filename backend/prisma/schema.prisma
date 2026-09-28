@@ -485,6 +485,7 @@ model Product {
 
   OrderItem          OrderItem[]
   saleItems          SaleItem[]
+  refundItems        SaleRefundItem[]
   stockMovements     StockMovement[]
   customOrderLines   CustomOrderLine[]
   giftTemplateItems  GiftTemplateItem[]
@@ -778,6 +779,8 @@ model Sale {
   grossProfit   Float      @default(0)
   partnerFee    Float      @default(0)
   netProfit     Float      @default(0)
+  refundedTotal Float      @default(0)
+  refundedAt    DateTime?
   completedAt   DateTime?
   voidReason    String?
   createdAt     DateTime   @default(now())
@@ -790,6 +793,7 @@ model Sale {
   items          SaleItem[]
   payments       Payment[]
   stockMovements StockMovement[]
+  refunds        SaleRefund[]
 
   @@index([partnerId, createdAt])
   @@index([partnerId, status])
@@ -808,12 +812,14 @@ model SaleItem {
   total       Float
   costPrice   Float    @default(0)
   profit      Float    @default(0)
+  returnedQuantity Float @default(0)
   productName String
   variantName String?
   createdAt   DateTime @default(now())
 
   sale    Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
+  refundItems SaleRefundItem[]
 
   @@index([saleId])
   @@index([productId])
@@ -825,6 +831,7 @@ model Payment {
   method    PaymentMethod
   status    PaymentStatus @default(PAID)
   amount    Float
+  refundedAmount Float @default(0)
   reference String?
   createdAt DateTime      @default(now())
 
@@ -832,6 +839,35 @@ model Payment {
 
   @@index([saleId])
   @@index([method])
+}
+
+model SaleRefund {
+  id        String   @id
+  saleId    String
+  amount    Float
+  reason    String
+  createdAt DateTime @default(now())
+
+  sale  Sale             @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  items SaleRefundItem[]
+
+  @@index([saleId, createdAt])
+}
+
+model SaleRefundItem {
+  id         String @id @default(uuid())
+  refundId   String
+  saleItemId String
+  productId  Int
+  quantity   Float
+  amount     Float
+
+  refund   SaleRefund @relation(fields: [refundId], references: [id], onDelete: Cascade)
+  saleItem SaleItem   @relation(fields: [saleItemId], references: [id], onDelete: Restrict)
+  product  Product    @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([refundId])
+  @@index([saleItemId])
 }
 
 model StockMovement {

@@ -685,6 +685,7 @@ type Mutation {
   readLogsByEntity(entityId: String!, entityType: String!): Int!
   recordSyncEvent(action: SyncEventAction!, deviceId: String, entity: String!, idempotencyKey: String!, payload: String!): SyncEvent
   refreshToken(data: String!): AuthPayload
+  refundSale(data: RefundSaleInput!): SaleRefund
   registerDevice(appVersion: String, deviceKey: String!, name: String, platform: Platform!, storeId: String): Device
   registerPushToken(deviceId: String, platform: Platform!, token: String!): Boolean
   rejectCatalogProposal(adminNote: String, id: String!, rejectionReason: String!): CatalogProposal
@@ -1040,6 +1041,7 @@ type Payment {
   id: String!
   method: PaymentMethod!
   reference: String
+  refundedAmount: Float!
   saleId: String!
   status: PaymentStatus!
 }
@@ -1070,6 +1072,11 @@ type PosBootstrap {
   generatedAt: DateTime!
   offlineUntil: DateTime!
   payload: String!
+}
+
+input PosRefundLineInput {
+  productId: Int!
+  quantity: Float!
 }
 
 input PosSaleItemInput {
@@ -1410,7 +1417,7 @@ type Query {
   findManyProductTemplateRequests(category_id: Int, limit: Int!, niche_id: Int, page: Int!, product_type_id: Int, search: String, status: ProductTemplateRequestStatus): ProductTemplateRequestResult
   findManyProductTemplates(brand_id: Int, category_id: Int, isFull: Boolean, limit: Int!, niche_id: Int, page: Int!, product_type_id: Int, search: String): ProductTemplateResult
   findManyProductTypes(brand_id: Int, category_id: Int, isFull: Boolean, limit: Int!, niche_id: Int, page: Int!, partnerId: Int, search: String): ProductTypeResult
-  findManyProducts(brand_id: Int, category_id: Int, isFull: Boolean, limit: Int!, order: QueryOrder, page: Int!, partnerId: Int, product_type_id: Int, search: String): ProductViewResult
+  findManyProducts(brand_id: Int, category_id: Int, isFull: Boolean, limit: Int!, niche_id: Int, order: QueryOrder, page: Int!, partnerId: Int, product_type_id: Int, search: String): ProductViewResult
   findManySchedule: [PartnerDeliverySchedule]!
   findManyUserAddresses(isFull: Boolean, limit: Int!, page: Int!, search: String): AddressResult
   findManyVariants(isFull: Boolean, limit: Int!, page: Int!, productId: Int!, search: String): VariantResult
@@ -1480,6 +1487,14 @@ enum QuotationStatus {
   SENT
 }
 
+input RefundSaleInput {
+  deviceId: String
+  lines: [PosRefundLineInput!]!
+  reason: String!
+  refundId: String!
+  saleId: String!
+}
+
 enum Role {
   ADMIN
   CLIENT
@@ -1503,6 +1518,8 @@ type Sale {
   partnerFee: Float!
   partnerId: Int!
   payments: [Payment!]!
+  refundedAt: DateTime
+  refundedTotal: Float!
   saleNumber: String!
   sourceOrderId: Int
   status: SaleStatus!
@@ -1523,6 +1540,7 @@ type SaleItem {
   productName: String!
   profit: Float!
   quantity: Float!
+  returnedQuantity: Float!
   saleId: String!
   tax: Float!
   total: Float!
@@ -1534,6 +1552,14 @@ input SalePaymentInput {
   amount: Float
   method: PaymentMethod!
   reference: String
+}
+
+type SaleRefund {
+  amount: Float!
+  createdAt: DateTime!
+  id: String!
+  reason: String!
+  saleId: String!
 }
 
 enum SaleStatus {

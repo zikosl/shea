@@ -206,6 +206,86 @@ const Mutation = extendType({
       },
     })
 
+    t.field('refundSale', {
+      type: 'SaleRefund',
+      args: { data: nonNull(arg({ type: 'RefundSaleInput' })) },
+      resolve: async (_parent, { data }: any, ctx: Context) => {
+        const partnerId = getUserId(ctx)
+        await assertPartner(ctx, partnerId)
+        if (!data.lines?.length) throw new GraphQLError('REFUND_ITEMS_REQUIRED')
+        if (new Set(data.lines.map((line: any) => line.productId)).size !== data.lines.length) throw new GraphQLError('DUPLICATE_REFUND_ITEM')
+        if (String(data.reason || '').trim().length < 3) throw new GraphQLError('REFUND_REASON_REQUIRED')
+        const duplicate = await ctx.prisma.saleRefund.findUnique({ where: { id: data.refundId } })
+        if (duplicate) return duplicate
+
+        return ctx.prisma.$transaction(async (tx) => {
+          const sale = await tx.sale.findFirst({
+            where: { id: data.saleId, partnerId },
+            include: { items: true, payments: true },
+          })
+          if (!sale) throw new GraphQLError('SALE_NOT_FOUND')
+          if (!['COMPLETED', 'PARTIALLY_REFUNDED'].includes(sale.status)) throw new GraphQLError('SALE_NOT_REFUNDABLE')
+
+          const prepared = data.lines.map((line: any) => {
+            const item = sale.items.find((entry: any) => entry.productId === line.productId)
+            if (!item) throw new GraphQLError('SALE_ITEM_NOT_FOUND')
+            const remaining = item.quantity - item.returnedQuantity
+            if (!Number.isFinite(line.quantity) || line.quantity <= 0 || line.quantity > remaining)
+              throw new GraphQLError('INVALID_REFUND_QUANTITY')
+            return { item, quantity: line.quantity, amount: item.total * (line.quantity / item.quantity) }
+          })
+          const amount = prepared.reduce((sum: number, row: any) => sum + row.amount, 0)
+          const cashPayment = sale.payments.find((payment: any) => payment.method === 'CASH')
+          if (!cashPayment) throw new GraphQLError('CASH_PAYMENT_NOT_FOUND')
+
+          const openCashSession = await tx.cashSession.findFirst({
+            where: { partnerId, deviceId: data.deviceId ?? sale.deviceId ?? undefined, status: 'OPEN' },
+            orderBy: { openedAt: 'desc' },
+          })
+          if (!openCashSession) throw new GraphQLError('OPEN_CASH_SESSION_NOT_FOUND')
+          if (openCashSession.expectedCash < amount) throw new GraphQLError('INSUFFICIENT_REGISTER_CASH')
+
+          for (const row of prepared) {
+            const product = await tx.product.findFirst({ where: { id: row.item.productId, partnerId } })
+            if (!product) throw new GraphQLError('PRODUCT_NOT_FOUND')
+            await tx.saleItem.update({ where: { id: row.item.id }, data: { returnedQuantity: { increment: row.quantity } } })
+            if (product.trackInventory) {
+              const stockAfter = product.stock + row.quantity
+              await tx.product.update({ where: { id: product.id }, data: { stock: { increment: row.quantity } } })
+              await tx.stockMovement.create({
+                data: { productId: product.id, partnerId, userId: partnerId, saleId: sale.id, type: 'RETURN', quantityDelta: row.quantity, stockBefore: product.stock, stockAfter, reason: data.reason, reference: sale.saleNumber },
+              })
+            }
+          }
+
+          const refundedTotal = sale.refundedTotal + amount
+          const fullyRefunded = refundedTotal >= sale.total - 0.005
+          await tx.sale.update({
+            where: { id: sale.id },
+            data: { status: fullyRefunded ? 'REFUNDED' : 'PARTIALLY_REFUNDED', refundedTotal, refundedAt: new Date() },
+          })
+          await tx.payment.update({
+            where: { id: cashPayment.id },
+            data: { refundedAmount: { increment: amount }, status: fullyRefunded ? 'REFUNDED' : cashPayment.status },
+          })
+          await tx.cashSession.update({ where: { id: openCashSession.id }, data: { expectedCash: { decrement: amount } } })
+          const refund = await tx.saleRefund.create({
+            data: {
+              id: data.refundId,
+              saleId: sale.id,
+              amount,
+              reason: data.reason.trim(),
+              items: { create: prepared.map((row: any) => ({ saleItemId: row.item.id, productId: row.item.productId, quantity: row.quantity, amount: row.amount })) },
+            },
+          })
+          await tx.auditLog.create({
+            data: { actorId: partnerId, partnerId, action: 'REFUND_SALE', entity: 'Sale', entityId: sale.id, after: { refundId: refund.id, amount, reason: data.reason } },
+          })
+          return refund
+        }, { isolationLevel: 'Serializable' })
+      },
+    })
+
     t.field('openCashSession', {
       type: 'CashSession',
       args: {

@@ -72,6 +72,8 @@ const Sale = objectType({
     t.nonNull.float('grossProfit')
     t.nonNull.float('partnerFee')
     t.nonNull.float('netProfit')
+    t.nonNull.float('refundedTotal')
+    t.field('refundedAt', { type: 'DateTime' })
     t.field('completedAt', { type: 'DateTime' })
     t.string('voidReason')
     t.nonNull.field('createdAt', { type: 'DateTime' })
@@ -100,6 +102,7 @@ const SaleItem = objectType({
     t.nonNull.float('total')
     t.nonNull.float('costPrice')
     t.nonNull.float('profit')
+    t.nonNull.float('returnedQuantity')
     t.nonNull.string('productName')
     t.string('variantName')
     t.nonNull.field('createdAt', { type: 'DateTime' })
@@ -118,7 +121,19 @@ const Payment = objectType({
     t.nonNull.field('method', { type: 'PaymentMethod' })
     t.nonNull.field('status', { type: 'PaymentStatus' })
     t.nonNull.float('amount')
+    t.nonNull.float('refundedAmount')
     t.string('reference')
+    t.nonNull.field('createdAt', { type: 'DateTime' })
+  },
+})
+
+const SaleRefund = objectType({
+  name: 'SaleRefund',
+  definition(t) {
+    t.nonNull.string('id')
+    t.nonNull.string('saleId')
+    t.nonNull.float('amount')
+    t.nonNull.string('reason')
     t.nonNull.field('createdAt', { type: 'DateTime' })
   },
 })
@@ -230,6 +245,25 @@ const CreateSaleInput = inputObjectType({
   },
 })
 
+const PosRefundLineInput = inputObjectType({
+  name: 'PosRefundLineInput',
+  definition(t) {
+    t.nonNull.int('productId')
+    t.nonNull.float('quantity')
+  },
+})
+
+const RefundSaleInput = inputObjectType({
+  name: 'RefundSaleInput',
+  definition(t) {
+    t.nonNull.string('refundId')
+    t.nonNull.string('saleId')
+    t.string('deviceId')
+    t.nonNull.string('reason')
+    t.nonNull.list.nonNull.field('lines', { type: 'PosRefundLineInput' })
+  },
+})
+
 export default {
   StockMovementType,
   SaleStatus,
@@ -242,6 +276,7 @@ export default {
   Sale,
   SaleItem,
   Payment,
+  SaleRefund,
   StockMovement,
   CashSession,
   SyncEvent,
@@ -249,4 +284,6 @@ export default {
   SalePaymentInput,
   PosSaleItemInput,
   CreateSaleInput,
+  PosRefundLineInput,
+  RefundSaleInput,
 }
