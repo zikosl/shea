@@ -140,6 +140,7 @@ export const permissions = shield(
       createProduct: isPartner,
       createManyProducts: isPartner,
       updateProduct: isPartner,
+      setProductsAvailability: isPartner,
       deleteProduct: isPartner,
       submitProductTemplateRequest: isPartner,
       submitCatalogProposal: isPartner,

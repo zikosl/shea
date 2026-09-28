@@ -170,6 +170,11 @@ type BrandResult {
   totalBrands: Int
 }
 
+type BulkProductAvailabilityResult {
+  failedIds: [Int!]!
+  updatedIds: [Int!]!
+}
+
 enum CapabilityCode {
   CUSTOM_ORDERS
   DELIVERY_PICKUP
@@ -706,6 +711,7 @@ type Mutation {
   setNicheCapability(capability: CapabilityCode!, enabled: Boolean, nicheId: Int!): NicheCapability
   setPartnerCapabilities(disabled: [CapabilityCode!]!, enabled: [CapabilityCode!]!, partnerId: Int!): [PartnerCapabilityOverride!]!
   setPartnerCapabilityOverride(capability: CapabilityCode!, effect: CapabilityOverrideEffect, partnerId: Int!): PartnerCapabilityOverride
+  setProductsAvailability(available: Boolean!, ids: [Int!]!): BulkProductAvailabilityResult
   setStoreDeploymentMode(mode: StoreDeploymentMode!, storeId: String!): Store!
   signIn(appVersion: String, deviceKey: String, deviceName: String, email: String!, password: String!, platform: String): AuthPayload
   submitCatalogProposal(categoryId: Int, description: String, deviceId: String, entityType: CatalogProposalEntityType!, image: String, localId: String!, name: String!, name_ar: String, nicheId: Int!, parentProposalId: String): CatalogProposal

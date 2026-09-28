@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { arg, intArg, nonNull, inputObjectType, list, extendType, stringArg, floatArg, booleanArg } from "nexus"
+import { arg, intArg, nonNull, inputObjectType, list, extendType, objectType, stringArg, floatArg, booleanArg } from "nexus"
 import { getUserId } from "../../../utils"
 import { Context } from "../../../context"
 import { publishStoreProducts } from "../../../modules/store-network/service"
@@ -8,6 +8,7 @@ import {
     createProduct,
     createProductTemplate,
     updateProduct,
+    setProductsAvailability,
     updateProductTemplate,
     updateProductTemplateImages
 } from "../../../application/catalog/product.service"
@@ -26,6 +27,14 @@ async function publishPartnerCatalog(ctx: Context, partnerId: number) {
     })
     await Promise.all(stores.map((store) => publishStoreProducts(ctx.prisma, store.id)))
 }
+
+const BulkProductAvailabilityResult = objectType({
+    name: 'BulkProductAvailabilityResult',
+    definition(t) {
+        t.nonNull.list.nonNull.int('updatedIds')
+        t.nonNull.list.nonNull.int('failedIds')
+    },
+})
 
 const ProductMutation = extendType({
     type: 'Mutation',
@@ -105,6 +114,20 @@ const ProductMutation = extendType({
                 })
                 await publishPartnerCatalog(ctx, userId)
                 return updated
+            },
+        })
+
+        t.field('setProductsAvailability', {
+            type: BulkProductAvailabilityResult,
+            args: {
+                ids: nonNull(list(nonNull(intArg()))),
+                available: nonNull(booleanArg()),
+            },
+            resolve: async (_parent, { ids, available }, ctx: Context) => {
+                const userId = getUserId(ctx)
+                const result = await setProductsAvailability(ctx.prisma, userId, ids, available)
+                if (result.updatedIds.length) await publishPartnerCatalog(ctx, userId)
+                return result
             },
         })
 
@@ -221,6 +244,7 @@ const InputProductVariant = inputObjectType({
 })
 export default {
     InputProductVariant,
+    BulkProductAvailabilityResult,
     ProductMutation,
     ProductTemplateMutation
 }

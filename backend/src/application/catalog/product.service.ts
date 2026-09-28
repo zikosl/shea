@@ -357,3 +357,29 @@ export async function updateProductTemplateImages(
     where: { product_template_id: productTemplateId },
   })
 }
+
+export async function setProductsAvailability(
+  prisma: PrismaClient,
+  partnerId: number,
+  ids: number[],
+  available: boolean,
+) {
+  const uniqueIds = [...new Set(ids)]
+  if (uniqueIds.length === 0 || ids.length > 100 || uniqueIds.some(id => !Number.isSafeInteger(id) || id <= 0)) {
+    throw createBadRequestError('Select between 1 and 100 products')
+  }
+
+  const owned = await prisma.product.findMany({
+    where: { id: { in: uniqueIds }, partnerId },
+    select: { id: true },
+  })
+  const updatedIds = owned.map(product => product.id)
+  if (updatedIds.length) {
+    await prisma.product.updateMany({
+      where: { id: { in: updatedIds }, partnerId },
+      data: { available },
+    })
+  }
+  const updatedSet = new Set(updatedIds)
+  return { updatedIds, failedIds: uniqueIds.filter(id => !updatedSet.has(id)) }
+}
