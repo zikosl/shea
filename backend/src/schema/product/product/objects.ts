@@ -396,6 +396,7 @@ const ProductTemplatePartnerPreview = objectType({
         t.nonNull.int('stock');
         t.nonNull.boolean('trackInventory', {
             resolve: async (parent, _args, ctx) => {
+                if (typeof parent.trackInventory === 'boolean') return parent.trackInventory
                 const product = await ctx.prisma.product.findUnique({ where: { id: parent.product_id }, select: { trackInventory: true } })
                 return product?.trackInventory ?? true
             },

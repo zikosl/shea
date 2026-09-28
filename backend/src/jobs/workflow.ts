@@ -94,6 +94,8 @@ async function processOutbox() {
           : getOrderPushCopy(status as OrderStatus, Number(payload.orderId ?? event.aggregateId), language)
         const result = await sendNotification({
           tokens: recipient.pushTokens.map((entry) => entry.token), title: copy.title, body: copy.body,
+          androidChannelId: recipient.client ? 'order_updates' : status === 'REQUESTED' ? 'new-order-alerts' : undefined,
+          sound: recipient.partner && status === 'REQUESTED' ? 'new_order.wav' : 'default',
           data: isGiftPreparation
             ? { event: 'GIFT_PREPARATION_DUE', customOrderId: String(payload.customOrderId ?? event.aggregateId), status }
             : isGiftQuote

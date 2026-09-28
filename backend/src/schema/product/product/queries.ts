@@ -146,8 +146,9 @@ export const ProductQuery = extendType({
                 isFull: booleanArg(),
                 order: arg({ type: "QueryOrder" }),
                 giftEligible: booleanArg(),
+                availableOnly: booleanArg(),
             },
-            resolve: async (_parent, { search, page, limit, isFull = false, category_id, brand_id, product_type_id, partnerId, order, giftEligible, niche_id }: any, ctx: Context) => {
+            resolve: async (_parent, { search, page, limit, isFull = false, category_id, brand_id, product_type_id, partnerId, order, giftEligible, availableOnly, niche_id }: any, ctx: Context) => {
 
 
                 const userId = getOptionalUserId(ctx);
@@ -177,9 +178,21 @@ export const ProductQuery = extendType({
                         partnerId
                     };
                 if (giftPartnerIds) where.partnerId = partnerId ?? { in: giftPartnerIds }
+                if (availableOnly) {
+                    Object.assign(where, {
+                        available: true,
+                        isActive: true,
+                        onlineVisible: true,
+                        partnerOnline: true,
+                    })
+                    where.AND = [{ OR: [{ trackInventory: false }, { stock: { gt: 0 } }] }]
+                }
                 if (niche_id) {
                     const categories = await ctx.prisma.category.findMany({ where: { niche_id }, select: { id: true } })
-                    where.AND = [{ category_id: { in: categories.map(category => category.id) } }]
+                    where.AND = [
+                        ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
+                        { category_id: { in: categories.map(category => category.id) } },
+                    ]
                 }
                 if (brand_id) {
                     where = {

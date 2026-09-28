@@ -80,6 +80,24 @@ test('invalid quantities and unavailable products are rejected', async () => {
   await assert.rejects(previewCheckout(db, 1, input), /PRODUCT_UNAVAILABLE/)
 })
 
+test('availability errors identify the affected cart product', async () => {
+  const { db, input, product } = fixture()
+  product.available = false
+  await assert.rejects(previewCheckout(db, 1, input), (error: any) => {
+    assert.equal(error.extensions.code, 'PRODUCT_UNAVAILABLE')
+    assert.equal(error.extensions.productId, product.id)
+    return true
+  })
+
+  product.available = true
+  product.stock = 1
+  await assert.rejects(previewCheckout(db, 1, input), (error: any) => {
+    assert.equal(error.extensions.code, 'INSUFFICIENT_STOCK')
+    assert.equal(error.extensions.productId, product.id)
+    return true
+  })
+})
+
 test('a changed total never creates an order', async () => {
   const { db, input, state } = fixture()
   await assert.rejects(submitCheckout(db, 1, { ...input, expectedTotal: 400 }), /PRICE_CHANGED/)

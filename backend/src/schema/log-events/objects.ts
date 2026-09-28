@@ -16,6 +16,14 @@ const Log = objectType({
     t.string('entityId')
     t.string('action')
     t.nonNull.string('priority')
+    t.string('status', {
+      resolve: (parent) => {
+        const metadata = parent.metadata
+        if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) return null
+        const status = (metadata as Record<string, unknown>).status
+        return typeof status === 'string' ? status : null
+      },
+    })
     t.int('userId')
     t.field('user', {
       type: 'User',

@@ -13,7 +13,9 @@ type CheckoutInput = {
   items: ({ productId?: number | null; quantity?: number | null; price?: number | null } | null)[]
 }
 const money = (value: number) => Math.round(value * 100) / 100
-const fail = (code: string): never => { throw new GraphQLError(code) }
+const fail = (code: string, productId?: number): never => {
+  throw new GraphQLError(code, { extensions: { code, ...(productId ? { productId } : {}) } })
+}
 
 export async function previewCheckout(tx: Prisma.TransactionClient, userId: number, input: CheckoutInput) {
   if (!input.partnerId || !input.items.length || input.items.length > 100) fail('INVALID_ORDER')
@@ -35,11 +37,14 @@ export async function previewCheckout(tx: Prisma.TransactionClient, userId: numb
     where: { id: { in: [...quantities.keys()] }, partnerId: input.partnerId! },
     include: { variant: { include: { product: true } } },
   })
-  if (products.length !== quantities.size) fail('PRODUCT_UNAVAILABLE')
+  if (products.length !== quantities.size) {
+    const found = new Set(products.map(product => product.id))
+    fail('PRODUCT_UNAVAILABLE', [...quantities.keys()].find(id => !found.has(id)))
+  }
   const items = products.map(product => {
     const quantity = quantities.get(product.id)!
-    if (!product.available || !product.isActive || !product.onlineVisible) fail('PRODUCT_UNAVAILABLE')
-    if (product.trackInventory && product.stock < quantity) fail('INSUFFICIENT_STOCK')
+    if (!product.available || !product.isActive || !product.onlineVisible) fail('PRODUCT_UNAVAILABLE', product.id)
+    if (product.trackInventory && product.stock < quantity) fail('INSUFFICIENT_STOCK', product.id)
     if (!Number.isFinite(product.price) || product.price < 0) fail('INVALID_PRICE')
     return {
       productId: product.id,

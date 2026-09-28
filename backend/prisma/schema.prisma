@@ -1565,6 +1565,8 @@ view ProductTemplatePartnerPreview {
   onlineVisible     Boolean
   priceOnRequest    Boolean
   isActive          Boolean
+  trackInventory    Boolean
+  partnerOnline     Boolean
   customName        String?
   customDescription String?
   customImages      String[]
