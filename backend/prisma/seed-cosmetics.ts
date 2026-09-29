@@ -26,6 +26,9 @@ type CosmeticsProductSeed = {
   variants: Array<{
     name?: string
     sku?: string | null
+    barcode?: string | null
+    barcodeStatus?: string
+    barcodeSource?: string | null
     tags?: string[]
     image?: string
   }>
@@ -286,6 +289,7 @@ async function main() {
           where: { id: existingTemplate.id },
           data: {
             description: clean(productSeed.description),
+            category_id: categoryId,
             product_type_id: productTypeId,
             brand_id: brandId,
           },
@@ -295,6 +299,7 @@ async function main() {
             name: productName,
             name_ar: '',
             description: clean(productSeed.description),
+            category_id: categoryId,
             product_type_id: productTypeId,
             brand_id: brandId,
           },
@@ -313,17 +318,22 @@ async function main() {
       })
 
       const sku = clean(variantSeed.sku)
+      const verifiedBarcode = variantSeed.barcodeStatus === 'VERIFIED' ? clean(variantSeed.barcode) : ''
       const variant = existingVariant
         ? await prisma.variant.update({
             where: { id: existingVariant.id },
             data: {
               sku: sku || existingVariant.sku,
+              ...(verifiedBarcode && !existingVariant.barcode ? { barcode: verifiedBarcode, barcodeSource: clean(variantSeed.barcodeSource), barcodeVerifiedAt: new Date() } : {}),
             },
           })
         : await prisma.variant.create({
             data: {
               name: variantName,
               sku: sku || null,
+              barcode: verifiedBarcode || null,
+              barcodeSource: verifiedBarcode ? clean(variantSeed.barcodeSource) : null,
+              barcodeVerifiedAt: verifiedBarcode ? new Date() : null,
               productId: productTemplate.id,
             },
           })

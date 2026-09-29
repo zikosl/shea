@@ -101,6 +101,7 @@ type ProductVariant = {
     description?: string | null;
     description_ar?: string | null;
     sku?: string | null;
+    barcode?: string | null;
     productId: string;
     tags: Array<{ id: string; value: string }>;
     images: ProductTemplateImage[];

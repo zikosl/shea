@@ -155,6 +155,23 @@ type AuthPayload {
   user: User
 }
 
+type BarcodeCandidate {
+  barcode: String!
+  createdAt: DateTime!
+  id: String!
+  matchScore: Int!
+  sourceName: String
+  sourceUrl: String!
+  status: String!
+  variant: Variant
+  variantId: Int!
+}
+
+type BarcodeCandidateResult {
+  candidates: [BarcodeCandidate!]!
+  total: Int!
+}
+
 type Brand {
   id: Int!
   image: String
@@ -702,6 +719,7 @@ type Mutation {
   resetPartnerAccessCode(id: Int!): Boolean!
   respondToGiftQuotation(accept: Boolean!, addressId: Int, customOrderId: String!): CustomOrder!
   respondToOrderQuotation(accepted: Boolean!, expectedOrderVersion: Int!, expectedQuoteVersion: Int!, quotationId: String!): Order!
+  reviewBarcodeCandidate(approve: Boolean!, id: String!): BarcodeCandidate!
   revokeOtherSessions(currentTokenId: String!): Boolean!
   revokeSession(tokenId: String!): Boolean!
   revokeStoreTerminal(terminalId: String!): StoreTerminal!
@@ -715,6 +733,7 @@ type Mutation {
   setProductsAvailability(available: Boolean!, ids: [Int!]!): BulkProductAvailabilityResult
   setStoreDeploymentMode(mode: StoreDeploymentMode!, storeId: String!): Store!
   signIn(appVersion: String, deviceKey: String, deviceName: String, email: String!, password: String!, platform: String): AuthPayload
+  submitBarcodeCandidate(barcode: String!, sourceName: String, sourceUrl: String!, variantId: Int!): BarcodeCandidate!
   submitCatalogProposal(categoryId: Int, description: String, deviceId: String, entityType: CatalogProposalEntityType!, image: String, localId: String!, name: String!, name_ar: String, nicheId: Int!, parentProposalId: String): CatalogProposal
   submitProductTemplateRequest(brand_id: Int, categoryProposalId: String, category_id: Int, description: String, images: ImagesList, name: String!, name_ar: String, posDeviceId: String, posLocalId: String, productTypeProposalId: String, product_type_id: Int, variants: [ProductTemplateRequestVariantInput]): ProductTemplateRequest
   transitionGiftOrder(expectedVersion: Int!, id: String!, status: CustomOrderStatus!): CustomOrder!
@@ -1410,6 +1429,7 @@ type Query {
   adminStoreNetworks(search: String): [Store!]!
   capabilityCatalog: [CapabilityCode!]!
   effectiveCapabilities(partnerId: Int): [EffectiveCapability!]!
+  findBarcodeCandidates(limit: Int!, page: Int!, status: String): BarcodeCandidateResult!
   findManyBrands(isFull: Boolean, limit: Int!, niche_id: Int, page: Int!, partnerId: Int, search: String): BrandResult
   findManyCatalogProposals(entityType: CatalogProposalEntityType, limit: Int!, page: Int!, partnerId: Int, search: String, status: CatalogProposalStatus): CatalogProposalResult
   findManyCategories(isFull: Boolean, limit: Int!, niche_id: Int, page: Int!, partnerId: Int, search: String): CategoryResult
@@ -1719,6 +1739,8 @@ type User {
 }
 
 type Variant {
+  barcode: String
+  barcodeSource: String
   description: String
   description_ar: String
   id: Int!

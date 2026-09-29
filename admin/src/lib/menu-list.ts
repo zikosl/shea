@@ -1,4 +1,4 @@
-import { Users, LayoutPanelTop, UserCog, GalleryVerticalEnd, PackageSearch, PackagePlus, BadgeHelp, Truck, Boxes, Sparkles, ClipboardCheck, SlidersHorizontal, Download, MapPinned, Network } from "lucide-react";
+import { Users, LayoutPanelTop, UserCog, GalleryVerticalEnd, PackageSearch, PackagePlus, BadgeHelp, Truck, Boxes, Sparkles, ClipboardCheck, SlidersHorizontal, Download, MapPinned, Network, ScanBarcode } from "lucide-react";
 
 
 type Submenu = {
@@ -105,6 +105,13 @@ export function getMenuList(pathname: string): Group[] {
           label: "Product Templates",
           active: pathname.includes("/product-templates"),
           icon: Boxes,
+          submenus: []
+        },
+        {
+          href: "/barcode-review",
+          label: "Barcode Review",
+          active: pathname.includes("/barcode-review"),
+          icon: ScanBarcode,
           submenus: []
         },
         {

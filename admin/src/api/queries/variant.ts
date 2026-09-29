@@ -10,6 +10,7 @@ export const FIND_MANY_VARIANTS = gql`
         description
         description_ar
         sku
+        barcode
         productId
         tags {
           id
@@ -37,6 +38,7 @@ export const FIND_ONE_VARIANT = gql`
       description
       description_ar
       sku
+      barcode
       productId
       tags {
         id

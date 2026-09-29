@@ -1145,6 +1145,9 @@ model Variant {
   description    String?
   description_ar String?
   sku            String? @unique
+  barcode        String? @unique
+  barcodeSource  String?
+  barcodeVerifiedAt DateTime?
 
   productId Int
   product   ProductTemplate @relation(fields: [productId], references: [id])
@@ -1152,6 +1155,30 @@ model Variant {
   images   ProductImage[]
   products Product[]
   tags     Tag[]
+  barcodeCandidates BarcodeCandidate[]
+}
+
+enum BarcodeCandidateStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model BarcodeCandidate {
+  id          String                 @id @default(uuid())
+  variantId   Int
+  variant     Variant                @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  barcode     String
+  sourceUrl   String
+  sourceName  String?
+  matchScore  Int                    @default(0)
+  status      BarcodeCandidateStatus @default(PENDING)
+  reviewedAt  DateTime?
+  createdAt   DateTime               @default(now())
+
+  @@unique([variantId, barcode, sourceUrl])
+  @@index([status, createdAt])
+  @@index([variantId])
 }
 
 model Tag {

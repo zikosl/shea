@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-import { createVariantCombinations, deleteVariantItem, updateVariantItem } from "./actions";
+import { createVariantCombinations, deleteVariantItem, submitPhysicalBarcode, updateVariantItem } from "./actions";
 
 type Props = {
   productId: number;
@@ -43,6 +43,7 @@ export default function VariantsManager({ productId, productName, variants, tota
   const [editDescriptionAr, setEditDescriptionAr] = useState("");
   const [editTags, setEditTags] = useState("");
   const [editSku, setEditSku] = useState("");
+  const [candidateBarcode, setCandidateBarcode] = useState("");
   const [editImages, setEditImages] = useState<string[]>([]);
   const [deleting, setDeleting] = useState<ProductVariant | null>(null);
   const { uploadFiles, progresses, isUploading } = useUploadFile(FILE_UPLOAD);
@@ -78,6 +79,7 @@ export default function VariantsManager({ productId, productName, variants, tota
     setEditDescriptionAr(variant.description_ar ?? "");
     setEditTags(variant.tags.map((tag) => tag.value).join(", "));
     setEditSku(variant.sku ?? "");
+    setCandidateBarcode("");
     setEditImages(variant.images.map((image) => image.url));
   }
 
@@ -121,6 +123,7 @@ export default function VariantsManager({ productId, productName, variants, tota
                   {variant.productCount > 0 ? <Badge variant="secondary">Used by {variant.productCount} partner product{variant.productCount === 1 ? "" : "s"}</Badge> : null}
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">{variant.sku || "No SKU"}</p>
+                {variant.barcode ? <p className="mt-1 font-mono text-xs text-emerald-700" dir="ltr">EAN/UPC {variant.barcode}</p> : null}
                 {variant.description ? <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{variant.description}</p> : null}
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {variant.tags.map((tag) => <Badge key={tag.id} variant="outline">{tag.value}</Badge>)}
@@ -178,6 +181,14 @@ export default function VariantsManager({ productId, productName, variants, tota
             <div className="space-y-2"><Label htmlFor="variant-sku">SKU</Label><Input id="variant-sku" value={editSku} onChange={(event) => setEditSku(event.target.value)} /></div>
           </div>
           <div className="space-y-2"><Label htmlFor="variant-tags">Tags</Label><Input id="variant-tags" value={editTags} onChange={(event) => setEditTags(event.target.value)} placeholder="20ml, Red" /><p className="text-xs text-muted-foreground">A variant must have a name or at least one comma-separated tag.</p></div>
+          <div className="space-y-2 rounded-lg bg-muted/50 p-3">
+            <Label htmlFor="variant-barcode">Manufacturer barcode</Label>
+            <p className="text-xs text-muted-foreground">Verified: {editing?.barcode ?? "None yet"}. Scan the exact package or enter its printed EAN/UPC, then approve it in Barcode Review.</p>
+            <div className="flex gap-2">
+              <Input id="variant-barcode" inputMode="numeric" value={candidateBarcode} onChange={(event) => setCandidateBarcode(event.target.value)} placeholder="Scan or enter EAN / UPC" />
+              <Button type="button" variant="outline" disabled={isPending || !candidateBarcode.trim() || !editing} onClick={() => editing && run(() => submitPhysicalBarcode(productId, Number(editing.id), candidateBarcode), "Barcode sent for review", () => setCandidateBarcode(""))}>Submit</Button>
+            </div>
+          </div>
           <div className="space-y-2"><Label htmlFor="variant-description">Description</Label><Textarea id="variant-description" value={editDescription} onChange={(event) => setEditDescription(event.target.value)} placeholder="Optional details specific to this variant" /></div>
           <div className="space-y-2"><Label htmlFor="variant-description-ar">Arabic description</Label><Textarea id="variant-description-ar" dir="rtl" lang="ar" value={editDescriptionAr} onChange={(event) => setEditDescriptionAr(event.target.value)} placeholder="تفاصيل الخيار باللغة العربية" /></div>
           <div className="space-y-3"><Label>Images</Label><FileUploader multiple maxFiles={6} maxSize={10 * 1024 * 1024} progresses={progresses} onUpload={uploadVariantImages} disabled={isUploading} />

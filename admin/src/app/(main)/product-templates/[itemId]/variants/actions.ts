@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { CREATE_VARIANTS, DELETE_VARIANT, UPDATE_VARIANT } from "@/api/mutations";
 import { FIND_MANY_VARIANTS } from "@/api/queries";
 import { requestServerGraphQL } from "@/lib/server-request";
+import { SUBMIT_BARCODE_CANDIDATE } from "@/api/mutations/barcode-candidates";
 
 type VariantResponse = {
   id: number;
@@ -13,6 +14,7 @@ type VariantResponse = {
   description?: string | null;
   description_ar?: string | null;
   sku?: string | null;
+  barcode?: string | null;
   productId: number;
   tags?: Array<{ id: number; value: string }>;
   images?: Array<{ id: number; url: string }>;
@@ -27,6 +29,7 @@ function mapVariant(variant: VariantResponse): ProductVariant {
     description: variant.description,
     description_ar: variant.description_ar,
     sku: variant.sku,
+    barcode: variant.barcode,
     productId: String(variant.productId),
     tags: (variant.tags ?? []).map((tag) => ({ id: String(tag.id), value: tag.value })),
     images: (variant.images ?? []).map((image) => ({ id: String(image.id), url: image.url })),
@@ -94,4 +97,14 @@ export async function updateVariantItem(
 export async function deleteVariantItem(productId: number, id: number) {
   await requestServerGraphQL(DELETE_VARIANT, { id });
   revalidatePath(`/product-templates/${productId}/variants`);
+}
+
+export async function submitPhysicalBarcode(productId: number, variantId: number, barcode: string) {
+  await requestServerGraphQL(SUBMIT_BARCODE_CANDIDATE, {
+    variantId,
+    barcode: barcode.trim(),
+    sourceUrl: "physical-package:admin-entry",
+  });
+  revalidatePath(`/product-templates/${productId}/variants`);
+  revalidatePath("/barcode-review");
 }

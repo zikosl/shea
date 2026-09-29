@@ -20,6 +20,8 @@ const Variant = objectType({
         t.nullable.string('description')
         t.nullable.string('description_ar')
         t.nullable.string('sku')
+        t.nullable.string('barcode')
+        t.nullable.string('barcodeSource')
         t.nonNull.int('productId')
 
         t.list.field("tags", {
