@@ -969,6 +969,7 @@ model ProductTemplate {
   name_ar        String @default("")
   description    String @default("")
   description_ar String @default("")
+  importSourceUrl String? @unique
 
   category_id     Int
   category        Category     @relation(fields: [category_id], references: [id])
