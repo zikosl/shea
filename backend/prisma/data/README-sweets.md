@@ -7,7 +7,7 @@ keys are mapped explicitly in the JSON; brand keys are copied from the brands
 workbook. The seed resolves actual database IDs within the `Sweets & Snacks`
 niche.
 
-From `backend/`:
+From the backend working directory (`backend/` locally or `/app` in Docker):
 
 1. Apply Prisma migrations (`npx prisma migrate deploy`) before importing.
 2. Run `npm run seed:sweets -- --dry-run` to validate the snapshot without

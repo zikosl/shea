@@ -24,7 +24,7 @@ const NICHE = {
   name_ar: 'حلويات ووجبات خفيفة',
 }
 const OTHER_BRAND = { name: 'Other', name_ar: 'أخرى' }
-const DATA_PATH = path.join(__dirname, 'data', 'sweets-catalog.json')
+const DATA_PATH = path.join(process.cwd(), 'prisma', 'data', 'sweets-catalog.json')
 
 function clean(value: string | null | undefined) {
   return value?.trim().replace(/\s+/g, ' ') ?? ''
