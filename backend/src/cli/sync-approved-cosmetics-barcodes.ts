@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import fs from 'fs'
+import fs from 'node:fs'
 import path from 'path'
 import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'

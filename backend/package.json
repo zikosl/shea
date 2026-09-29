@@ -12,8 +12,8 @@
     "test:guest-catalog": "npm run build && node --test dist/security/guest-catalog.test.js",
     "test:scraping": "npm run build && node --test dist/security/scraping-protection.test.js",
     "seed:cosmetics": "ts-node prisma/seed-cosmetics.ts",
-    "enrich:cosmetics-barcodes": "ts-node scripts/enrich-cosmetics-barcodes.ts",
-    "sync:approved-cosmetics-barcodes": "ts-node scripts/sync-approved-cosmetics-barcodes.ts",
+    "enrich:cosmetics-barcodes": "node dist/cli/enrich-cosmetics-barcodes.js",
+    "sync:approved-cosmetics-barcodes": "node dist/cli/sync-approved-cosmetics-barcodes.js",
     "seed:sweets": "ts-node prisma/seed-sweets.ts",
     "localize:cosmetics-images": "sh -c 'if [ -f dist/scripts/localize-cosmetics-images.js ]; then node dist/scripts/localize-cosmetics-images.js; else ts-node src/scripts/localize-cosmetics-images.ts; fi'",
     "sync:cosmetics-images": "sh -c 'if [ -f dist/scripts/sync-cosmetics-images.js ]; then node dist/scripts/sync-cosmetics-images.js; else ts-node src/scripts/sync-cosmetics-images.ts; fi'"

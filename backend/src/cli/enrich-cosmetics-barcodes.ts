@@ -5,7 +5,7 @@ import fs from 'fs'
 import path from 'path'
 import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
-import { isValidGtin, normalizeGtin } from '../src/modules/catalog/barcodes'
+import { isValidGtin, normalizeGtin } from '../modules/catalog/barcodes'
 
 type VariantSeed = { sku?: string | null; sourceName?: string; sourceProductUrl?: string; barcode?: string | null }
 type ProductSeed = { name: string; brand: string; variants: VariantSeed[] }
