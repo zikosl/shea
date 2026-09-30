@@ -158,7 +158,7 @@ export async function updateProduct(
 ) {
   const product = await prisma.product.findUnique({
     where: { id: input.id },
-    select: { partnerId: true, stock: true, trackInventory: true },
+    select: { partnerId: true, stock: true, trackInventory: true, variantId: true },
   })
 
   if (!product) {
@@ -170,6 +170,40 @@ export async function updateProduct(
   }
 
   await prisma.$transaction(async (tx) => {
+    if (input.vendorBarcode !== undefined && input.vendorBarcode !== null) {
+      const code = input.vendorBarcode.trim()
+      if (!code || code.length > 80 || !/^[A-Za-z0-9._:-]+$/.test(code)) {
+        throw createBadRequestError('Enter a valid product barcode or internal code')
+      }
+      // Serialize assignments of the same code for this partner, including concurrent POS terminals.
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`${userId}:${code.toUpperCase()}`}))`
+      const duplicate = await tx.product.findFirst({
+        where: {
+          partnerId: userId,
+          id: { not: input.id },
+          OR: [
+            { vendorBarcode: { equals: code, mode: 'insensitive' } },
+            { vendorSku: { equals: code, mode: 'insensitive' } },
+            { variant: { barcode: { equals: code, mode: 'insensitive' } } },
+            { variant: { sku: { equals: code, mode: 'insensitive' } } },
+          ],
+        },
+        select: { id: true },
+      })
+      if (duplicate) throw createBadRequestError('This code is already assigned to another product')
+      const catalogDuplicate = await tx.variant.findFirst({
+        where: {
+          id: { not: product.variantId },
+          OR: [
+            { barcode: { equals: code, mode: 'insensitive' } },
+            { sku: { equals: code, mode: 'insensitive' } },
+          ],
+        },
+        select: { id: true },
+      })
+      if (catalogDuplicate) throw createBadRequestError('This code belongs to another catalog variant')
+      input.vendorBarcode = code
+    }
     await tx.product.update({
       where: { id: input.id },
       data: {

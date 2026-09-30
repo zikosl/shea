@@ -15,6 +15,7 @@
     "enrich:cosmetics-barcodes": "node dist/cli/enrich-cosmetics-barcodes.js",
     "sync:approved-cosmetics-barcodes": "node dist/cli/sync-approved-cosmetics-barcodes.js",
     "seed:sweets": "ts-node prisma/seed-sweets.ts",
+    "sync:catalog-barcodes": "ts-node prisma/sync-catalog-barcodes.ts",
     "localize:cosmetics-images": "sh -c 'if [ -f dist/scripts/localize-cosmetics-images.js ]; then node dist/scripts/localize-cosmetics-images.js; else ts-node src/scripts/localize-cosmetics-images.ts; fi'",
     "sync:cosmetics-images": "sh -c 'if [ -f dist/scripts/sync-cosmetics-images.js ]; then node dist/scripts/sync-cosmetics-images.js; else ts-node src/scripts/sync-cosmetics-images.ts; fi'"
   },
