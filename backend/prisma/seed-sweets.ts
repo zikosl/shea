@@ -14,6 +14,8 @@ type ProductSeed = {
   name_ar: string
   description: string
   tags: string | null
+  barcode?: string
+  barcodeSource?: string
   category_id: string
   brand_id: string | null
 }
@@ -56,12 +58,21 @@ function tagsFor(value: string | null) {
   return [...new Set(clean(value).split(',').map(clean).filter(Boolean))]
 }
 
+function validGtin(value: string) {
+  if (!/^(\d{8}|\d{12}|\d{13}|\d{14})$/.test(value)) return false
+  const digits = [...value].map(Number)
+  const check = digits.pop()!
+  const sum = digits.reverse().reduce((total, digit, index) => total + digit * (index % 2 === 0 ? 3 : 1), 0)
+  return (10 - sum % 10) % 10 === check
+}
+
 function validate(data: SeedData) {
   const categoryKeys = new Set<string>()
   const brandKeys = new Set<string>()
   const sourceUrls = new Set<string>()
   const imageUrls = new Set<string>()
   const skus = new Set<string>()
+  const barcodes = new Set<string>()
 
   for (const category of data.categories) {
     if (!category.key || !clean(category.name) || !clean(category.name_ar) || !clean(category.image)) {
@@ -99,6 +110,13 @@ function validate(data: SeedData) {
       if (imageUrls.has(product.image)) throw new Error(`Duplicate image URL: ${product.image}`)
       imageUrls.add(product.image)
     }
+    if (product.barcode) {
+      if (!validGtin(product.barcode) || !product.barcodeSource?.startsWith('https://')) {
+        throw new Error(`Barcode requires a valid GTIN and HTTPS source at row ${index + 2}`)
+      }
+      if (barcodes.has(product.barcode)) throw new Error(`Duplicate barcode: ${product.barcode}`)
+      barcodes.add(product.barcode)
+    }
   }
 }
 
@@ -119,6 +137,7 @@ async function main() {
     products: data.products.length,
     productsUsingOtherBrand: data.products.filter((item) => !item.brand_id).length,
     productsWithoutImage: data.products.filter((item) => !item.image).length,
+    productsWithSourcedBarcode: data.products.filter((item) => !!item.barcode).length,
     promotionsMappedToChocolate: data.products.filter((item) => item.category_id === 'promo').length,
   }
   if (!args.includes('--apply')) {
@@ -137,6 +156,17 @@ async function main() {
       select: { id: true, importSourceUrl: true },
     })
     const importedByUrl = new Map(importedTemplates.map((template) => [template.importSourceUrl, template.id]))
+    const sourcedProducts = data.products.filter((product) => product.barcode)
+    const existingBarcodeOwners = await prisma.variant.findMany({
+      where: { barcode: { in: sourcedProducts.map((product) => product.barcode!) } },
+      select: { barcode: true, productId: true },
+    })
+    for (const owner of existingBarcodeOwners) {
+      const source = sourcedProducts.find((product) => product.barcode === owner.barcode)!
+      if (owner.productId !== importedByUrl.get(source.url)) {
+        throw new Error(`Barcode ${owner.barcode} already belongs to another template`)
+      }
+    }
     const existingImages = await prisma.productImage.findMany({
       where: { url: { in: data.products.flatMap((product) => product.image ? [product.image] : []) } },
       select: { url: true, product_template_id: true },
@@ -181,8 +211,27 @@ async function main() {
 
     let created = 0
     let skipped = 0
+    let barcodesUpdated = 0
     for (const product of data.products) {
       if (importedByUrl.has(product.url)) {
+        if (product.barcode) {
+          const variants = await prisma.variant.findMany({
+            where: { productId: importedByUrl.get(product.url)! },
+            select: { id: true, name: true, barcode: true },
+          })
+          const variant = variants.length === 1 && variants[0].name === 'Standard' ? variants[0] : null
+          if (!variant) throw new Error(`Cannot identify Standard variant for ${product.url}`)
+          if (variant.barcode && variant.barcode !== product.barcode) {
+            throw new Error(`Conflicting barcode on ${product.url}: ${variant.barcode}`)
+          }
+          if (!variant.barcode) {
+            await prisma.variant.update({
+              where: { id: variant.id },
+              data: { barcode: product.barcode, barcodeSource: product.barcodeSource, barcodeVerifiedAt: new Date() },
+            })
+            barcodesUpdated += 1
+          }
+        }
         skipped += 1
         continue
       }
@@ -199,6 +248,11 @@ async function main() {
             create: {
               name: 'Standard',
               sku: skuFor(product),
+              ...(product.barcode ? {
+                barcode: product.barcode,
+                barcodeSource: product.barcodeSource,
+                barcodeVerifiedAt: new Date(),
+              } : {}),
               tags: { create: tagsFor(product.tags).map((value) => ({ value })) },
             },
           },
@@ -209,7 +263,7 @@ async function main() {
       })
       created += 1
     }
-    console.log(JSON.stringify({ mode: 'apply', ...summary, created, skipped }, null, 2))
+    console.log(JSON.stringify({ mode: 'apply', ...summary, created, skipped, barcodesUpdated }, null, 2))
   } finally {
     await prisma.$disconnect()
   }

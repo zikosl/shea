@@ -998,6 +998,8 @@
       "name_ar": "توبليرون",
       "description": "Toblerone 50G — Chocolat.",
       "tags": "50g",
+      "barcode": "76145513",
+      "barcodeSource": "https://www.stama.co/products/toblerone-50g/",
       "category_id": "chocolate",
       "brand_id": "toblerone"
     },
@@ -1108,6 +1110,8 @@
       "name_ar": "كيندر ماكسي",
       "description": "Kinder Maxi T 11 — Chocolat.",
       "tags": "T11",
+      "barcode": "4008400828022",
+      "barcodeSource": "https://www.thefreshmarketdubai.com/products/kinder-maxi-t11-231g-4008400828022",
       "category_id": "chocolate",
       "brand_id": "kinder"
     },
@@ -1328,6 +1332,8 @@
       "name_ar": "سمارتيز",
       "description": "Smarties 38g — Chocolat.",
       "tags": "38g",
+      "barcode": "40057781",
+      "barcodeSource": "https://www.buycott.com/brand/15123/nestle-smarties-upc",
       "category_id": "chocolate",
       "brand_id": "smarties"
     },
@@ -1378,6 +1384,8 @@
       "name_ar": "نوتيلا",
       "description": "Nutella 750G — Chocolat.",
       "tags": "750g",
+      "barcode": "3017624047509",
+      "barcodeSource": "https://www.foodfactor.net/produits/3017624047509/nutella.php",
       "category_id": "chocolate",
       "brand_id": "nutella"
     },
@@ -1388,6 +1396,8 @@
       "name_ar": "توبليرون",
       "description": "Toblerone Lait Or 100g — Chocolat.",
       "tags": "100g",
+      "barcode": "7614500010013",
+      "barcodeSource": "https://www.kespro.com/en/products/toblerone-maitosuklaa-suklaapatukka-100g-7614500010013",
       "category_id": "chocolate",
       "brand_id": "toblerone"
     },
@@ -1548,6 +1558,8 @@
       "name_ar": "توبليرون",
       "description": "Toblerone 35G — Chocolat.",
       "tags": "35g",
+      "barcode": "76145759",
+      "barcodeSource": "https://www.stama.co/products/toblerone-35g/",
       "category_id": "chocolate",
       "brand_id": "toblerone"
     },
@@ -1618,6 +1630,8 @@
       "name_ar": "فيريرو روشيه",
       "description": "Ferrero Rocher T16 — Chocolat.",
       "tags": "T16",
+      "barcode": "8000500037874",
+      "barcodeSource": "https://www.dischem.co.za/ferrero-rocher-200g-t16-783",
       "category_id": "chocolate",
       "brand_id": "ferrero-rocher"
     },
@@ -1628,6 +1642,8 @@
       "name_ar": "كرانش لي",
       "description": "Crunch Lait 100G — Chocolat.",
       "tags": "100g",
+      "barcode": "3033710001279",
+      "barcodeSource": "https://www.auchan.fr/nestle-crunch-tablette-de-chocolat-au-lait/pr-C1871474",
       "category_id": "chocolate",
       "brand_id": "crunch"
     },
@@ -1678,6 +1694,8 @@
       "name_ar": "هاريبو روليت",
       "description": "Haribo Roulette — Bonbons gélifiés.",
       "tags": null,
+      "barcode": "8691216019805",
+      "barcodeSource": "https://dmg-manual-live.s3.ap-south-1.amazonaws.com/Production/exb_doc/492/82085/Abbar_Catalog_All_Products_May2024.pdf",
       "category_id": "gummies",
       "brand_id": "haribo"
     },
@@ -2378,6 +2396,8 @@
       "name_ar": "سشوكو بونس",
       "description": "Schoko Bons 300G — Chocolat.",
       "tags": "300g",
+      "barcode": "4008400280127",
+      "barcodeSource": "https://outlet.drogeriedepot.de/suess-salzig/schokolade/kinder-schoko-bons-pr-022099/",
       "category_id": "chocolate",
       "brand_id": "kinder"
     },
@@ -2908,6 +2928,8 @@
       "name_ar": "نوتيلا",
       "description": "Nutella 350G — Chocolat.",
       "tags": "350g",
+      "barcode": "80177173",
+      "barcodeSource": "https://rednevaltrading.com/product/nutella-jar-350g/",
       "category_id": "chocolate",
       "brand_id": "nutella"
     },
@@ -3148,6 +3170,8 @@
       "name_ar": "نوتيلا",
       "description": "Nutella 630G — Chocolat.",
       "tags": "630g",
+      "barcode": "59032823",
+      "barcodeSource": "https://www.kespro.com/tuotteet/nutella-hasselpahkina-kaakaolevite-630g-59032823",
       "category_id": "chocolate",
       "brand_id": "nutella"
     },
@@ -3608,6 +3632,8 @@
       "name_ar": "نوتيلا",
       "description": "Nutella 825G — Chocolat.",
       "tags": "825g",
+      "barcode": "3017620428258",
+      "barcodeSource": "https://www.aykilicgross.com/urun/nutella-cikolata-cam-kavanoz-825-gr.html",
       "category_id": "chocolate",
       "brand_id": "nutella"
     },
@@ -9278,6 +9304,8 @@
       "name_ar": "توين غو",
       "description": "twin go 145g — Biscuits.",
       "tags": "145g",
+      "barcode": "8410376046922",
+      "barcodeSource": "https://nutrifoodindex.com/product/twin-go",
       "category_id": "biscuits",
       "brand_id": "gullon"
     },
