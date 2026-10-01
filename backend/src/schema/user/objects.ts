@@ -49,7 +49,7 @@ export const AccountSession = objectType({
 // Role enum
 export const Role = enumType({
     name: 'Role',
-    members: ['ADMIN', 'CLIENT', 'PARTNER', 'DRIVER'],
+    members: ['ADMIN', 'CLIENT', 'PARTNER', 'DRIVER', 'CONTRIBUTOR'],
 });
 
 export const ThemePreference = enumType({

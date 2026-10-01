@@ -22,16 +22,16 @@ const isAuthenticated = rule({ cache: 'contextual' })(async (_parent, _args, ctx
   }
 })
 
-const hasRole = (role: 'ADMIN' | 'CLIENT' | 'PARTNER' | 'DRIVER') =>
+const hasRole = (role: 'ADMIN' | 'CLIENT' | 'PARTNER' | 'DRIVER' | 'CONTRIBUTOR') =>
   rule({ cache: 'contextual' })(async (_parent, _args, ctx) => {
     try {
       const id = getUserId(ctx)
       if (!(await hasActiveSession(ctx, id))) return createUnauthorizedError('SESSION_REVOKED')
       const user = await ctx.prisma.user.findUnique({
         where: { id },
-        select: { role: true },
+        select: { role: true, contributor: { select: { active: true } } },
       })
-      return user?.role === role || createForbiddenError(`${role} role required`)
+      return (user?.role === role && (role !== 'CONTRIBUTOR' || user.contributor?.active)) || createForbiddenError(`${role} role required`)
     } catch {
       return createUnauthorizedError('EXPIRED TOKEN')
     }
@@ -41,6 +41,7 @@ const isAdmin = hasRole('ADMIN')
 const isPartner = hasRole('PARTNER')
 const isClient = hasRole('CLIENT')
 const isDriver = hasRole('DRIVER')
+const isContributor = hasRole('CONTRIBUTOR')
 
 const publicFields = (...fields: string[]) => Object.fromEntries(fields.map(field => [field, allow]))
 const storefrontProductFields = publicFields('id', 'name', 'name_ar', 'price', 'priceOnRequest', 'discount', 'available', 'stock', 'trackInventory', 'image', 'images', 'partnerId', 'variantId', 'variantName', 'variantNameAr', 'sku', 'isActive', 'onlineVisible')
@@ -67,6 +68,10 @@ export const permissions = shield(
       adminDispatchBoard: isAdmin,
       adminCatalogSubmissions: isAdmin,
       findBarcodeCandidates: isAdmin,
+      contributors: isAdmin,
+      sahimReviewQueue: isAdmin,
+      mySahimContributions: isContributor,
+      sahimBarcodeLookup: isContributor,
       findManyProductTemplateRequests: isAdmin,
       myCatalogSubmissions: isPartner,
       findMyProductTemplateRequests: isPartner,
@@ -117,6 +122,12 @@ export const permissions = shield(
       createVariant: isAdmin,
       updateVariant: isAdmin,
       submitBarcodeCandidate: isAdmin,
+      createContributor: isAdmin,
+      resetContributorAccess: isAdmin,
+      setContributorActive: isAdmin,
+      submitSahimContribution: isContributor,
+      uploadSahimPhoto: isContributor,
+      reviewSahimContribution: isAdmin,
       reviewBarcodeCandidate: isAdmin,
       deleteVariant: isAdmin,
       approveProductTemplateRequest: isAdmin,

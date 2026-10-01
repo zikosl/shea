@@ -95,6 +95,8 @@ export async function signInWithEmailPassword(
   const user = await prisma.user.findUnique({ where: { email: normalizedEmail } })
   if (!user || !user.passwordHash || !bcrypt.compareSync(password, user.passwordHash))
     throw createUnauthorizedError('Invalid credentials')
+  if (user.role === 'CONTRIBUTOR' && !(await prisma.contributor.findUnique({ where: { userId: user.id }, select: { active: true } }))?.active)
+    throw createUnauthorizedError('Account disabled')
   return createSession(user, prisma, metadata)
 }
 
@@ -119,6 +121,8 @@ export async function refreshUserSession(
     if (!matchingToken) throw createUnauthorizedError('Invalid refresh token')
     const user = await prisma.user.findUnique({ where: { id: userId } })
     if (!user) throw createUnauthorizedError('Invalid refresh token')
+    if (user.role === 'CONTRIBUTOR' && !(await prisma.contributor.findUnique({ where: { userId: user.id }, select: { active: true } }))?.active)
+      throw createUnauthorizedError('Account disabled')
     return createSession(user, prisma, { ...metadata, deviceKey: matchingToken.deviceKey }, matchingToken.id)
   } catch (error) {
     if (error instanceof GraphQLError) throw error

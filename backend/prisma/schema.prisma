@@ -13,6 +13,7 @@ enum Role {
   CLIENT
   PARTNER
   DRIVER
+  CONTRIBUTOR
 }
 
 enum ThemePreference {
@@ -263,6 +264,8 @@ model User {
   partner            Partner?
   driver             Driver?
   admin              Admin?
+  contributor        Contributor?
+  contributions      CatalogContribution[]
   tokens             Token[]
   logs               Log[]
   auditLogs          AuditLog[]
@@ -400,6 +403,41 @@ model Admin {
   birthday   DateTime @default(now())
   city       Int      @default(16)
   privileges String[]
+}
+
+model Contributor {
+  userId    Int     @id
+  name      String
+  active    Boolean @default(true)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum CatalogContributionKind {
+  BARCODE
+  PRODUCT
+}
+
+enum CatalogContributionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model CatalogContribution {
+  id            String                    @id @default(uuid())
+  contributorId Int
+  localId       String
+  kind          CatalogContributionKind
+  status        CatalogContributionStatus @default(PENDING)
+  payload       Json
+  reviewNote    String?
+  reviewedAt    DateTime?
+  createdAt     DateTime                  @default(now())
+  contributor   User                      @relation(fields: [contributorId], references: [id], onDelete: Cascade)
+
+  @@unique([contributorId, localId])
+  @@index([status, createdAt])
+  @@index([contributorId, createdAt])
 }
 
 model Niche {

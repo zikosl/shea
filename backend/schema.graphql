@@ -355,6 +355,13 @@ type Client {
   userId: Int
 }
 
+type ContributorAccount {
+  active: Boolean!
+  email: String
+  name: String!
+  userId: Int!
+}
+
 input CreateGiftOrderInput {
   addressId: Int
   cardMessage: String
@@ -665,6 +672,7 @@ type Mutation {
   createCatalogSubmission(localId: String, productRequestIds: [Int!], proposalIds: [String!], title: String): CatalogSubmission!
   createCategory(image: String, name: String!, name_ar: String!, niche_id: Int): Category
   createClientGiftOrder(input: CreateGiftOrderInput!): CustomOrder!
+  createContributor(email: String!, name: String!): ContributorAccount
   createDriver(email: String!, firstname: String!, lastname: String!): Driver
   createGiftOrder(input: CreateGiftOrderInput!): CustomOrder!
   createGiftQuotation(customOrderId: String!, discount: Float, lines: [GiftQuotationLineInput!], note: String, preparationStartsAt: DateTime, proposedFor: DateTime, validUntil: DateTime): GiftQuotation!
@@ -715,15 +723,18 @@ type Mutation {
   rejectProductTemplateRequest(adminNote: String, id: Int!, rejectionReason: String): ProductTemplateRequest
   requestClientPhoneChange(phone: String!): Boolean
   reserveGiftMaterials(customOrderId: String!): CustomOrder!
+  resetContributorAccess(userId: Int!): Boolean!
   resetDriverAccessCode(id: Int!): Boolean!
   resetPartnerAccessCode(id: Int!): Boolean!
   respondToGiftQuotation(accept: Boolean!, addressId: Int, customOrderId: String!): CustomOrder!
   respondToOrderQuotation(accepted: Boolean!, expectedOrderVersion: Int!, expectedQuoteVersion: Int!, quotationId: String!): Order!
   reviewBarcodeCandidate(approve: Boolean!, id: String!): BarcodeCandidate!
+  reviewSahimContribution(approve: Boolean!, id: String!, mergeTemplateId: Int, note: String): SahimContribution!
   revokeOtherSessions(currentTokenId: String!): Boolean!
   revokeSession(tokenId: String!): Boolean!
   revokeStoreTerminal(terminalId: String!): StoreTerminal!
   sendOtp(phone: String!): Boolean
+  setContributorActive(active: Boolean!, userId: Int!): ContributorAccount!
   setGlobalCapabilities(enabled: [CapabilityCode!]!): [GlobalCapabilitySetting!]!
   setGlobalCapability(capability: CapabilityCode!, enabled: Boolean!): GlobalCapabilitySetting!
   setNicheCapabilities(disabled: [CapabilityCode!]!, enabled: [CapabilityCode!]!, nicheId: Int!): [NicheCapability!]!
@@ -736,6 +747,7 @@ type Mutation {
   submitBarcodeCandidate(barcode: String!, sourceName: String, sourceUrl: String!, variantId: Int!): BarcodeCandidate!
   submitCatalogProposal(categoryId: Int, description: String, deviceId: String, entityType: CatalogProposalEntityType!, image: String, localId: String!, name: String!, name_ar: String, nicheId: Int!, parentProposalId: String): CatalogProposal
   submitProductTemplateRequest(brand_id: Int, categoryProposalId: String, category_id: Int, description: String, images: ImagesList, name: String!, name_ar: String, posDeviceId: String, posLocalId: String, productTypeProposalId: String, product_type_id: Int, variants: [ProductTemplateRequestVariantInput]): ProductTemplateRequest
+  submitSahimContribution(inputJson: String!, kind: String!, localId: String!): SahimContribution!
   transitionGiftOrder(expectedVersion: Int!, id: String!, status: CustomOrderStatus!): CustomOrder!
   transitionOrderStatus(expectedVersion: Int!, id: Int!, reason: String, status: OrderStatus!): Order
   unregisterPushToken(token: String!): Boolean!
@@ -756,6 +768,7 @@ type Mutation {
   updateProfile(birthday: DateTime!, city: Int!, firstname: String!, lastname: String!): AuthPayload
   updateVariant(data: UpdateVariantInput!, id: Int!): Variant
   uploadFile(file: File!): FileUploadResponse
+  uploadSahimPhoto(file: File!): FileUploadResponse!
   upsertPricing(name: PricingName!, price: Int!): Pricing
   verifyClientPhoneChange(code: String!, phone: String!): AuthPayload
   verifyOtp(appVersion: String, code: String!, deviceKey: String, deviceName: String, phone: String!, platform: String): AuthPayload
@@ -1428,6 +1441,7 @@ type Query {
   adminDispatchBoard: AdminDispatchBoard!
   adminStoreNetworks(search: String): [Store!]!
   capabilityCatalog: [CapabilityCode!]!
+  contributors: [ContributorAccount!]!
   effectiveCapabilities(partnerId: Int): [EffectiveCapability!]!
   findBarcodeCandidates(limit: Int!, page: Int!, status: String): BarcodeCandidateResult!
   findManyBrands(isFull: Boolean, limit: Int!, niche_id: Int, page: Int!, partnerId: Int, search: String): BrandResult
@@ -1490,6 +1504,7 @@ type Query {
   myCatalogSubmissions(status: CatalogSubmissionStatus): [CatalogSubmission!]!
   myPartnerProfile: Partner!
   myProvisionalProducts: [ProvisionalProduct!]!
+  mySahimContributions: [SahimContribution!]!
   mySessions: [AccountSession!]!
   myStores: [Store!]!
   nicheCapabilityDefaults(nicheId: Int): [NicheCapability!]!
@@ -1498,6 +1513,8 @@ type Query {
   partnerStatistics: PartnerStatisticsResult!
   posBootstrap(deviceKey: String!): PosBootstrap!
   previewCheckout(data: OrderInput!): CheckoutPreview!
+  sahimBarcodeLookup(barcode: String!): Variant
+  sahimReviewQueue: [SahimContribution!]!
   unreadLogCount: Int!
 }
 
@@ -1525,8 +1542,20 @@ input RefundSaleInput {
 enum Role {
   ADMIN
   CLIENT
+  CONTRIBUTOR
   DRIVER
   PARTNER
+}
+
+type SahimContribution {
+  contributorId: Int!
+  createdAt: DateTime!
+  id: String!
+  kind: String!
+  localId: String!
+  payloadJson: String!
+  reviewNote: String
+  status: String!
 }
 
 type Sale {
