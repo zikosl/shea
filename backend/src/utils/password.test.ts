@@ -33,3 +33,13 @@ test('access-code email escapes dynamic HTML without changing plain text credent
 test('access codes reject lengths below the production minimum', () => {
   assert.throws(() => generateAccessCode(11), /at least 12 characters/)
 })
+
+test('Sahim invitation and reset emails identify the right app', () => {
+  const payload = { email: 'person@example.com', password: 'SafeCode-2Aa', appName: 'Sahim' as const }
+  const welcome = buildAccessCodeEmail(payload)
+  const reset = buildAccessCodeEmail({ ...payload, purpose: 'reset' })
+  assert.match(welcome.subject, /Sahim/)
+  assert.match(welcome.text, /sign in to Sahim/)
+  assert.match(reset.subject, /Sahim access code was reset/)
+  assert.match(reset.text, /Access code: SafeCode-2Aa/)
+})

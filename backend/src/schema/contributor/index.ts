@@ -7,7 +7,7 @@ import path from 'node:path'
 import { Context } from '../../context'
 import { getUserId } from '../../utils'
 import { UPLOAD_DIR } from '../../utils/const'
-import { ensureEmailAvailable } from '../../application/auth/auth.service'
+import { ensureEmailAvailable, throwAccountWriteError } from '../../application/auth/auth.service'
 import { generateAccessCode } from '../../utils/password'
 import { sendAccessCodeEmail } from '../../utils/mailer'
 import { requireGtin } from '../../modules/catalog/barcodes'
@@ -124,7 +124,8 @@ const Mutation = extendType({
         const password = generateAccessCode()
         const passwordHash = await bcrypt.hash(password, 12)
         const user = await ctx.prisma.user.create({ data: { email, passwordHash, authMethod: 'EMAIL_PASSWORD', role: 'CONTRIBUTOR', contributor: { create: { name } } } })
-        try { await sendAccessCodeEmail({ email, password, name, purpose: 'welcome' }) }
+          .catch((error: unknown) => throwAccountWriteError(error, 'CONTRIBUTOR_CREATE_FAILED'))
+        try { await sendAccessCodeEmail({ email, password, name, purpose: 'welcome', appName: 'Sahim' }) }
         catch { await ctx.prisma.user.delete({ where: { id: user.id } }); throw new GraphQLError('INVITE_EMAIL_FAILED') }
         await ctx.prisma.auditLog.create({ data: { actorId: getUserId(ctx), action: 'CONTRIBUTOR_CREATED', entity: 'CONTRIBUTOR', entityId: String(user.id) } })
         return ctx.prisma.contributor.findUniqueOrThrow({ where: { userId: user.id } })
@@ -137,7 +138,7 @@ const Mutation = extendType({
         if (!contributor?.user.email) throw new GraphQLError('CONTRIBUTOR_NOT_FOUND')
         const password = generateAccessCode()
         const passwordHash = await bcrypt.hash(password, 12)
-        await sendAccessCodeEmail({ email: contributor.user.email, password, name: contributor.name, purpose: 'reset' })
+        await sendAccessCodeEmail({ email: contributor.user.email, password, name: contributor.name, purpose: 'reset', appName: 'Sahim' })
         await ctx.prisma.$transaction([
           ctx.prisma.user.update({ where: { id: userId }, data: { passwordHash } }),
           ctx.prisma.token.deleteMany({ where: { userId } }),

@@ -8,6 +8,7 @@ type PasswordEmailPayload = {
 
 type AccessCodeEmailPayload = PasswordEmailPayload & {
     purpose?: 'welcome' | 'reset'
+    appName?: 'Shea' | 'Sahim'
 }
 
 type AccessCodeEmailContent = {
@@ -55,9 +56,10 @@ export async function sendAccessCodeEmail({
     email,
     name = 'there',
     purpose = 'welcome',
+    appName = 'Shea',
 }: AccessCodeEmailPayload) {
     const { user, senderName } = getMailerConfig()
-    const content = buildAccessCodeEmail({ password, email, name, purpose })
+    const content = buildAccessCodeEmail({ password, email, name, purpose, appName })
     const mailOptions = {
         from: `"${senderName}" <${user}>`,
         to: email,
@@ -73,12 +75,13 @@ export function buildAccessCodeEmail({
     email,
     name = 'there',
     purpose = 'welcome',
+    appName = 'Shea',
 }: AccessCodeEmailPayload): AccessCodeEmailContent {
     const isReset = purpose === 'reset'
-    const title = isReset ? 'Your Shea access code was reset' : 'Welcome to Shea'
+    const title = isReset ? `Your ${appName} access code was reset` : `Welcome to ${appName}`
     const introduction = isReset
-        ? 'An administrator reset the access code for your Shea account.'
-        : 'You can now access your Shea account using the following credentials.'
+        ? `An administrator reset the access code for your ${appName} account.`
+        : `You can now sign in to ${appName} using the following credentials.`
     const safeName = escapeHtml(name)
     const safeEmail = escapeHtml(email)
     const safePassword = escapeHtml(password)
