@@ -9,7 +9,7 @@ backend/src/lib/generated/
 dist/
 build/
 out/
-sahim/
+/sahim/
 coverage/
 shea-admin/
 shea-partner/

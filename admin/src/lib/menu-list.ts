@@ -1,4 +1,4 @@
-import { Users, LayoutPanelTop, UserCog, GalleryVerticalEnd, PackageSearch, PackagePlus, BadgeHelp, Truck, Boxes, Sparkles, ClipboardCheck, SlidersHorizontal, Download, MapPinned, Network, ScanBarcode } from "lucide-react";
+import { Users, LayoutPanelTop, UserCog, GalleryVerticalEnd, PackageSearch, PackagePlus, BadgeHelp, Truck, Boxes, Sparkles, ClipboardCheck, SlidersHorizontal, Download, MapPinned, Network, ScanBarcode, UserRoundPlus } from "lucide-react";
 
 
 type Submenu = {
@@ -77,6 +77,13 @@ export function getMenuList(pathname: string): Group[] {
           label: "Drivers",
           active: pathname.includes("/driver"),
           icon: Truck,
+          submenus: []
+        },
+        {
+          href: "/sahim",
+          label: "Sahim contributors",
+          active: pathname.includes("/sahim"),
+          icon: UserRoundPlus,
           submenus: []
         },
         {
