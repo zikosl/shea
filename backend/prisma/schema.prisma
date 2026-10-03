@@ -503,7 +503,7 @@ model Product {
   trackInventory    Boolean  @default(true)
   reorderThreshold  Int      @default(0)
   isVisibleInPos    Boolean  @default(true)
-  onlineVisible     Boolean  @default(false)
+  onlineVisible     Boolean  @default(true)
   priceOnRequest    Boolean  @default(false)
   isActive          Boolean  @default(true)
   customName        String?
