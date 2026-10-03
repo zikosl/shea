@@ -3,6 +3,7 @@ import { CapabilityCode, Prisma } from "@prisma/client"
 import { getOptionalUserId } from "../../../utils"
 import { Context } from "../../../context"
 import { partnerUserIdsWithCapability } from '../../../modules/capabilities/service'
+import { catalogSearchTerms, previewSearchWhere, productSearchWhere, templateSearchWhere } from '../../../modules/catalog/search'
 
 async function attachCatalogPartners(ctx: Context, products: Array<Record<string, unknown>>) {
     const partnerIds = [...new Set(products.map(product => Number(product.partnerId)).filter(Number.isFinite))]
@@ -71,21 +72,8 @@ export const ProductQuery = extendType({
                 if (partner)
                     partnerId = partner.userId
 
-                let where: Prisma.ProductViewWhereInput = search
-                    ? {
-                        partnerId,
-                        OR: [
-                            { name: { contains: search, mode: 'insensitive' } },
-                            { name_ar: { contains: search, mode: 'insensitive' } },
-                            { sku: { contains: search, mode: 'insensitive' } },
-                            { customName: { contains: search, mode: 'insensitive' } },
-                            { vendorSku: { contains: search, mode: 'insensitive' } },
-                            { vendorBarcode: { contains: search, mode: 'insensitive' } },
-                        ],
-                    }
-                    : {
-                        partnerId
-                    };
+                const terms = catalogSearchTerms(search)
+                let where: Prisma.ProductViewWhereInput = { partnerId, ...(terms.length ? productSearchWhere(terms) : {}) };
                 if (brand_id) {
                     where = {
                         ...where,
@@ -119,10 +107,7 @@ export const ProductQuery = extendType({
                     take: limit,
                     skip: limit * (page - 1),
                 }
-                if (order)
-                    args.orderBy = {
-                        id: order
-                    }
+                args.orderBy = { id: order ?? 'asc' }
 
                 const products = await ctx.prisma.productView.findMany(args);
 
@@ -165,18 +150,8 @@ export const ProductQuery = extendType({
                     return { productPartners: [], totalProductPartners: 0 }
                 }
 
-                let where: Prisma.ProductTemplatePartnerPreviewWhereInput = search
-                    ? {
-                        partnerId,
-                        OR: [
-                            { name: { contains: search, mode: 'insensitive' } },
-                            { name_ar: { contains: search, mode: 'insensitive' } },
-                            // { description: { contains: search, mode: 'insensitive' } },
-                        ],
-                    }
-                    : {
-                        partnerId
-                    };
+                const terms = catalogSearchTerms(search)
+                let where: Prisma.ProductTemplatePartnerPreviewWhereInput = { partnerId, ...(terms.length ? previewSearchWhere(terms) : {}) };
                 if (giftPartnerIds) where.partnerId = partnerId ?? { in: giftPartnerIds }
                 if (availableOnly) {
                     Object.assign(where, {
@@ -185,7 +160,10 @@ export const ProductQuery = extendType({
                         onlineVisible: true,
                         partnerOnline: true,
                     })
-                    where.AND = [{ OR: [{ trackInventory: false }, { stock: { gt: 0 } }] }]
+                    where.AND = [
+                        ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
+                        { OR: [{ trackInventory: false }, { stock: { gt: 0 } }] },
+                    ]
                 }
                 if (niche_id) {
                     const categories = await ctx.prisma.category.findMany({ where: { niche_id }, select: { id: true } })
@@ -222,10 +200,11 @@ export const ProductQuery = extendType({
                     take: limit,
                     skip: limit * (page - 1),
                 }
-                if (order)
-                    args.orderBy = {
-                        product_template_id: order
-                    }
+                args.orderBy = [
+                    { product_template_id: order ?? 'asc' },
+                    { partnerId: 'asc' },
+                    { product_id: 'asc' },
+                ]
                 const productPartners = await ctx.prisma.productTemplatePartnerPreview.findMany(args);
                 const productPartnersWithStores = await attachCatalogPartners(ctx, productPartners);
 
@@ -266,15 +245,8 @@ export const ProductTemplateQuery = extendType({
                 isFull: booleanArg(),
             },
             resolve: async (_parent, { search, page, limit, isFull = false, brand_id, product_type_id, niche_id, category_id }, ctx: Context) => {
-                let where: Prisma.ProductTemplateViewWhereInput = search
-                    ? {
-                        OR: [
-                            { name: { contains: search, mode: 'insensitive' } },
-                            { name_ar: { contains: search, mode: 'insensitive' } },
-                            { description: { contains: search, mode: 'insensitive' } },
-                        ],
-                    }
-                    : {};
+                const terms = catalogSearchTerms(search)
+                let where: Prisma.ProductTemplateViewWhereInput = terms.length ? templateSearchWhere(terms) : {};
                 if (niche_id) {
                     where = {
                         ...where,

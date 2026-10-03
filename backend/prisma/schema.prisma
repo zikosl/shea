@@ -1559,6 +1559,9 @@ view ProductView {
   id                  Int      @unique
   name                String
   name_ar             String
+  description         String
+  description_ar      String
+  variantNameAr       String?
   sku                 String
   variantName         String
   price               Float
@@ -1590,6 +1593,7 @@ view ProductTemplateView {
   name            String
   name_ar         String
   description     String
+  description_ar  String
   product_type_id Int?
   brand_id        Int?
   category_id     Int
@@ -1612,6 +1616,8 @@ view ProductTemplatePartnerPreview {
   name            String
   name_ar         String
   description     String
+  description_ar  String
+  variant_name_ar String?
   product_type_id Int?
   category_id     Int
   brand_id        Int?
