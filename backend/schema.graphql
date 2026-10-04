@@ -1571,6 +1571,8 @@ type SahimContribution {
   payloadJson: String!
   reviewNote: String
   status: String!
+  targetProductName: String
+  targetVariantName: String
 }
 
 type SahimExistingBarcode {

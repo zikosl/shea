@@ -11,7 +11,7 @@ export type ContributorAccount = {
   email: string | null;
   active: boolean;
 };
-export type SahimReviewItem = { id: string; kind: string; contributorId: number; payloadJson: string; createdAt: string };
+export type SahimReviewItem = { id: string; kind: string; contributorId: number; payloadJson: string; createdAt: string; targetProductName: string | null; targetVariantName: string | null };
 
 type ActionResult = { ok: true } | { ok: false; message: string };
 
@@ -38,7 +38,7 @@ const RESET_ACCESS = gql`
     resetContributorAccess(userId: $userId)
   }
 `;
-const REVIEW_QUEUE = gql`query SahimReviewQueue { sahimReviewQueue { id kind contributorId payloadJson createdAt } }`;
+const REVIEW_QUEUE = gql`query SahimReviewQueue { sahimReviewQueue { id kind contributorId payloadJson createdAt targetProductName targetVariantName } }`;
 const REVIEW = gql`mutation ReviewSahimContribution($id: String!, $approve: Boolean!, $note: String, $mergeTemplateId: Int) {
   reviewSahimContribution(id: $id, approve: $approve, note: $note, mergeTemplateId: $mergeTemplateId) { id status }
 }`;

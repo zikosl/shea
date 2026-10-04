@@ -12,6 +12,11 @@ import { type SahimReviewItem, reviewSahimItem } from "./actions";
 
 type Payload = { name?: string; description?: string; barcode?: string; variantId?: number; image?: string; mergeTemplateId?: number; sourceUrl?: string; sourceImageUrl?: string; variants?: { name?: string; barcode?: string }[] };
 
+function reviewBarcode(item: SahimReviewItem): string {
+  try { return (JSON.parse(item.payloadJson) as Payload).barcode || "unknown"; }
+  catch { return "unknown"; }
+}
+
 export function SahimReviewQueue({ items }: { items: SahimReviewItem[] }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
@@ -43,8 +48,9 @@ export function SahimReviewQueue({ items }: { items: SahimReviewItem[] }) {
       return <article key={item.id} className="space-y-3 rounded-xl border bg-card p-4">
         <div className="flex flex-wrap items-start justify-between gap-2"><div><p className="text-sm font-semibold">{item.kind === "PRODUCT" ? payload.name || "Unnamed product" : `Barcode ${payload.barcode || "unknown"}`}</p><p className="text-xs text-muted-foreground">{item.kind} · Contributor #{item.contributorId} · {new Date(item.createdAt).toLocaleString()}</p></div><span className="text-xs text-muted-foreground">{payload.mergeTemplateId ? `Proposed Shea template #${payload.mergeTemplateId}` : item.kind === "PRODUCT" ? "New template" : "Existing variant"}</span></div>
         {payload.description ? <p className="text-sm text-muted-foreground">{payload.description}</p> : null}
-        {payload.variantId ? <p className="text-xs text-muted-foreground">Assign to Shea variant #{payload.variantId}</p> : null}
+        {payload.variantId ? <p className="text-sm">Assign to {item.targetProductName || "Unknown Shea product"} / {item.targetVariantName || "Default variant"} <span className="text-xs text-muted-foreground">(variant #{payload.variantId})</span></p> : null}
         {payload.image?.startsWith("/uploads/sahim/") ? <div className="relative h-28 w-28 overflow-hidden rounded-lg border"><Image unoptimized fill src={resolvePublicAssetUrl(payload.image)} alt="Contributor package evidence" className="object-contain" /></div> : null}
+        {item.kind === "BARCODE" && !payload.image ? <p className="text-xs text-muted-foreground">No package photo was submitted. Verify the scanned code against the Shea variant before approving.</p> : null}
         {payload.variants?.length ? <p className="text-xs text-muted-foreground">{payload.variants.map((variant) => `${variant.name || "Variant"}${variant.barcode ? ` · ${variant.barcode}` : ""}`).join("; ")}</p> : null}
         {payload.sourceUrl ? <a className="text-xs underline" href={payload.sourceUrl} target="_blank" rel="noopener noreferrer">View external reference</a> : null}
         {payload.sourceImageUrl ? <a className="ml-3 text-xs underline" href={payload.sourceImageUrl} target="_blank" rel="noopener noreferrer">View external image</a> : null}
@@ -52,6 +58,6 @@ export function SahimReviewQueue({ items }: { items: SahimReviewItem[] }) {
         <div className="flex gap-2"><Button size="sm" disabled={Boolean(busy)} onClick={() => setAction({ item, approve: true })}>Approve</Button><Button size="sm" variant="outline" disabled={Boolean(busy)} onClick={() => setAction({ item, approve: false })}>Reject</Button></div>
       </article>;
     })}
-    <Dialog open={Boolean(action)} onOpenChange={(open) => { if (!open && !busy) setAction(null); }}><DialogContent><DialogHeader><DialogTitle>{action?.approve ? "Approve contribution?" : "Reject contribution?"}</DialogTitle><DialogDescription>{action?.approve ? "This will add the barcode or variant to Shea immediately. Confirm the package photo and template match first." : "The contributor will see your review note. Add a clear reason before rejecting."}</DialogDescription></DialogHeader><DialogFooter><Button variant="outline" disabled={Boolean(busy)} onClick={() => setAction(null)}>Cancel</Button><Button variant={action?.approve ? "default" : "destructive"} disabled={Boolean(busy)} onClick={() => { if (action) void review(action.item, action.approve); }}>{busy ? "Saving..." : action?.approve ? "Approve" : "Reject"}</Button></DialogFooter></DialogContent></Dialog>
+    <Dialog open={Boolean(action)} onOpenChange={(open) => { if (!open && !busy) setAction(null); }}><DialogContent><DialogHeader><DialogTitle>{action?.approve ? "Approve contribution?" : "Reject contribution?"}</DialogTitle><DialogDescription>{action?.approve ? action.item.kind === "BARCODE" ? `Assign barcode ${reviewBarcode(action.item)} to ${action.item.targetProductName || "the selected Shea product"} / ${action.item.targetVariantName || "Default variant"}? Verify this match before approving.` : "This will add a product or variant to Shea. Confirm the package photo and template match first." : "The contributor will see your review note. Add a clear reason before rejecting."}</DialogDescription></DialogHeader><DialogFooter><Button variant="outline" disabled={Boolean(busy)} onClick={() => setAction(null)}>Cancel</Button><Button variant={action?.approve ? "default" : "destructive"} disabled={Boolean(busy)} onClick={() => { if (action) void review(action.item, action.approve); }}>{busy ? "Saving..." : action?.approve ? "Approve" : "Reject"}</Button></DialogFooter></DialogContent></Dialog>
   </section>;
 }

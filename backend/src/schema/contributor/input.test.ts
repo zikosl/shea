@@ -4,10 +4,14 @@ import { normalizeInput } from './index'
 
 const photo = '/uploads/sahim/11111111-1111-4111-8111-111111111111.jpg'
 
-test('barcode contributions require a real package photo and valid GTIN', () => {
+test('barcode contributions accept the scanned GTIN without reopening the camera', () => {
+  assert.deepEqual(normalizeInput('BARCODE', JSON.stringify({ variantId: 4, barcode: '4006381333931' })), {
+    variantId: 4, barcode: '4006381333931',
+  })
   assert.deepEqual(normalizeInput('BARCODE', JSON.stringify({ variantId: 4, barcode: '4006381333931', image: photo })), {
     variantId: 4, barcode: '4006381333931', image: photo,
   })
+  assert.throws(() => normalizeInput('BARCODE', JSON.stringify({ variantId: 0, barcode: '4006381333931' })))
   assert.throws(() => normalizeInput('BARCODE', JSON.stringify({ variantId: 4, barcode: '4006381333932', image: photo })))
   assert.throws(() => normalizeInput('BARCODE', JSON.stringify({ variantId: 4, barcode: '4006381333931', image: 'https://untrusted.test/pic.jpg' })))
 })

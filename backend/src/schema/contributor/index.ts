@@ -15,7 +15,7 @@ import { discoverBarcode } from '../../modules/catalog/sahim-discovery'
 
 type ProductVariant = { name: string; tags: string[]; sku?: string; barcode?: string; image?: string }
 type ProductInput = { name: string; nameAr?: string; description?: string; categoryId: number; productTypeId?: number; brandId?: number; mergeTemplateId?: number; image: string; variants: ProductVariant[]; sourceUrl?: string; sourceImageUrl?: string }
-type BarcodeInput = { variantId: number; barcode: string; image: string }
+type BarcodeInput = { variantId: number; barcode: string; image?: string }
 
 function imageUrl(value: unknown): string {
   if (typeof value !== 'string' || !/^\/uploads\/sahim\/[a-f0-9-]{36}\.(jpg|png|webp)$/.test(value)) throw new GraphQLError('PACKAGE_IMAGE_REQUIRED')
@@ -30,7 +30,7 @@ export function normalizeInput(kind: string, raw: string): ProductInput | Barcod
   if (kind === 'BARCODE') {
     if (!Number.isSafeInteger(input.variantId) || input.variantId < 1) throw new GraphQLError('VARIANT_REQUIRED')
     if (typeof input.barcode !== 'string') throw new GraphQLError('BARCODE_REQUIRED')
-    return { variantId: input.variantId, barcode: requireGtin(input.barcode), image: imageUrl(input.image) }
+    return { variantId: input.variantId, barcode: requireGtin(input.barcode), ...(input.image == null ? {} : { image: imageUrl(input.image) }) }
   }
   if (kind !== 'PRODUCT') throw new GraphQLError('INVALID_SUBMISSION_KIND')
   const name = String(input.name ?? '').trim()
@@ -108,6 +108,8 @@ const Contribution = objectType({
     t.nonNull.string('status')
     t.nonNull.int('contributorId')
     t.nonNull.string('payloadJson', { resolve: (parent) => JSON.stringify(parent.payload) })
+    t.string('targetProductName', { resolve: (parent) => (parent as typeof parent & { targetProductName?: string }).targetProductName ?? null })
+    t.string('targetVariantName', { resolve: (parent) => (parent as typeof parent & { targetVariantName?: string | null }).targetVariantName ?? null })
     t.string('reviewNote')
     t.nonNull.field('createdAt', { type: 'DateTime' })
   },
@@ -117,7 +119,16 @@ const Query = extendType({
   type: 'Query',
   definition(t) {
     t.nonNull.list.nonNull.field('contributors', { type: Contributor, resolve: (_parent, _args, ctx: Context) => ctx.prisma.contributor.findMany({ orderBy: { name: 'asc' } }) })
-    t.nonNull.list.nonNull.field('sahimReviewQueue', { type: Contribution, resolve: (_parent, _args, ctx: Context) => ctx.prisma.catalogContribution.findMany({ where: { status: 'PENDING' }, orderBy: { createdAt: 'asc' }, take: 100 }) })
+    t.nonNull.list.nonNull.field('sahimReviewQueue', { type: Contribution, resolve: async (_parent, _args, ctx: Context) => {
+      const queue = await ctx.prisma.catalogContribution.findMany({ where: { status: 'PENDING' }, orderBy: { createdAt: 'asc' }, take: 100 })
+      const ids = queue.filter(item => item.kind === 'BARCODE').map(item => (item.payload as BarcodeInput).variantId).filter(Number.isSafeInteger)
+      const variants = ids.length ? await ctx.prisma.variant.findMany({ where: { id: { in: ids } }, select: { id: true, name: true, product: { select: { name: true } } } }) : []
+      const byId = new Map(variants.map(variant => [variant.id, variant]))
+      return queue.map(item => {
+        const target = item.kind === 'BARCODE' ? byId.get((item.payload as BarcodeInput).variantId) : null
+        return { ...item, targetProductName: target?.product.name ?? null, targetVariantName: target?.name ?? null }
+      })
+    } })
     t.nonNull.list.nonNull.field('mySahimContributions', { type: Contribution, resolve: (_parent, _args, ctx: Context) => ctx.prisma.catalogContribution.findMany({ where: { contributorId: getUserId(ctx) }, orderBy: { createdAt: 'desc' }, take: 100 }) })
     t.field('sahimBarcodeLookup', {
       type: 'Variant',
@@ -252,7 +263,7 @@ const Mutation = extendType({
             const owner = await tx.variant.findUnique({ where: { barcode: payload.barcode } })
             const target = await tx.variant.findUnique({ where: { id: payload.variantId } })
             if (!target || (owner && owner.id !== target.id) || (target.barcode && target.barcode !== payload.barcode)) throw new GraphQLError('BARCODE_CONFLICT')
-            await tx.variant.update({ where: { id: target.id }, data: { barcode: payload.barcode, barcodeSource: payload.image, barcodeVerifiedAt: new Date() } })
+            await tx.variant.update({ where: { id: target.id }, data: { barcode: payload.barcode, barcodeSource: payload.image ?? null, barcodeVerifiedAt: new Date() } })
           } else {
             const entry = payload as ProductInput
             const category = await tx.category.findUnique({ where: { id: entry.categoryId } })
