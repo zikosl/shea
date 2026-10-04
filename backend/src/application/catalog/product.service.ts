@@ -411,7 +411,7 @@ export async function setProductsAvailability(
   if (updatedIds.length) {
     await prisma.product.updateMany({
       where: { id: { in: updatedIds }, partnerId },
-      data: { available },
+      data: { available, onlineVisible: available },
     })
   }
   const updatedSet = new Set(updatedIds)

@@ -18,7 +18,7 @@ test('bulk availability updates only products owned by the partner', async () =>
 
   const result = await setProductsAvailability(prisma, 7, [1, 2], false)
   assert.deepEqual(result, { updatedIds: [1], failedIds: [2] })
-  assert.deepEqual(updated, [{ where: { id: { in: [1] }, partnerId: 7 }, data: { available: false } }])
+  assert.deepEqual(updated, [{ where: { id: { in: [1] }, partnerId: 7 }, data: { available: false, onlineVisible: false } }])
 })
 
 test('bulk availability rejects oversized selections before querying', async () => {

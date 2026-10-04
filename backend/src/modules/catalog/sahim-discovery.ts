@@ -13,12 +13,13 @@ export type ExternalSuggestion = {
 }
 
 type ExternalResult = { status: 'FOUND' | 'NOT_FOUND' | 'UNAVAILABLE' | 'RATE_LIMITED'; suggestion: ExternalSuggestion | null; retryAfterSeconds: number }
-type Match = { templateId: number; name: string; description: string; brand: string; categoryId: number; nicheId: number | null; productTypeId: number | null; brandId: number | null; score: number; reason: string; variants: { id: number; name: string | null; barcode: string | null }[] }
+type Match = { templateId: number; name: string; description: string; brand: string; categoryId: number; nicheId: number | null; productTypeId: number | null; brandId: number | null; score: number; reason: string; variants: { id: number; name: string | null; barcode: string | null; sizeHint: 'MATCH' | 'DIFFERENT' | 'UNKNOWN' }[] }
 const cache = new Map<string, { expires: number; value: ExternalResult }>()
 const lookupTimes: number[] = []
 let providerCooldownUntil = 0
 const STOP_WORDS = new Set(['the', 'and', 'for', 'with', 'de', 'des', 'du', 'la', 'le', 'les', 'un', 'une', 'et', 'pour', 'من', 'في', 'مع'])
 const SIZE_UNITS = new Set(['g', 'kg', 'mg', 'ml', 'cl', 'l', 'oz'])
+const GENERIC_WORDS = new Set(['cream', 'creme', 'lotion', 'gel', 'soap', 'savon', 'shampoo', 'shampoing', 'perfume', 'parfum', 'body', 'corps', 'face', 'visage', 'chocolate', 'chocolat', 'biscuit', 'biscuits', 'شامبو', 'كريم', 'عطر', 'صابون', 'شوكولاتة'])
 
 export function searchWords(value: string): string[] {
   return [...new Set(value.normalize('NFKD').toLocaleLowerCase().replace(/[\u0300-\u036f]/g, '').match(/[\p{L}\p{N}]+/gu) ?? [])]
@@ -32,7 +33,7 @@ function clean(value: unknown, max: number): string {
 function candidateTerms(source: ExternalSuggestion): string[][] {
   const tokens = (value: string) => value.normalize('NFKC').toLocaleLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []
   const brand = tokens(source.brand)
-  const name = tokens(`${source.name} ${source.nameAr}`).sort((a, b) => b.length - a.length)
+  const name = tokens(`${source.name} ${source.nameAr}`).sort((a, b) => Number(GENERIC_WORDS.has(searchWords(a)[0])) - Number(GENERIC_WORDS.has(searchWords(b)[0])) || b.length - a.length)
   const seen = new Set<string>()
   return [...brand, ...name].flatMap(word => {
     const folded = searchWords(word)[0]
@@ -119,20 +120,61 @@ export async function externalBarcodeLookup(code: string, fetcher: typeof fetch 
   return result
 }
 
+function brandKey(value: string): string {
+  return value.normalize('NFKD').toLocaleLowerCase().replace(/[\u0300-\u036f]/g, '').replace(/[^\p{L}\p{N}]/gu, '')
+}
+
+function productSizes(value: string): string[] {
+  const sizes: string[] = []
+  for (const match of value.toLocaleLowerCase().matchAll(/(\d+(?:[.,]\d+)?)\s*(kg|mg|g|ml|cl|l)\b/gu)) {
+    const amount = Number(match[1].replace(',', '.'))
+    const unit = match[2]
+    const family = ['kg', 'mg', 'g'].includes(unit) ? 'g' : 'ml'
+    const factor = unit === 'kg' || unit === 'l' ? 1000 : unit === 'mg' ? 0.001 : unit === 'cl' ? 10 : 1
+    if (amount > 0) sizes.push(`${family}:${Math.round(amount * factor * 100) / 100}`)
+  }
+  return [...new Set(sizes)]
+}
+
+function variantSizeHint(sourceSizes: string[], templateName: string, variantName: string): 'MATCH' | 'DIFFERENT' | 'UNKNOWN' {
+  const variantSizes = productSizes(variantName)
+  const catalogSizes = variantSizes.length ? variantSizes : productSizes(templateName)
+  if (!sourceSizes.length || !catalogSizes.length) return 'UNKNOWN'
+  return sourceSizes.some(size => catalogSizes.includes(size)) ? 'MATCH' : 'DIFFERENT'
+}
+
 export function rankTemplate(source: ExternalSuggestion, candidate: { name: string; name_ar?: string; description: string; Brand: { name: string } | null; variants: { name: string | null; name_ar?: string | null }[] }): { score: number; reason: string } {
-  const sourceWords = searchWords(`${source.name} ${source.nameAr} ${source.quantity}`)
-  const productWords = new Set(searchWords(`${candidate.name} ${candidate.name_ar ?? ''} ${candidate.description} ${candidate.Brand?.name ?? ''} ${candidate.variants.map(v => `${v.name ?? ''} ${v.name_ar ?? ''}`).join(' ')}`))
-  const common = sourceWords.filter(word => productWords.has(word))
-  const sizeTerms = sourceWords.filter(word => /\d/.test(word) || SIZE_UNITS.has(word))
-  const candidateHasSize = [...productWords].some(word => /\d/.test(word) || SIZE_UNITS.has(word))
-  const missingSizeTerms = candidateHasSize ? sizeTerms.filter(word => !productWords.has(word)) : []
-  const brandWords = searchWords(source.brand)
-  const candidateBrand = new Set(searchWords(candidate.Brand?.name ?? ''))
-  const brandMatched = brandWords.length > 0 && brandWords.every(word => candidateBrand.has(word))
-  const brandMismatch = brandWords.length > 0 && candidate.Brand && candidate.Brand.name.toLocaleLowerCase() !== 'other' && !brandMatched
-  if (!common.length && !brandMatched) return { score: 0, reason: '' }
-  const score = Math.max(10, Math.min(100, Math.round(15 + 55 * common.length / Math.max(sourceWords.length, 1) + (brandMatched ? 25 : 0) - (brandMismatch ? 8 : 0) - 8 * missingSizeTerms.length)))
-  return { score, reason: [brandMatched ? 'Brand matches' : '', common.length ? `${common.length} name/size terms match` : '', missingSizeTerms.length ? 'Size may differ' : ''].filter(Boolean).join(' · ') }
+  const sourceBrand = brandKey(source.brand)
+  const catalogBrand = brandKey(candidate.Brand?.name ?? '')
+  const knownCatalogBrand = catalogBrand && !['other', 'otherbrand', 'autre', 'autremarque'].includes(catalogBrand)
+  const brandMatched = Boolean(sourceBrand && knownCatalogBrand && sourceBrand.length >= 4 && catalogBrand.length >= 4 && (sourceBrand === catalogBrand || sourceBrand.startsWith(catalogBrand) || catalogBrand.startsWith(sourceBrand)))
+  const brandConflict = Boolean(sourceBrand && knownCatalogBrand && !brandMatched)
+  const sourceBrandWords = new Set(searchWords(source.brand))
+  const nameWords = searchWords(`${source.name} ${source.nameAr}`).filter(word => !sourceBrandWords.has(word) && !/^\d/.test(word) && !SIZE_UNITS.has(word))
+  const catalogNameWords = new Set(searchWords(`${candidate.name} ${candidate.name_ar ?? ''}`))
+  const shared = nameWords.filter(word => catalogNameWords.has(word))
+  const distinctive = shared.filter(word => !GENERIC_WORDS.has(word))
+  const generic = shared.length - distinctive.length
+  const descriptionWords = new Set(searchWords(candidate.description))
+  const descriptionMatches = nameWords.some(word => !GENERIC_WORDS.has(word) && descriptionWords.has(word))
+  const sourceSizes = productSizes(`${source.quantity} ${source.name}`)
+  const catalogSizes = [...new Set(productSizes(candidate.name).concat(candidate.variants.flatMap(variant => productSizes(`${variant.name ?? ''} ${variant.name_ar ?? ''}`))))]
+  const sizeMatched = sourceSizes.length > 0 && sourceSizes.some(size => catalogSizes.includes(size))
+  const sizeDifferent = sourceSizes.length > 0 && catalogSizes.length > 0 && !sizeMatched
+
+  // Brand alone, or a generic word alone, must not imply the same product.
+  if (!distinctive.length && !(brandMatched && generic) && !(generic && sizeMatched && !brandConflict)) return { score: 0, reason: '' }
+  if (brandConflict && !distinctive.length) return { score: 0, reason: '' }
+  const score = Math.max(1, Math.min(100,
+    22 + Math.min(distinctive.length, 3) * 18 + Math.min(generic, 2) * 6
+    + (brandMatched ? 22 : 0) + (sizeMatched ? 10 : 0) + (descriptionMatches ? 4 : 0)
+    - (brandConflict ? 28 : 0) - (sizeDifferent ? 12 : 0),
+  ))
+  return { score, reason: [
+    distinctive.length ? `${distinctive.length} distinctive name term${distinctive.length === 1 ? '' : 's'} match` : 'Only generic name terms match',
+    brandMatched ? 'Brand matches' : brandConflict ? 'Brand differs' : '',
+    sizeMatched ? 'Size matches a variant' : sizeDifferent ? 'Size differs; check variants' : '',
+  ].filter(Boolean).join(' · ') }
 }
 
 export async function discoverBarcode(prisma: PrismaClient, rawCode: string, fetcher: typeof fetch = fetch, sharedBudget?: () => Promise<boolean>): Promise<{
@@ -167,6 +209,13 @@ export async function discoverBarcode(prisma: PrismaClient, rawCode: string, fet
   const candidates = [...new Map(batches.flat().map(candidate => [candidate.id, candidate])).values()]
   const matches = candidates.map(candidate => ({ candidate, ...rankTemplate(external.suggestion!, candidate) }))
     .filter(item => item.score > 0).sort((a, b) => b.score - a.score || a.candidate.id - b.candidate.id).slice(0, 6)
-    .map(({ candidate, score, reason }) => ({ templateId: candidate.id, name: candidate.name, description: candidate.description ?? '', brand: candidate.Brand?.name ?? '', categoryId: candidate.category_id, nicheId: candidate.category.niche_id, productTypeId: candidate.product_type_id, brandId: candidate.brand_id, score, reason, variants: candidate.variants }))
+    .map(({ candidate, score, reason }) => {
+      const sourceSizes = productSizes(`${external.suggestion!.quantity} ${external.suggestion!.name}`)
+      const variants = candidate.variants.map(variant => ({
+        id: variant.id, name: variant.name, barcode: variant.barcode,
+        sizeHint: variantSizeHint(sourceSizes, candidate.name, `${variant.name ?? ''} ${variant.name_ar ?? ''}`),
+      })).sort((a, b) => ({ MATCH: 0, UNKNOWN: 1, DIFFERENT: 2 })[a.sizeHint] - ({ MATCH: 0, UNKNOWN: 1, DIFFERENT: 2 })[b.sizeHint])
+      return { templateId: candidate.id, name: candidate.name, description: candidate.description ?? '', brand: candidate.Brand?.name ?? '', categoryId: candidate.category_id, nicheId: candidate.category.niche_id, productTypeId: candidate.product_type_id, brandId: candidate.brand_id, score, reason, variants }
+    })
   return { status: 'FOUND', retryAfterSeconds: 0, existing: null, external: external.suggestion, matches }
 }
