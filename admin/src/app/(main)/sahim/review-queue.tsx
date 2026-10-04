@@ -41,7 +41,7 @@ export function SahimReviewQueue({ items }: { items: SahimReviewItem[] }) {
   }
 
   return <section className="space-y-3 pt-6">
-    <div><h2 className="text-base font-semibold">Contributions awaiting review</h2><p className="text-sm text-muted-foreground">Verify package evidence and the suggested template before adding a barcode or variant to Shea.</p></div>
+    <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-base font-semibold">Contributions awaiting review</h2><p className="text-sm text-muted-foreground">Only requests synced from Sahim appear here. Verify package evidence and the suggested template before approval.</p></div><Button size="sm" variant="outline" onClick={() => router.refresh()}>Refresh queue</Button></div>
     {!items.length ? <div className="rounded-xl border bg-card px-5 py-8 text-center text-sm text-muted-foreground">No pending contributions.</div> : items.map((item) => {
       let payload: Payload = {};
       try { payload = JSON.parse(item.payloadJson) as Payload; } catch { /* Keep malformed data visible for rejection. */ }
