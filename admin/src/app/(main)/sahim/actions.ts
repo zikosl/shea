@@ -11,6 +11,7 @@ export type ContributorAccount = {
   email: string | null;
   active: boolean;
 };
+export type SahimReviewItem = { id: string; kind: string; contributorId: number; payloadJson: string; createdAt: string };
 
 type ActionResult = { ok: true } | { ok: false; message: string };
 
@@ -37,6 +38,10 @@ const RESET_ACCESS = gql`
     resetContributorAccess(userId: $userId)
   }
 `;
+const REVIEW_QUEUE = gql`query SahimReviewQueue { sahimReviewQueue { id kind contributorId payloadJson createdAt } }`;
+const REVIEW = gql`mutation ReviewSahimContribution($id: String!, $approve: Boolean!, $note: String, $mergeTemplateId: Int) {
+  reviewSahimContribution(id: $id, approve: $approve, note: $note, mergeTemplateId: $mergeTemplateId) { id status }
+}`;
 
 function errorMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
@@ -49,6 +54,27 @@ function errorMessage(error: unknown): string {
 export async function getContributors(): Promise<ContributorAccount[]> {
   const result = await requestServerGraphQL<{ contributors: ContributorAccount[] }>(CONTRIBUTORS);
   return result.contributors;
+}
+export async function getSahimReviewQueue(): Promise<SahimReviewItem[]> {
+  const result = await requestServerGraphQL<{ sahimReviewQueue: SahimReviewItem[] }>(REVIEW_QUEUE);
+  return result.sahimReviewQueue;
+}
+
+export async function reviewSahimItem(id: string, approve: boolean, note: string, mergeTemplateId?: number): Promise<ActionResult> {
+  if (!id || (mergeTemplateId !== undefined && (!Number.isSafeInteger(mergeTemplateId) || mergeTemplateId < 1))) return { ok: false, message: "Invalid review selection." };
+  if (!approve && !note.trim()) return { ok: false, message: "Add a reason before rejecting this contribution." };
+  try {
+    await requestServerGraphQL(REVIEW, { id, approve, note: note.trim().slice(0, 500) || null, mergeTemplateId: mergeTemplateId ?? null });
+    revalidatePath("/sahim");
+    return { ok: true };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (message.includes("BARCODE_CONFLICT") || message.includes("BARCODE_ALREADY_ASSIGNED")) return { ok: false, message: "This barcode is already assigned. Refresh the queue and review the product." };
+    if (message.includes("BARCODE_ALREADY_PENDING")) return { ok: false, message: "This barcode already has a pending contribution." };
+    if (message.includes("SKU_CONFLICT")) return { ok: false, message: "A variant already uses this SKU." };
+    if (message.includes("MERGE_CATEGORY_MISMATCH")) return { ok: false, message: "The chosen template is not in the same category." };
+    return { ok: false, message: "Review could not be saved. Refresh and try again." };
+  }
 }
 
 export async function createContributorAccount(name: string, email: string): Promise<ActionResult> {

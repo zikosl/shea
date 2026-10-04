@@ -72,6 +72,7 @@ export const permissions = shield(
       sahimReviewQueue: isAdmin,
       mySahimContributions: isContributor,
       sahimBarcodeLookup: isContributor,
+      sahimDiscoverBarcode: isContributor,
       findManyProductTemplateRequests: isAdmin,
       myCatalogSubmissions: isPartner,
       findMyProductTemplateRequests: isPartner,

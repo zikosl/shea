@@ -11,9 +11,10 @@ import { ensureEmailAvailable, throwAccountWriteError } from '../../application/
 import { generateAccessCode } from '../../utils/password'
 import { sendAccessCodeEmail } from '../../utils/mailer'
 import { requireGtin } from '../../modules/catalog/barcodes'
+import { discoverBarcode } from '../../modules/catalog/sahim-discovery'
 
 type ProductVariant = { name: string; tags: string[]; sku?: string; barcode?: string; image?: string }
-type ProductInput = { name: string; nameAr?: string; categoryId: number; productTypeId?: number; brandId?: number; image: string; variants: ProductVariant[] }
+type ProductInput = { name: string; nameAr?: string; description?: string; categoryId: number; productTypeId?: number; brandId?: number; mergeTemplateId?: number; image: string; variants: ProductVariant[]; sourceUrl?: string; sourceImageUrl?: string }
 type BarcodeInput = { variantId: number; barcode: string; image: string }
 
 function imageUrl(value: unknown): string {
@@ -47,11 +48,45 @@ export function normalizeInput(kind: string, raw: string): ProductInput | Barcod
   if (new Set(barcodes).size !== barcodes.length) throw new GraphQLError('DUPLICATE_BARCODE')
   if (new Set(variants.map((variant: ProductVariant) => variant.sku)).size !== variants.length) throw new GraphQLError('DUPLICATE_SKU')
   return {
-    name, nameAr: String(input.nameAr ?? '').trim().slice(0, 160), categoryId: input.categoryId,
+    name, nameAr: String(input.nameAr ?? '').trim().slice(0, 160), description: String(input.description ?? '').trim().slice(0, 2000), categoryId: input.categoryId,
     productTypeId: Number.isSafeInteger(input.productTypeId) ? input.productTypeId : undefined,
     brandId: Number.isSafeInteger(input.brandId) ? input.brandId : undefined,
+    mergeTemplateId: Number.isSafeInteger(input.mergeTemplateId) && input.mergeTemplateId > 0 ? input.mergeTemplateId : undefined,
+    sourceUrl: typeof input.sourceUrl === 'string' && /^https:\/\/world\.open(?:food|beauty|products|petfood)facts\.org\/product\/\d+$/.test(input.sourceUrl) ? input.sourceUrl : undefined,
+    sourceImageUrl: typeof input.sourceImageUrl === 'string' && /^https:\/\/images\.open(?:food|beauty|products|petfood)facts\.org\//.test(input.sourceImageUrl) ? input.sourceImageUrl.slice(0, 600) : undefined,
     image: imageUrl(input.image), variants,
   }
+}
+
+const SahimExternalProduct = objectType({ name: 'SahimExternalProduct', definition(t) {
+  t.nonNull.string('name'); t.nonNull.string('nameAr'); t.nonNull.string('description'); t.nonNull.string('brand'); t.nonNull.string('quantity'); t.string('imageUrl'); t.nonNull.string('sourceUrl'); t.nonNull.string('sourceName')
+} })
+const SahimCandidateVariant = objectType({ name: 'SahimCandidateVariant', definition(t) {
+  t.nonNull.int('id'); t.string('name'); t.string('barcode')
+} })
+const SahimTemplateMatch = objectType({ name: 'SahimTemplateMatch', definition(t) {
+  t.nonNull.int('templateId'); t.nonNull.string('name'); t.nonNull.string('brand'); t.nonNull.int('categoryId'); t.int('nicheId'); t.int('productTypeId'); t.int('brandId'); t.nonNull.int('score'); t.nonNull.string('reason'); t.nonNull.list.nonNull.field('variants', { type: SahimCandidateVariant })
+} })
+const SahimExistingBarcode = objectType({ name: 'SahimExistingBarcode', definition(t) {
+  t.nonNull.int('id'); t.string('name'); t.nonNull.string('productName')
+} })
+const SahimBarcodeDiscovery = objectType({ name: 'SahimBarcodeDiscovery', definition(t) {
+  t.nonNull.string('status'); t.field('existing', { type: SahimExistingBarcode }); t.field('external', { type: SahimExternalProduct }); t.nonNull.list.nonNull.field('matches', { type: SahimTemplateMatch })
+} })
+
+async function sharedLookupBudget(): Promise<boolean> {
+  const { redis } = await import('../../servers')
+  if (redis.status !== 'ready') return true
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    const window = Math.floor(Date.now() / 60_000)
+    const count = await Promise.race([
+      redis.eval("local n=redis.call('INCR',KEYS[1]); if n==1 then redis.call('PEXPIRE',KEYS[1],ARGV[1]) end; return n", 1, `shea:sahim-lookup:${window}`, 60_000),
+      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('LOOKUP_BUDGET_TIMEOUT')), 500) }),
+    ])
+    return Number(count) <= 10
+  } catch { return true }
+  finally { if (timer) clearTimeout(timer) }
 }
 
 const Contributor = objectType({
@@ -88,6 +123,11 @@ const Query = extendType({
       type: 'Variant',
       args: { barcode: nonNull(stringArg()) },
       resolve: (_parent, { barcode }, ctx: Context) => ctx.prisma.variant.findUnique({ where: { barcode: requireGtin(barcode) } }),
+    })
+    t.nonNull.field('sahimDiscoverBarcode', {
+      type: SahimBarcodeDiscovery,
+      args: { barcode: nonNull(stringArg()) },
+      resolve: (_parent, { barcode }, ctx: Context) => discoverBarcode(ctx.prisma, barcode, fetch, sharedLookupBudget),
     })
   },
 })
@@ -167,6 +207,16 @@ const Mutation = extendType({
         const existing = await ctx.prisma.catalogContribution.findUnique({ where: { contributorId_localId: { contributorId, localId: id } } })
         if (existing) return existing
         const payload = normalizeInput(kind, inputJson)
+        const submittedCodes = kind === 'BARCODE'
+          ? [(payload as BarcodeInput).barcode]
+          : (payload as ProductInput).variants.flatMap(variant => variant.barcode ? [variant.barcode] : [])
+        if (submittedCodes.length) {
+          const pending = await ctx.prisma.catalogContribution.findMany({ where: { status: 'PENDING' }, select: { payload: true } })
+          if (pending.some(item => {
+            const other = item.payload as Record<string, any>
+            return submittedCodes.includes(other.barcode) || (Array.isArray(other.variants) && other.variants.some((variant: ProductVariant) => variant.barcode && submittedCodes.includes(variant.barcode)))
+          })) throw new GraphQLError('BARCODE_ALREADY_PENDING')
+        }
         if (kind === 'BARCODE') {
           const entry = payload as BarcodeInput
           const target = await ctx.prisma.variant.findUnique({ where: { id: entry.variantId }, select: { barcode: true } })
@@ -178,6 +228,10 @@ const Mutation = extendType({
           const entry = payload as ProductInput
           const category = await ctx.prisma.category.findUnique({ where: { id: entry.categoryId } })
           if (!category) throw new GraphQLError('CATEGORY_NOT_FOUND')
+          if (entry.mergeTemplateId) {
+            const template = await ctx.prisma.productTemplate.findUnique({ where: { id: entry.mergeTemplateId }, select: { category_id: true } })
+            if (!template || template.category_id !== entry.categoryId) throw new GraphQLError('MERGE_CATEGORY_MISMATCH')
+          }
           if (entry.productTypeId && !(await ctx.prisma.productType.findFirst({ where: { id: entry.productTypeId, category_id: entry.categoryId } }))) throw new GraphQLError('PRODUCT_TYPE_DOES_NOT_BELONG_TO_CATEGORY')
           if (entry.brandId && !(await ctx.prisma.brand.findFirst({ where: { id: entry.brandId, OR: [{ niche_id: null }, { niche_id: category.niche_id }] } }))) throw new GraphQLError('BRAND_DOES_NOT_BELONG_TO_NICHE')
           const codes = entry.variants.map((variant) => variant.barcode).filter((code): code is string => Boolean(code))
@@ -208,22 +262,27 @@ const Mutation = extendType({
             const skus = entry.variants.map((variant) => variant.sku).filter((sku): sku is string => Boolean(sku))
             if (codes.length && await tx.variant.findFirst({ where: { barcode: { in: codes } } })) throw new GraphQLError('BARCODE_CONFLICT')
             if (skus.length && await tx.variant.findFirst({ where: { sku: { in: skus } } })) throw new GraphQLError('SKU_CONFLICT')
-            const template = mergeTemplateId
-              ? await tx.productTemplate.findUnique({ where: { id: mergeTemplateId } })
-              : await tx.productTemplate.create({ data: { name: entry.name, name_ar: entry.nameAr ?? '', category_id: entry.categoryId, product_type_id: entry.productTypeId, brand_id: entry.brandId, images: { create: [{ url: entry.image }] } } })
+            const chosenTemplateId = mergeTemplateId ?? entry.mergeTemplateId
+            const template = chosenTemplateId
+              ? await tx.productTemplate.findUnique({ where: { id: chosenTemplateId } })
+              : await tx.productTemplate.create({ data: { name: entry.name, name_ar: entry.nameAr ?? '', description: entry.description ?? '', category_id: entry.categoryId, product_type_id: entry.productTypeId, brand_id: entry.brandId, images: { create: [{ url: entry.image }] } } })
             if (!template || template.category_id !== entry.categoryId) throw new GraphQLError('MERGE_CATEGORY_MISMATCH')
+            const usedImages = new Set<string>(chosenTemplateId ? [] : [entry.image])
             for (const variant of entry.variants) {
+              const variantImage = variant.image || (chosenTemplateId ? entry.image : undefined)
+              const addImage = variantImage && !usedImages.has(variantImage)
+              if (variantImage) usedImages.add(variantImage)
               await tx.variant.create({ data: {
                 productId: template.id, name: variant.name, sku: variant.sku, barcode: variant.barcode,
                 barcodeSource: variant.barcode ? (variant.image || entry.image) : null, barcodeVerifiedAt: variant.barcode ? new Date() : null,
                 tags: { create: variant.tags.map((value) => ({ value })) },
-                images: variant.image ? { create: [{ url: variant.image }] } : undefined,
+                images: addImage ? { create: [{ url: variantImage }] } : undefined,
               } })
             }
           }
         }
         const reviewed = await tx.catalogContribution.update({ where: { id }, data: { status: approve ? 'APPROVED' : 'REJECTED', reviewNote: note?.trim().slice(0, 500) || null, reviewedAt: new Date() } })
-        await tx.auditLog.create({ data: { actorId: getUserId(ctx), action: approve ? 'SAHIM_APPROVED' : 'SAHIM_REJECTED', entity: 'CatalogContribution', entityId: id, metadata: { kind: contribution.kind, contributorId: contribution.contributorId, mergeTemplateId: mergeTemplateId ?? null } } })
+        await tx.auditLog.create({ data: { actorId: getUserId(ctx), action: approve ? 'SAHIM_APPROVED' : 'SAHIM_REJECTED', entity: 'CatalogContribution', entityId: id, metadata: { kind: contribution.kind, contributorId: contribution.contributorId, mergeTemplateId: mergeTemplateId ?? (contribution.payload as ProductInput).mergeTemplateId ?? null } } })
         return reviewed
       }),
     })

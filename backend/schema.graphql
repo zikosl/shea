@@ -1514,6 +1514,7 @@ type Query {
   posBootstrap(deviceKey: String!): PosBootstrap!
   previewCheckout(data: OrderInput!): CheckoutPreview!
   sahimBarcodeLookup(barcode: String!): Variant
+  sahimDiscoverBarcode(barcode: String!): SahimBarcodeDiscovery!
   sahimReviewQueue: [SahimContribution!]!
   unreadLogCount: Int!
 }
@@ -1547,6 +1548,19 @@ enum Role {
   PARTNER
 }
 
+type SahimBarcodeDiscovery {
+  existing: SahimExistingBarcode
+  external: SahimExternalProduct
+  matches: [SahimTemplateMatch!]!
+  status: String!
+}
+
+type SahimCandidateVariant {
+  barcode: String
+  id: Int!
+  name: String
+}
+
 type SahimContribution {
   contributorId: Int!
   createdAt: DateTime!
@@ -1556,6 +1570,36 @@ type SahimContribution {
   payloadJson: String!
   reviewNote: String
   status: String!
+}
+
+type SahimExistingBarcode {
+  id: Int!
+  name: String
+  productName: String!
+}
+
+type SahimExternalProduct {
+  brand: String!
+  description: String!
+  imageUrl: String
+  name: String!
+  nameAr: String!
+  quantity: String!
+  sourceName: String!
+  sourceUrl: String!
+}
+
+type SahimTemplateMatch {
+  brand: String!
+  brandId: Int
+  categoryId: Int!
+  name: String!
+  nicheId: Int
+  productTypeId: Int
+  reason: String!
+  score: Int!
+  templateId: Int!
+  variants: [SahimCandidateVariant!]!
 }
 
 type Sale {
