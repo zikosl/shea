@@ -13,8 +13,8 @@ import { sendAccessCodeEmail } from '../../utils/mailer'
 import { requireGtin } from '../../modules/catalog/barcodes'
 import { discoverBarcode } from '../../modules/catalog/sahim-discovery'
 
-type ProductVariant = { name: string; tags: string[]; sku?: string; barcode?: string; image?: string }
-type ProductInput = { name: string; nameAr?: string; description?: string; categoryId: number; productTypeId?: number; brandId?: number; mergeTemplateId?: number; image: string; variants: ProductVariant[]; sourceUrl?: string; sourceImageUrl?: string }
+type ProductVariant = { name: string; tags: string[]; sku?: string; barcode?: string; image?: string; imageSource?: 'CAMERA' | 'EXTERNAL' }
+type ProductInput = { name: string; nameAr?: string; description?: string; categoryId: number; productTypeId?: number; brandId?: number; mergeTemplateId?: number; image?: string; imageSource?: 'CAMERA' | 'EXTERNAL'; variants: ProductVariant[]; sourceUrl?: string; sourceImageUrl?: string }
 type BarcodeInput = { variantId: number; barcode: string; image?: string }
 
 function imageUrl(value: unknown): string {
@@ -42,7 +42,8 @@ export function normalizeInput(kind: string, raw: string): ProductInput | Barcod
     if (!variantName || variantName.length > 120 || !tags.length || tags.length > 12) throw new GraphQLError('VARIANT_DETAILS_REQUIRED')
     const generated = [name, ...tags].join('-').normalize('NFKD').toUpperCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '').slice(0, 70) || 'VARIANT'
     const sku = typeof item.sku === 'string' ? item.sku.trim().slice(0, 120) : ''
-    return { name: variantName, tags, sku: sku || `${generated}-${randomUUID().slice(0, 7).toUpperCase()}`, barcode: item.barcode ? requireGtin(item.barcode) : undefined, image: item.image ? imageUrl(item.image) : undefined }
+    return { name: variantName, tags, sku: sku || `${generated}-${randomUUID().slice(0, 7).toUpperCase()}`, barcode: item.barcode ? requireGtin(item.barcode) : undefined, image: item.image ? imageUrl(item.image) : undefined,
+      imageSource: item.image && item.imageSource === 'EXTERNAL' ? 'EXTERNAL' : item.image ? 'CAMERA' : undefined }
   })
   const barcodes = variants.map((variant: ProductVariant) => variant.barcode).filter(Boolean)
   if (new Set(barcodes).size !== barcodes.length) throw new GraphQLError('DUPLICATE_BARCODE')
@@ -54,12 +55,14 @@ export function normalizeInput(kind: string, raw: string): ProductInput | Barcod
     mergeTemplateId: Number.isSafeInteger(input.mergeTemplateId) && input.mergeTemplateId > 0 ? input.mergeTemplateId : undefined,
     sourceUrl: typeof input.sourceUrl === 'string' && /^https:\/\/world\.open(?:food|beauty|products|petfood)facts\.org\/product\/\d+$/.test(input.sourceUrl) ? input.sourceUrl : undefined,
     sourceImageUrl: typeof input.sourceImageUrl === 'string' && /^https:\/\/images\.open(?:food|beauty|products|petfood)facts\.org\//.test(input.sourceImageUrl) ? input.sourceImageUrl.slice(0, 600) : undefined,
-    image: imageUrl(input.image), variants,
+    image: input.mergeTemplateId && !input.image ? undefined : imageUrl(input.image),
+    imageSource: input.image && input.imageSource === 'EXTERNAL' ? 'EXTERNAL' : input.image ? 'CAMERA' : undefined,
+    variants,
   }
 }
 
 const SahimExternalProduct = objectType({ name: 'SahimExternalProduct', definition(t) {
-  t.nonNull.string('name'); t.nonNull.string('nameAr'); t.nonNull.string('description'); t.nonNull.string('brand'); t.nonNull.string('quantity'); t.string('imageUrl'); t.nonNull.string('sourceUrl'); t.nonNull.string('sourceName')
+  t.nonNull.string('name'); t.nonNull.string('nameAr'); t.nonNull.string('description'); t.nonNull.string('brand'); t.nonNull.string('quantity'); t.nonNull.list.nonNull.string('tags'); t.string('imageUrl'); t.nonNull.string('sourceUrl'); t.nonNull.string('sourceName')
 } })
 const SahimCandidateVariant = objectType({ name: 'SahimCandidateVariant', definition(t) {
   t.nonNull.int('id'); t.string('name'); t.string('barcode'); t.nonNull.string('sizeHint')
@@ -276,9 +279,9 @@ const Mutation = extendType({
             const chosenTemplateId = mergeTemplateId ?? entry.mergeTemplateId
             const template = chosenTemplateId
               ? await tx.productTemplate.findUnique({ where: { id: chosenTemplateId } })
-              : await tx.productTemplate.create({ data: { name: entry.name, name_ar: entry.nameAr ?? '', description: entry.description ?? '', category_id: entry.categoryId, product_type_id: entry.productTypeId, brand_id: entry.brandId, images: { create: [{ url: entry.image }] } } })
+              : await tx.productTemplate.create({ data: { name: entry.name, name_ar: entry.nameAr ?? '', description: entry.description ?? '', category_id: entry.categoryId, product_type_id: entry.productTypeId, brand_id: entry.brandId, images: { create: [{ url: entry.image! }] } } })
             if (!template || template.category_id !== entry.categoryId) throw new GraphQLError('MERGE_CATEGORY_MISMATCH')
-            const usedImages = new Set<string>(chosenTemplateId ? [] : [entry.image])
+            const usedImages = new Set<string>(chosenTemplateId ? [] : [entry.image!])
             for (const variant of entry.variants) {
               const variantImage = variant.image || (chosenTemplateId ? entry.image : undefined)
               const addImage = variantImage && !usedImages.has(variantImage)

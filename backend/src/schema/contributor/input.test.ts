@@ -35,3 +35,23 @@ test('product suggestions retain reviewed description and template choice withou
   assert.equal(result.sourceImageUrl, undefined)
   assert.equal(result.image, photo)
 })
+
+test('variant-only requests preserve the existing template and may omit a template image', () => {
+  const input = { name: 'Nutella', categoryId: 3, mergeTemplateId: 42,
+    variants: [{ name: 'Nutella', tags: ['Hazelnut spread'], barcode: '4006381333931' }] }
+  const result = normalizeInput('PRODUCT', JSON.stringify(input)) as any
+  assert.equal(result.image, undefined)
+  assert.equal(result.variants[0].image, undefined)
+  assert.throws(() => normalizeInput('PRODUCT', JSON.stringify({ ...input, mergeTemplateId: undefined })), /PACKAGE_IMAGE_REQUIRED/)
+})
+
+test('imported suggested images keep their source for admin review', () => {
+  const input = { name: 'Nutella', categoryId: 3, image: photo, imageSource: 'EXTERNAL',
+    sourceImageUrl: 'https://images.openfoodfacts.org/images/products/example.jpg',
+    variants: [{ name: 'Nutella', tags: ['hazelnut spread'], image: photo, imageSource: 'EXTERNAL' }] }
+  const result = normalizeInput('PRODUCT', JSON.stringify(input)) as any
+  assert.equal(result.image, photo)
+  assert.equal(result.imageSource, 'EXTERNAL')
+  assert.equal(result.variants[0].imageSource, 'EXTERNAL')
+  assert.equal(result.sourceImageUrl, input.sourceImageUrl)
+})

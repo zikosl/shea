@@ -7,6 +7,7 @@ export type ExternalSuggestion = {
   description: string
   brand: string
   quantity: string
+  tags: string[]
   imageUrl: string | null
   sourceUrl: string
   sourceName: string
@@ -28,6 +29,17 @@ export function searchWords(value: string): string[] {
 
 function clean(value: unknown, max: number): string {
   return typeof value === 'string' ? value.trim().slice(0, max) : ''
+}
+
+function suggestedTags(value: unknown, name: string): string[] {
+  const categories = Array.isArray(value) ? value : []
+  const tags = categories.slice(-8).map(item => {
+    if (typeof item !== 'string') return ''
+    const match = item.match(/^(?:en|fr|ar):(.+)$/i)
+    return match ? match[1].replace(/[-_]+/g, ' ').trim().slice(0, 60) : ''
+  }).filter(tag => tag && !['food', 'foods', 'products', 'beverages'].includes(tag.toLowerCase()))
+  const distinct = [...new Set(tags)].slice(-4)
+  return distinct.length ? distinct : [name.trim().slice(0, 60)]
 }
 
 function candidateTerms(source: ExternalSuggestion): string[][] {
@@ -82,7 +94,7 @@ export async function externalBarcodeLookup(code: string, fetcher: typeof fetch 
   if (lookupTimes.length >= 10) return { status: 'RATE_LIMITED', suggestion: null, retryAfterSeconds: Math.ceil((lookupTimes[0] + 60_000 - now) / 1000) }
   if (sharedBudget && !(await sharedBudget())) return { status: 'RATE_LIMITED', suggestion: null, retryAfterSeconds: 60 }
   lookupTimes.push(now)
-  const url = `https://world.openfoodfacts.org/api/v3/product/${barcode}?product_type=all&fields=code,product_name,product_name_ar,generic_name,brands,quantity,selected_images,image_front_url,product_type`
+  const url = `https://world.openfoodfacts.org/api/v3/product/${barcode}?product_type=all&fields=code,product_name,product_name_ar,generic_name,brands,quantity,categories_tags,selected_images,image_front_url,product_type`
   let result: ExternalResult
   try {
     const { response, finalUrl } = await fetchFacts(url, fetcher)
@@ -107,7 +119,7 @@ export async function externalBarcodeLookup(code: string, fetcher: typeof fetch 
           ? `https://${sourceDomain}/product/${barcode}` : `https://world.openfoodfacts.org/product/${barcode}`
         result = { status: 'FOUND', retryAfterSeconds: 0, suggestion: {
           name, nameAr: clean(item.product_name_ar, 160), description: clean(item.generic_name, 1000),
-          brand: clean(item.brands, 120).split(',')[0].trim(), quantity: clean(item.quantity, 80), imageUrl,
+          brand: clean(item.brands, 120).split(',')[0].trim(), quantity: clean(item.quantity, 80), tags: suggestedTags(item.categories_tags, name), imageUrl,
           sourceUrl, sourceName: 'Open Facts',
         } }
       }

@@ -7,7 +7,7 @@ const code = '3017620422003'
 
 test('matching favors identity evidence and rejects generic words from a different brand', () => {
   assert.deepEqual(searchWords('Crème de cacao 250 g'), ['creme', 'cacao', '250', 'g'])
-  const source = { name: 'Nivea Soft Cream', nameAr: '', description: '', brand: 'Nivea', quantity: '250 ml', imageUrl: null, sourceUrl: '', sourceName: 'Open Facts' }
+  const source = { name: 'Nivea Soft Cream', nameAr: '', description: '', brand: 'Nivea', quantity: '250 ml', tags: [], imageUrl: null, sourceUrl: '', sourceName: 'Open Facts' }
   const strong = rankTemplate(source, { name: 'Soft Nivea cream', description: '', Brand: { name: 'Nivea' }, variants: [{ name: '250 ml' }] })
   const weak = rankTemplate(source, { name: 'Cream', description: '', Brand: { name: 'Other' }, variants: [{ name: '100 ml' }] })
   assert.ok(strong.score > weak.score)
@@ -34,11 +34,12 @@ test('worldwide lookup distinguishes a missing product from an unavailable provi
 
 test('worldwide lookup accepts v3 success and only a safe external image host', async () => {
   const fetcher = async () => new Response(JSON.stringify({ status: 'success', product: {
-    product_name: 'Hazelnut Spread', brands: 'Test', quantity: '250 g', image_front_url: 'https://evil.example/image.jpg',
+    product_name: 'Hazelnut Spread', brands: 'Test', quantity: '250 g', categories_tags: ['en:foods', 'en:spreads', 'en:hazelnut-spreads'], image_front_url: 'https://evil.example/image.jpg',
   } }), { status: 200 })
   const result = await externalBarcodeLookup(code, fetcher as typeof fetch)
   assert.equal(result.status, 'FOUND')
   assert.equal(result.suggestion?.imageUrl, null)
+  assert.deepEqual(result.suggestion?.tags, ['spreads', 'hazelnut spreads'])
 })
 
 test('worldwide lookup refuses redirects outside Open Facts', async () => {
