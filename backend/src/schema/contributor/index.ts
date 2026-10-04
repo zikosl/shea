@@ -65,13 +65,13 @@ const SahimCandidateVariant = objectType({ name: 'SahimCandidateVariant', defini
   t.nonNull.int('id'); t.string('name'); t.string('barcode')
 } })
 const SahimTemplateMatch = objectType({ name: 'SahimTemplateMatch', definition(t) {
-  t.nonNull.int('templateId'); t.nonNull.string('name'); t.nonNull.string('brand'); t.nonNull.int('categoryId'); t.int('nicheId'); t.int('productTypeId'); t.int('brandId'); t.nonNull.int('score'); t.nonNull.string('reason'); t.nonNull.list.nonNull.field('variants', { type: SahimCandidateVariant })
+  t.nonNull.int('templateId'); t.nonNull.string('name'); t.nonNull.string('description'); t.nonNull.string('brand'); t.nonNull.int('categoryId'); t.int('nicheId'); t.int('productTypeId'); t.int('brandId'); t.nonNull.int('score'); t.nonNull.string('reason'); t.nonNull.list.nonNull.field('variants', { type: SahimCandidateVariant })
 } })
 const SahimExistingBarcode = objectType({ name: 'SahimExistingBarcode', definition(t) {
   t.nonNull.int('id'); t.string('name'); t.nonNull.string('productName')
 } })
 const SahimBarcodeDiscovery = objectType({ name: 'SahimBarcodeDiscovery', definition(t) {
-  t.nonNull.string('status'); t.field('existing', { type: SahimExistingBarcode }); t.field('external', { type: SahimExternalProduct }); t.nonNull.list.nonNull.field('matches', { type: SahimTemplateMatch })
+  t.nonNull.string('status'); t.nonNull.int('retryAfterSeconds'); t.field('existing', { type: SahimExistingBarcode }); t.field('external', { type: SahimExternalProduct }); t.nonNull.list.nonNull.field('matches', { type: SahimTemplateMatch })
 } })
 
 async function sharedLookupBudget(): Promise<boolean> {

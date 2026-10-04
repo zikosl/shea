@@ -1552,6 +1552,7 @@ type SahimBarcodeDiscovery {
   existing: SahimExistingBarcode
   external: SahimExternalProduct
   matches: [SahimTemplateMatch!]!
+  retryAfterSeconds: Int!
   status: String!
 }
 
@@ -1593,6 +1594,7 @@ type SahimTemplateMatch {
   brand: String!
   brandId: Int
   categoryId: Int!
+  description: String!
   name: String!
   nicheId: Int
   productTypeId: Int

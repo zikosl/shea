@@ -70,6 +70,22 @@ test('new barcodes return ranked Shea templates with external details for human 
   assert.equal(result.status, 'FOUND')
   assert.equal(result.matches[0]?.templateId, 7)
   assert.equal(result.matches[0]?.categoryId, 4)
+  assert.equal(result.matches[0]?.description, '')
   assert.match(result.matches[0]?.reason ?? '', /Brand matches/)
   assert.equal(result.external?.imageUrl, 'https://images.openfoodfacts.org/images/products/example.jpg')
+})
+
+test('provider rate limits expose a retry delay and prevent immediate repeat calls', async () => {
+  let calls = 0
+  const fetcher = async () => {
+    calls += 1
+    return new Response(null, { status: 429, headers: { 'retry-after': '120' } })
+  }
+  const limited = await externalBarcodeLookup('3017620422058', fetcher as typeof fetch)
+  assert.equal(limited.status, 'RATE_LIMITED')
+  assert.equal(limited.retryAfterSeconds, 120)
+  const repeated = await externalBarcodeLookup('3017620422065', fetcher as typeof fetch)
+  assert.equal(repeated.status, 'RATE_LIMITED')
+  assert.ok(repeated.retryAfterSeconds > 0)
+  assert.equal(calls, 1)
 })
