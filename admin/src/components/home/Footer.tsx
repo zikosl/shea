@@ -13,8 +13,8 @@ const columns = [
 const resolveHref = (item: string) => {
   if (item === "privacy") return "/privacy";
   if (item === "terms") return "/privacy#data-retention";
-  if (item === "partners") return "#workspace";
-  return "#features";
+  if (item === "partners") return "/#workspace";
+  return "/#features";
 };
 
 export default async function Footer() {

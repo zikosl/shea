@@ -9,7 +9,7 @@ const policySections = [
   {
     id: "data-we-collect",
     title: "Information we collect",
-    body: "Shea may collect account details, phone or email login data, delivery addresses, beauty preferences, order activity, device information, and support messages. Location data is used only when you allow it, mainly for delivery and nearby service experiences.",
+    body: "Shea may collect account details, phone or email login data, delivery addresses, beauty preferences, order activity, device information, and support messages. If you request iPhone beta access, we collect the invitation email you submit. Location data is used only when you allow it, mainly for delivery and nearby service experiences.",
   },
   {
     id: "how-we-use-data",
@@ -19,7 +19,7 @@ const policySections = [
   {
     id: "sharing",
     title: "Sharing with partners",
-    body: "We share only the information needed to complete the service. Stores may receive order and customer details needed to prepare purchases. Drivers may receive delivery details. We do not sell personal information.",
+    body: "We share only the information needed to complete the service. Stores may receive order and customer details needed to prepare purchases. Drivers may receive delivery details. If you request beta access, our team enters your invitation email into Apple's App Store Connect to send a TestFlight invitation. We do not sell personal information.",
   },
   {
     id: "security",
@@ -56,7 +56,7 @@ export default function PrivacyPolicyPage() {
               This policy explains how Shea handles information across the customer app, partner tools, delivery workflow, and admin platform.
             </p>
             <p className="mt-4 text-sm font-medium text-rose-950/55 dark:text-rose-50/55">
-              Effective date: April 10, 2026
+              Effective date: October 4, 2026
             </p>
           </div>
         </section>

@@ -11,8 +11,9 @@ import SelectLanguage from "@/components/language";
 import styles from "./landing-system.module.css";
 
 const links = [
-  { href: "#features", key: "features" },
-  { href: "#workspace", key: "download" },
+  { href: "/#features", key: "features" },
+  { href: "/#workspace", key: "download" },
+  { href: "/bio", key: "bio" },
   { href: "/privacy", key: "privacy" },
 ] as const;
 

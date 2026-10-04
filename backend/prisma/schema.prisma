@@ -16,6 +16,11 @@ enum Role {
   CONTRIBUTOR
 }
 
+enum TestFlightRequestStatus {
+  REQUESTED
+  INVITED
+}
+
 enum ThemePreference {
   SYSTEM
   LIGHT
@@ -999,6 +1004,17 @@ model AuditLog {
   @@index([actorId, createdAt])
   @@index([partnerId, createdAt])
   @@index([entity, entityId])
+}
+
+model TestFlightRequest {
+  id        String                  @id @default(uuid())
+  email     String                  @unique @db.VarChar(254)
+  status    TestFlightRequestStatus @default(REQUESTED)
+  invitedAt DateTime?
+  createdAt DateTime                @default(now())
+  updatedAt DateTime                @updatedAt
+
+  @@index([status, createdAt])
 }
 
 model ProductTemplate {

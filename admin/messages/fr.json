@@ -33,11 +33,51 @@
       "products": "Produits",
       "testimonials": "Avis",
       "download": "Télécharger",
+      "bio": "Liens",
       "workspace": "Espace admin",
       "privacy": "Confidentialité",
       "cta": "Ouvrir l’admin",
       "themeToggle": "Changer le thème",
       "menu": "Ouvrir le menu"
+    },
+    "bio": {
+      "eyebrow": "Tout Shea, au même endroit",
+      "title": "Trouvez votre accès à Shea.",
+      "intro": "Le bon outil Shea au bon moment. Découvrez nos applications et rejoignez la bêta iPhone.",
+      "linksLabel": "Liens Shea",
+      "partner": { "title": "Shea Partner", "description": "Application partenaire sur Google Play" },
+      "iphone": { "title": "Shea pour iPhone", "description": "Demander une invitation TestFlight" },
+      "pos": { "title": "Shea POS pour Windows", "description": "Télécharger le programme d’installation" },
+      "footnote": "Pensé pour celles et ceux qui font vivre Shea.",
+      "privacy": "Confidentialité",
+      "modal": {
+        "title": "Rejoindre la bêta iPhone",
+        "description": "Indiquez une adresse où recevoir l’invitation. Notre équipe ajoute manuellement les testeurs dans App Store Connect lorsqu’une version est disponible.",
+        "emailLabel": "E-mail pour l’invitation",
+        "emailHelp": "Une adresse iCloud n’est pas nécessaire. Utilisez une boîte mail accessible sur votre iPhone.",
+        "submit": "Demander une invitation",
+        "submitting": "Envoi en cours...",
+        "privacyBefore": "Nous utilisons cet e-mail uniquement pour l’invitation bêta. Consultez notre politique de"
+      },
+      "success": {
+        "title": "Demande reçue",
+        "description": "L’invitation n’a pas encore été envoyée. Surveillez votre boîte mail pendant que notre équipe prépare l’accès."
+      },
+      "guide": {
+        "title": "Installer Shea sur iPhone",
+        "description": "Suivez ces étapes après avoir reçu l’invitation Shea par e-mail.",
+        "reopen": "Déjà invité ? Voir les étapes d’installation",
+        "install": "Installez l’application TestFlight d’Apple.",
+        "openTestFlight": "Ouvrir TestFlight dans l’App Store",
+        "email": "Quand l’e-mail d’invitation Shea arrive, ouvrez-le sur votre iPhone et acceptez l’invitation.",
+        "test": "Ouvrez TestFlight, installez Shea et essayez l’application. Vous pouvez envoyer vos commentaires via TestFlight.",
+        "note": "Pas encore d’invitation ? L’accès dépend de la disponibilité d’une version bêta."
+      },
+      "errors": {
+        "invalid": "Saisissez une adresse e-mail valide.",
+        "limited": "Trop de demandes pour le moment. Réessayez plus tard.",
+        "unavailable": "Impossible d’enregistrer votre demande. Réessayez bientôt."
+      }
     },
     "hero": {
       "eyebrow": "Le système d’exploitation du commerce beauté",
