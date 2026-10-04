@@ -29,6 +29,19 @@ function clean(value: unknown, max: number): string {
   return typeof value === 'string' ? value.trim().slice(0, max) : ''
 }
 
+function candidateTerms(source: ExternalSuggestion): string[][] {
+  const tokens = (value: string) => value.normalize('NFKC').toLocaleLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []
+  const brand = tokens(source.brand)
+  const name = tokens(`${source.name} ${source.nameAr}`).sort((a, b) => b.length - a.length)
+  const seen = new Set<string>()
+  return [...brand, ...name].flatMap(word => {
+    const folded = searchWords(word)[0]
+    if (!folded || seen.has(folded)) return []
+    seen.add(folded)
+    return [[...new Set([word, folded])]]
+  }).slice(0, 6)
+}
+
 function trustedFactsUrl(value: string): boolean {
   try {
     const url = new URL(value)
@@ -108,16 +121,17 @@ export async function externalBarcodeLookup(code: string, fetcher: typeof fetch 
 
 export function rankTemplate(source: ExternalSuggestion, candidate: { name: string; name_ar?: string; description: string; Brand: { name: string } | null; variants: { name: string | null; name_ar?: string | null }[] }): { score: number; reason: string } {
   const sourceWords = searchWords(`${source.name} ${source.nameAr} ${source.quantity}`)
-  const productWords = new Set(searchWords(`${candidate.name} ${candidate.name_ar ?? ''} ${candidate.description} ${candidate.variants.map(v => `${v.name ?? ''} ${v.name_ar ?? ''}`).join(' ')}`))
+  const productWords = new Set(searchWords(`${candidate.name} ${candidate.name_ar ?? ''} ${candidate.description} ${candidate.Brand?.name ?? ''} ${candidate.variants.map(v => `${v.name ?? ''} ${v.name_ar ?? ''}`).join(' ')}`))
   const common = sourceWords.filter(word => productWords.has(word))
   const sizeTerms = sourceWords.filter(word => /\d/.test(word) || SIZE_UNITS.has(word))
-  const missingSizeTerms = sizeTerms.filter(word => !productWords.has(word))
+  const candidateHasSize = [...productWords].some(word => /\d/.test(word) || SIZE_UNITS.has(word))
+  const missingSizeTerms = candidateHasSize ? sizeTerms.filter(word => !productWords.has(word)) : []
   const brandWords = searchWords(source.brand)
   const candidateBrand = new Set(searchWords(candidate.Brand?.name ?? ''))
   const brandMatched = brandWords.length > 0 && brandWords.every(word => candidateBrand.has(word))
-  const brandMismatch = brandWords.length > 0 && candidate.Brand && !brandMatched
+  const brandMismatch = brandWords.length > 0 && candidate.Brand && candidate.Brand.name.toLocaleLowerCase() !== 'other' && !brandMatched
   if (!common.length && !brandMatched) return { score: 0, reason: '' }
-  const score = Math.max(0, Math.min(100, Math.round(15 + 55 * common.length / Math.max(sourceWords.length, 1) + (brandMatched ? 25 : 0) - (brandMismatch ? 25 : 0) - 20 * missingSizeTerms.length)))
+  const score = Math.max(10, Math.min(100, Math.round(15 + 55 * common.length / Math.max(sourceWords.length, 1) + (brandMatched ? 25 : 0) - (brandMismatch ? 8 : 0) - 8 * missingSizeTerms.length)))
   return { score, reason: [brandMatched ? 'Brand matches' : '', common.length ? `${common.length} name/size terms match` : '', missingSizeTerms.length ? 'Size may differ' : ''].filter(Boolean).join(' · ') }
 }
 
@@ -134,21 +148,25 @@ export async function discoverBarcode(prisma: PrismaClient, rawCode: string, fet
   })) return { status: 'PENDING', retryAfterSeconds: 0, existing: null, external: null, matches: [] }
   const external = await externalBarcodeLookup(code, fetcher, sharedBudget)
   if (!external.suggestion) return { status: external.status, retryAfterSeconds: external.retryAfterSeconds, existing: null, external: null, matches: [] }
-  const words = searchWords(`${external.suggestion.name} ${external.suggestion.nameAr} ${external.suggestion.brand}`).slice(0, 8)
-  if (!words.length) return { status: 'FOUND', retryAfterSeconds: 0, existing: null, external: external.suggestion, matches: [] }
-  const candidates = await prisma.productTemplate.findMany({
-    where: { OR: words.map(word => ({ OR: [
-      { name: { contains: word, mode: 'insensitive' } },
-      { name_ar: { contains: word, mode: 'insensitive' } },
-      { description: { contains: word, mode: 'insensitive' } },
-      { Brand: { is: { name: { contains: word, mode: 'insensitive' } } } },
-      { variants: { some: { name: { contains: word, mode: 'insensitive' } } } },
-    ] })) },
+  const terms = candidateTerms(external.suggestion)
+  if (!terms.length) return { status: 'FOUND', retryAfterSeconds: 0, existing: null, external: external.suggestion, matches: [] }
+  // A small result set per distinctive term prevents a generic word from filling one broad query.
+  const batches = await Promise.all(terms.map(variants => prisma.productTemplate.findMany({
+    where: { OR: variants.flatMap(word => [
+      { name: { contains: word, mode: 'insensitive' as const } },
+      { name_ar: { contains: word, mode: 'insensitive' as const } },
+      { description: { contains: word, mode: 'insensitive' as const } },
+      { description_ar: { contains: word, mode: 'insensitive' as const } },
+      { Brand: { is: { name: { contains: word, mode: 'insensitive' as const } } } },
+      { variants: { some: { name: { contains: word, mode: 'insensitive' as const } } } },
+      { variants: { some: { name_ar: { contains: word, mode: 'insensitive' as const } } } },
+    ]) },
     include: { Brand: { select: { name: true } }, category: { select: { niche_id: true } }, variants: { select: { id: true, name: true, name_ar: true, barcode: true } } },
-    take: 150,
-  })
+    take: 40,
+  })))
+  const candidates = [...new Map(batches.flat().map(candidate => [candidate.id, candidate])).values()]
   const matches = candidates.map(candidate => ({ candidate, ...rankTemplate(external.suggestion!, candidate) }))
-    .filter(item => item.score >= 15).sort((a, b) => b.score - a.score || a.candidate.id - b.candidate.id).slice(0, 6)
+    .filter(item => item.score > 0).sort((a, b) => b.score - a.score || a.candidate.id - b.candidate.id).slice(0, 6)
     .map(({ candidate, score, reason }) => ({ templateId: candidate.id, name: candidate.name, description: candidate.description ?? '', brand: candidate.Brand?.name ?? '', categoryId: candidate.category_id, nicheId: candidate.category.niche_id, productTypeId: candidate.product_type_id, brandId: candidate.brand_id, score, reason, variants: candidate.variants }))
   return { status: 'FOUND', retryAfterSeconds: 0, existing: null, external: external.suggestion, matches }
 }

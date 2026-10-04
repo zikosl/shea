@@ -13,6 +13,9 @@ test('candidate search accepts shared words but ranks brand and size, not a comm
   assert.ok(strong.score > weak.score)
   assert.match(strong.reason, /Brand matches/)
   assert.match(weak.reason, /Size may differ/)
+  const partial = rankTemplate(source, { name: 'Nivea Soft', description: '', Brand: { name: 'Other' }, variants: [{ name: null }] })
+  assert.ok(partial.score >= 10)
+  assert.doesNotMatch(partial.reason, /Size may differ/)
 })
 
 test('worldwide lookup distinguishes a missing product from an unavailable provider', async () => {
@@ -73,6 +76,28 @@ test('new barcodes return ranked Shea templates with external details for human 
   assert.equal(result.matches[0]?.description, '')
   assert.match(result.matches[0]?.reason ?? '', /Brand matches/)
   assert.equal(result.external?.imageUrl, 'https://images.openfoodfacts.org/images/products/example.jpg')
+})
+
+test('accented Shea names are searched without losing a plausible match to a broad first page', async () => {
+  const queries: string[] = []
+  const prisma = {
+    variant: { findUnique: async () => null },
+    catalogContribution: { findMany: async () => [] },
+    productTemplate: { findMany: async (args: { where: unknown }) => {
+      const query = JSON.stringify(args.where)
+      queries.push(query)
+      return query.includes('"contains":"crème"')
+        ? [{ id: 21, name: 'Crème Douce', name_ar: '', description: 'Hydrating face cream', category_id: 4, category: { niche_id: 2 }, product_type_id: null, brand_id: null, Brand: null, variants: [{ id: 22, name: null, name_ar: null, barcode: null }] }]
+        : []
+    } },
+  } as unknown as PrismaClient
+  const fetcher = async () => new Response(JSON.stringify({ status: 'success', product: {
+    product_name: 'Crème Douce', quantity: '250 ml',
+  } }), { status: 200 })
+  const result = await discoverBarcode(prisma, '3017620422072', fetcher as typeof fetch)
+  assert.ok(queries.some(query => query.includes('"contains":"crème"') && query.includes('"contains":"creme"')))
+  assert.equal(result.matches[0]?.templateId, 21)
+  assert.equal(result.matches[0]?.description, 'Hydrating face cream')
 })
 
 test('provider rate limits expose a retry delay and prevent immediate repeat calls', async () => {
