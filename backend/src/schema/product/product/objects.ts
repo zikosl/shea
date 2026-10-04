@@ -12,6 +12,22 @@ type ProductCatalogDetails = {
 }
 
 const productCatalogCache = new WeakMap<object, Promise<ProductCatalogDetails>>()
+const productViewImagesCache = new WeakMap<object, Promise<ProductCatalogDetails['images']>>()
+
+export const getProductViewImages = (parent: { variantId: number; product_template_id: number }, ctx: any) => {
+    const cached = productViewImagesCache.get(parent)
+    if (cached) return cached
+
+    const images = ctx.prisma.productImage.findMany({
+        where: { OR: [{ variantId: parent.variantId }, { product_template_id: parent.product_template_id }] },
+        orderBy: { id: 'asc' },
+    }).then((items: ProductCatalogDetails['images']) => {
+        const variantImages = items.filter(image => image.variantId === parent.variantId)
+        return variantImages.length ? variantImages : items.filter(image => image.product_template_id === parent.product_template_id)
+    })
+    productViewImagesCache.set(parent, images)
+    return images
+}
 
 const getProductCatalogDetails = (parent: Record<string, unknown>, ctx: any) => {
     const cached = productCatalogCache.get(parent)
@@ -24,7 +40,7 @@ const getProductCatalogDetails = (parent: Record<string, unknown>, ctx: any) => 
             name_ar: true,
             sku: true,
             images: true,
-            product: { select: { name: true, name_ar: true } },
+            product: { select: { name: true, name_ar: true, images: true } },
         },
     }).then((variant: any) => ({
         name: (parent.customName as string | null) || variant?.product.name || null,
@@ -32,7 +48,7 @@ const getProductCatalogDetails = (parent: Record<string, unknown>, ctx: any) => 
         variantName: variant?.name || null,
         variantNameAr: variant?.name_ar || null,
         sku: (parent.vendorSku as string | null) || variant?.sku || null,
-        images: variant?.images || [],
+        images: variant?.images?.length ? variant.images : variant?.product.images || [],
     }))
 
     productCatalogCache.set(parent, details)
@@ -267,19 +283,11 @@ const ProductView = objectType({
         });
         t.nonNull.list.field('images', {
             type: 'ProductImage',
-            resolve: async (parent, _args, ctx) => {
-                return ctx.prisma.productImage.findMany({
-                    where: { variantId: parent.variantId },
-                })
-            }
+            resolve: (parent, _args, ctx) => getProductViewImages(parent, ctx),
         })
         t.field('image', {
             type: 'ProductImage',
-            resolve: async (parent, _args, ctx) => {
-                return ctx.prisma.productImage.findFirst({
-                    where: { variantId: parent.variantId },
-                })
-            }
+            resolve: async (parent, _args, ctx) => (await getProductViewImages(parent, ctx))[0] ?? null,
         })
         t.field('partner', {
             type: 'Partner',
