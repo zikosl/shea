@@ -131,6 +131,9 @@ const yoga = createYoga({
               ? (error.originalError as unknown as { code: string }).code
               : undefined,
             path: error.path?.join('.') ?? null,
+            // Validation errors have no resolver path. Their message identifies
+            // schema/version mismatches without including request variables.
+            message: error.path ? undefined : error.message.slice(0, 240),
           }))))
         }
       },
