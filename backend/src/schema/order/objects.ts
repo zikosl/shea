@@ -355,6 +355,10 @@ const OrderItemInput = inputObjectType({
         t.float('price')
         t.int('quantity')
         t.int('productId')
+        // Older client builds return checkout preview lines verbatim. The server
+        // always determines this flag from the catalog, so it is accepted only
+        // for backward compatibility and is never trusted during checkout.
+        t.boolean('priceOnRequest')
     }
 })
 const OrderQuotationLineInput = inputObjectType({
