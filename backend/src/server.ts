@@ -114,13 +114,25 @@ const yoga = createYoga({
           operationName: 'AnonymousOperation',
         }
         const durationMs = Date.now() - metadata.startedAt
-        const errors = Array.isArray((result as { errors?: unknown[] } | undefined)?.errors)
-          ? (result as { errors?: unknown[] }).errors!.length
-          : 0
+        const resultErrors = Array.isArray((result as { errors?: GraphQLError[] } | undefined)?.errors)
+          ? (result as { errors?: GraphQLError[] }).errors!
+          : []
+        const errors = resultErrors.length
 
         console.log(
           `[GraphQL] completed ${metadata.operationName} in ${durationMs}ms${errors > 0 ? ` with ${errors} error(s)` : ''}`,
         )
+        if (errors) {
+          // Keep production logs actionable without logging request variables,
+          // tokens, or personal customer data.
+          console.error('[GraphQL] errors', JSON.stringify(resultErrors.map(error => ({
+            code: error.extensions?.code ?? 'GRAPHQL_ERROR',
+            originalCode: typeof (error.originalError as { code?: unknown } | undefined)?.code === 'string'
+              ? (error.originalError as unknown as { code: string }).code
+              : undefined,
+            path: error.path?.join('.') ?? null,
+          }))))
+        }
       },
     },
   ],

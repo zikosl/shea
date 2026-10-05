@@ -162,7 +162,12 @@ export function rankTemplate(source: ExternalSuggestion, candidate: { name: stri
   const brandMatched = Boolean(sourceBrand && knownCatalogBrand && sourceBrand.length >= 4 && catalogBrand.length >= 4 && (sourceBrand === catalogBrand || sourceBrand.startsWith(catalogBrand) || catalogBrand.startsWith(sourceBrand)))
   const brandConflict = Boolean(sourceBrand && knownCatalogBrand && !brandMatched)
   const sourceBrandWords = new Set(searchWords(source.brand))
-  const nameWords = searchWords(`${source.name} ${source.nameAr}`).filter(word => !sourceBrandWords.has(word) && !/^\d/.test(word) && !SIZE_UNITS.has(word))
+  const rawNameWords = searchWords(`${source.name} ${source.nameAr}`).filter(word => !/^\d/.test(word) && !SIZE_UNITS.has(word))
+  const nonBrandNameWords = rawNameWords.filter(word => !sourceBrandWords.has(word))
+  // Some products are named after their brand (for example, "Twix"). Keep that
+  // term when it is the entire product name, but do not let a brand outweigh a
+  // more specific product term such as "Soft" or "Shampoo".
+  const nameWords = nonBrandNameWords.length ? nonBrandNameWords : rawNameWords
   const catalogNameWords = new Set(searchWords(`${candidate.name} ${candidate.name_ar ?? ''}`))
   const shared = nameWords.filter(word => catalogNameWords.has(word))
   const distinctive = shared.filter(word => !GENERIC_WORDS.has(word))

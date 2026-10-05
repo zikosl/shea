@@ -25,6 +25,14 @@ test('matching favors identity evidence and rejects generic words from a differe
   assert.match(equivalentSize.reason, /Size matches a variant/)
 })
 
+test('matching keeps a product name that is identical to its brand', () => {
+  const source = { name: 'Twix', nameAr: '', description: '', brand: 'Twix', quantity: '', tags: [], imageUrl: null, sourceUrl: '', sourceName: 'Open Facts' }
+  const matchingProduct = rankTemplate(source, { name: 'Twix', description: '', Brand: { name: 'Other' }, variants: [{ name: 'Standard' }] })
+  const unrelatedProduct = rankTemplate(source, { name: 'Chocolate Bar', description: '', Brand: { name: 'Other' }, variants: [{ name: 'Standard' }] })
+  assert.ok(matchingProduct.score > 0)
+  assert.equal(unrelatedProduct.score, 0)
+})
+
 test('worldwide lookup distinguishes a missing product from an unavailable provider', async () => {
   const missing = await externalBarcodeLookup('3017620422010', async () => new Response(null, { status: 404 }) as never)
   assert.equal(missing.status, 'NOT_FOUND')
@@ -87,6 +95,18 @@ test('new barcodes return ranked Shea templates with external details for human 
   assert.equal(result.matches[0]?.variants[0]?.sizeHint, 'MATCH')
   assert.equal(result.matches[0]?.variants[1]?.sizeHint, 'DIFFERENT')
   assert.equal(result.external?.imageUrl, 'https://images.openfoodfacts.org/images/products/example.jpg')
+})
+
+test('barcode discovery suggests Shea products whose name is also their brand', async () => {
+  const prisma = {
+    variant: { findUnique: async () => null },
+    catalogContribution: { findMany: async () => [] },
+    productTemplate: { findMany: async () => [{ id: 35, name: 'Twix', name_ar: '', description: '', category_id: 4, category: { niche_id: 2 }, product_type_id: null, brand_id: null, Brand: { name: 'Other' }, variants: [{ id: 36, name: 'Standard', name_ar: null, barcode: null }] }] },
+  } as unknown as PrismaClient
+  const fetcher = async () => new Response(JSON.stringify({ status: 'success', product: { product_name: 'Twix', brands: 'Twix' } }), { status: 200 })
+  const result = await discoverBarcode(prisma, '5000159366267', fetcher as typeof fetch)
+  assert.equal(result.matches[0]?.templateId, 35)
+  assert.match(result.matches[0]?.reason ?? '', /distinctive name term match/)
 })
 
 test('accented Shea names are searched without losing a plausible match to a broad first page', async () => {
