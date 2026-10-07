@@ -14,6 +14,7 @@ export type ContributorAccount = {
 export type SahimReviewItem = { id: string; kind: string; contributorId: number; payloadJson: string; createdAt: string; targetProductName: string | null; targetVariantName: string | null };
 
 type ActionResult = { ok: true } | { ok: false; message: string };
+type BatchActionResult = { ok: boolean; completed: number; failed: number; message?: string };
 
 const CONTRIBUTORS = gql`
   query SahimContributors {
@@ -81,6 +82,22 @@ export async function reviewSahimItem(id: string, approve: boolean, note: string
     if (message.includes("MERGE_CATEGORY_MISMATCH")) return { ok: false, message: "The chosen template is not in the same category." };
     return { ok: false, message: "Review could not be saved. Refresh and try again." };
   }
+}
+
+export async function reviewSahimItems(ids: string[], approve: boolean, note: string): Promise<BatchActionResult> {
+  const uniqueIds = [...new Set(ids.filter((id) => typeof id === "string" && id.length > 0))].slice(0, 100);
+  if (!uniqueIds.length) return { ok: false, completed: 0, failed: 0, message: "Select at least one contribution." };
+  if (!approve && !note.trim()) return { ok: false, completed: 0, failed: 0, message: "Add a reason before rejecting contributions." };
+  let completed = 0;
+  let failed = 0;
+  for (const id of uniqueIds) {
+    try {
+      await requestServerGraphQL(REVIEW, { id, approve, note: note.trim().slice(0, 500) || null, mergeTemplateId: null });
+      completed += 1;
+    } catch { failed += 1; }
+  }
+  revalidatePath("/sahim");
+  return { ok: failed === 0, completed, failed, message: failed ? `${failed} contribution${failed === 1 ? "" : "s"} could not be reviewed. Refresh the queue and check them individually.` : undefined };
 }
 
 export async function updateSahimItemImage(id: string, target: string, source: string): Promise<ActionResult> {
