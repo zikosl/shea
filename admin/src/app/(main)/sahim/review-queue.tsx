@@ -3,13 +3,14 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, useState } from "react";
+import { gql } from "graphql-request";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { resolvePublicAssetUrl } from "@/constant";
 import { useUploadFile } from "@/hooks/use-upload-file";
-import { SAHIM_REVIEW_UPLOAD, type SahimReviewItem, reviewSahimItem, updateSahimItemImage } from "./actions";
+import { type SahimReviewItem, reviewSahimItem, updateSahimItemImage } from "./actions";
 
 type ReviewImages = { product?: string; barcode?: string; variants?: Record<string, string> };
 type Payload = {
@@ -19,6 +20,10 @@ type Payload = {
 };
 type ImageTarget = "PRODUCT" | "BARCODE" | `VARIANT:${number}`;
 type ImageEditor = { item: SahimReviewItem; target: ImageTarget; title: string; current: string; original: string; overridden: boolean };
+
+const SAHIM_REVIEW_UPLOAD = gql`mutation UploadSahimReviewPhoto($file: File!) {
+  uploadSahimReviewPhoto(file: $file) { url }
+}`;
 
 const storedImage = (value?: string) => Boolean(value && /^\/uploads\/sahim(?:-review)?\//.test(value));
 

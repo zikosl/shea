@@ -42,9 +42,6 @@ const REVIEW_QUEUE = gql`query SahimReviewQueue { sahimReviewQueue { id kind con
 const REVIEW = gql`mutation ReviewSahimContribution($id: String!, $approve: Boolean!, $note: String, $mergeTemplateId: Int) {
   reviewSahimContribution(id: $id, approve: $approve, note: $note, mergeTemplateId: $mergeTemplateId) { id status }
 }`;
-export const SAHIM_REVIEW_UPLOAD = gql`mutation UploadSahimReviewPhoto($file: File!) {
-  uploadSahimReviewPhoto(file: $file) { url }
-}`;
 const UPDATE_IMAGE = gql`mutation UpdateSahimContributionImage($id: String!, $target: String!, $source: String!) {
   updateSahimContributionImage(id: $id, target: $target, source: $source) { id payloadJson }
 }`;
