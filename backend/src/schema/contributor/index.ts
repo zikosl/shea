@@ -374,6 +374,27 @@ const Mutation = extendType({
         return updated
       }),
     })
+    t.nonNull.field('copySahimProductImageToVariants', {
+      type: Contribution,
+      args: { id: nonNull(stringArg()), variantIndex: intArg() },
+      resolve: async (_parent, { id, variantIndex }, ctx: Context) => ctx.prisma.$transaction(async (tx) => {
+        const contribution = await tx.catalogContribution.findUnique({ where: { id } })
+        if (!contribution || contribution.status !== 'PENDING') throw new GraphQLError('SUBMISSION_NOT_PENDING')
+        if (contribution.kind !== 'PRODUCT') throw new GraphQLError('INVALID_IMAGE_TARGET')
+        const payload = { ...(contribution.payload as Record<string, any>) }
+        if (!Array.isArray(payload.variants) || !payload.variants.length) throw new GraphQLError('INVALID_IMAGE_TARGET')
+        const reviewImages: ReviewImages = { ...(payload.reviewImages as ReviewImages | undefined), variants: { ...((payload.reviewImages as ReviewImages | undefined)?.variants || {}) } }
+        const productImage = reviewImages.product || payload.image
+        if (!storedSahimImage.test(productImage || '')) throw new GraphQLError('PRODUCT_IMAGE_REQUIRED')
+        const indexes = variantIndex == null ? payload.variants.map((_: unknown, index: number) => index) : [variantIndex]
+        if (indexes.some((index) => !Number.isSafeInteger(index) || index < 0 || index >= payload.variants.length)) throw new GraphQLError('INVALID_IMAGE_TARGET')
+        for (const index of indexes) reviewImages.variants![String(index)] = productImage
+        payload.reviewImages = reviewImages
+        const updated = await tx.catalogContribution.update({ where: { id }, data: { payload } })
+        await tx.auditLog.create({ data: { actorId: getUserId(ctx), action: 'SAHIM_PRODUCT_IMAGE_COPIED', entity: 'CatalogContribution', entityId: id, metadata: { variantIndex: variantIndex ?? 'all', image: productImage } } })
+        return updated
+      }),
+    })
     t.nonNull.field('reviewSahimContribution', {
       type: Contribution,
       args: { id: nonNull(stringArg()), approve: nonNull(booleanArg()), note: stringArg(), mergeTemplateId: intArg() },

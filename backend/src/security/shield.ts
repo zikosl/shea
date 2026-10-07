@@ -134,6 +134,7 @@ export const permissions = shield(
       uploadSahimPhoto: isContributor,
       uploadSahimReviewPhoto: isAdmin,
       updateSahimContributionImage: isAdmin,
+      copySahimProductImageToVariants: isAdmin,
       reviewSahimContribution: isAdmin,
       reviewBarcodeCandidate: isAdmin,
       deleteVariant: isAdmin,

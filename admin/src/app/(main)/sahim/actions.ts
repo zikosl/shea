@@ -45,6 +45,9 @@ const REVIEW = gql`mutation ReviewSahimContribution($id: String!, $approve: Bool
 const UPDATE_IMAGE = gql`mutation UpdateSahimContributionImage($id: String!, $target: String!, $source: String!) {
   updateSahimContributionImage(id: $id, target: $target, source: $source) { id payloadJson }
 }`;
+const COPY_PRODUCT_IMAGE = gql`mutation CopySahimProductImageToVariants($id: String!, $variantIndex: Int) {
+  copySahimProductImageToVariants(id: $id, variantIndex: $variantIndex) { id }
+}`;
 
 function errorMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
@@ -96,6 +99,20 @@ export async function updateSahimItemImage(id: string, target: string, source: s
     if (message.includes("INVALID_IMAGE")) return { ok: false, message: "Use a valid JPEG, PNG, or WebP image." };
     if (message.includes("SUBMISSION_NOT_PENDING")) return { ok: false, message: "This contribution was already reviewed. Refresh the queue." };
     return { ok: false, message: "The image could not be updated. Try again." };
+  }
+}
+
+export async function copySahimProductImage(id: string, variantIndex?: number): Promise<ActionResult> {
+  if (!id || (variantIndex !== undefined && (!Number.isSafeInteger(variantIndex) || variantIndex < 0))) return { ok: false, message: "Invalid variant image selection." };
+  try {
+    await requestServerGraphQL(COPY_PRODUCT_IMAGE, { id, variantIndex: variantIndex ?? null });
+    revalidatePath("/sahim");
+    return { ok: true };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (message.includes("PRODUCT_IMAGE_REQUIRED")) return { ok: false, message: "Add or select a product image first." };
+    if (message.includes("SUBMISSION_NOT_PENDING")) return { ok: false, message: "This contribution was already reviewed. Refresh the queue." };
+    return { ok: false, message: "The product image could not be copied. Try again." };
   }
 }
 
