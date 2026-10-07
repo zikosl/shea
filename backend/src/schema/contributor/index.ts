@@ -4,6 +4,8 @@ import bcrypt from 'bcryptjs'
 import { randomUUID } from 'node:crypto'
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import { lookup } from 'node:dns/promises'
+import { isIP } from 'node:net'
 import { Context } from '../../context'
 import { getUserId } from '../../utils'
 import { UPLOAD_DIR } from '../../utils/const'
@@ -16,10 +18,73 @@ import { discoverBarcode } from '../../modules/catalog/sahim-discovery'
 type ProductVariant = { name: string; tags: string[]; sku?: string; barcode?: string; image?: string; imageSource?: 'CAMERA' | 'EXTERNAL' }
 type ProductInput = { name: string; nameAr?: string; description?: string; categoryId: number; productTypeId?: number; brandId?: number; mergeTemplateId?: number; image?: string; imageSource?: 'CAMERA' | 'EXTERNAL'; variants: ProductVariant[]; sourceUrl?: string; sourceImageUrl?: string }
 type BarcodeInput = { variantId: number; barcode: string; image?: string }
+type ReviewImages = { product?: string; barcode?: string; variants?: Record<string, string> }
+
+const storedSahimImage = /^\/uploads\/sahim(?:-review)?\/[a-f0-9-]{36}\.(jpg|png|webp)$/
 
 function imageUrl(value: unknown): string {
-  if (typeof value !== 'string' || !/^\/uploads\/sahim\/[a-f0-9-]{36}\.(jpg|png|webp)$/.test(value)) throw new GraphQLError('PACKAGE_IMAGE_REQUIRED')
+  if (typeof value !== 'string' || !storedSahimImage.test(value)) throw new GraphQLError('PACKAGE_IMAGE_REQUIRED')
   return value
+}
+
+function imageExtension(buffer: Buffer, type: string): 'jpg' | 'png' | 'webp' | null {
+  const jpeg = buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff
+  const png = buffer.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
+  const webp = buffer.toString('ascii', 0, 4) === 'RIFF' && buffer.toString('ascii', 8, 12) === 'WEBP'
+  if ((type === 'image/jpeg' && jpeg) || (type === 'image/png' && png) || (type === 'image/webp' && webp)) return jpeg ? 'jpg' : png ? 'png' : 'webp'
+  return null
+}
+
+async function storeReviewImage(buffer: Buffer, type: string) {
+  if (buffer.length > 8 * 1024 * 1024 || buffer.length < 12) throw new GraphQLError('IMAGE_TOO_LARGE')
+  const extension = imageExtension(buffer, type)
+  if (!extension) throw new GraphQLError('INVALID_IMAGE')
+  const filename = `${randomUUID()}.${extension}`
+  await fs.mkdir(path.join(UPLOAD_DIR, 'sahim-review'), { recursive: true })
+  await fs.writeFile(path.join(UPLOAD_DIR, 'sahim-review', filename), buffer, { flag: 'wx' })
+  return { filename, mimetype: type, encoding: 'binary', url: `/uploads/sahim-review/${filename}` }
+}
+
+function unsafeAddress(address: string) {
+  if (isIP(address) === 4) {
+    const [first, second] = address.split('.').map(Number)
+    return first === 10 || first === 127 || first === 0 || first >= 224 || (first === 169 && second === 254) || (first === 172 && second >= 16 && second <= 31) || (first === 192 && second === 168)
+  }
+  const value = address.toLowerCase()
+  return value === '::1' || value === '::' || value.startsWith('fc') || value.startsWith('fd') || value.startsWith('fe80:')
+}
+
+async function importReviewImage(value: string) {
+  let url: URL
+  try { url = new URL(value) } catch { throw new GraphQLError('INVALID_IMAGE_URL') }
+  if (url.protocol !== 'https:' || !url.hostname || url.username || url.password) throw new GraphQLError('INVALID_IMAGE_URL')
+  const addresses = await lookup(url.hostname, { all: true }).catch(() => [])
+  if (!addresses.length || addresses.some(({ address }) => unsafeAddress(address))) throw new GraphQLError('UNSAFE_IMAGE_URL')
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 15_000)
+  try {
+    const response = await fetch(url, { redirect: 'error', signal: controller.signal })
+    const contentType = response.headers.get('content-type')?.split(';')[0].toLowerCase() || ''
+    const contentLength = Number(response.headers.get('content-length') || 0)
+    if (!response.ok || !['image/jpeg', 'image/png', 'image/webp'].includes(contentType) || (contentLength && contentLength > 8 * 1024 * 1024)) throw new GraphQLError('IMAGE_URL_NOT_AVAILABLE')
+    return storeReviewImage(Buffer.from(await response.arrayBuffer()), contentType)
+  } catch (error) {
+    if (error instanceof GraphQLError) throw error
+    throw new GraphQLError('IMAGE_URL_NOT_AVAILABLE')
+  } finally { clearTimeout(timeout) }
+}
+
+function reviewPayload(raw: Record<string, any>): ProductInput | BarcodeInput {
+  const payload = { ...raw }
+  const reviewImages = payload.reviewImages as ReviewImages | undefined
+  delete payload.reviewImages
+  if (!reviewImages) return payload as ProductInput | BarcodeInput
+  if (reviewImages.product) payload.image = reviewImages.product
+  if (reviewImages.barcode) payload.image = reviewImages.barcode
+  if (Array.isArray(payload.variants) && reviewImages.variants) {
+    payload.variants = payload.variants.map((variant: Record<string, any>, index: number) => reviewImages.variants?.[String(index)] ? { ...variant, image: reviewImages.variants[String(index)], imageSource: 'CAMERA' } : variant)
+  }
+  return payload as ProductInput | BarcodeInput
 }
 
 export function normalizeInput(kind: string, raw: string): ProductInput | BarcodeInput {
@@ -168,6 +233,14 @@ const Mutation = extendType({
         return { filename, mimetype: file.type, encoding: 'binary', url: `/uploads/sahim/${filename}` }
       },
     })
+    t.nonNull.field('uploadSahimReviewPhoto', {
+      type: 'FileUploadResponse',
+      args: { file: nonNull(arg({ type: 'File' })) },
+      resolve: async (_parent, { file }: { file: File }) => {
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) throw new GraphQLError('IMAGE_TYPE_NOT_SUPPORTED')
+        return storeReviewImage(Buffer.from(await file.arrayBuffer()), file.type)
+      },
+    })
     t.field('createContributor', {
       type: Contributor,
       args: { email: nonNull(stringArg()), name: nonNull(stringArg()) },
@@ -254,6 +327,53 @@ const Mutation = extendType({
         return ctx.prisma.catalogContribution.create({ data: { contributorId, localId: id, kind: kind as 'BARCODE' | 'PRODUCT', payload } })
       },
     })
+    t.nonNull.boolean('cancelSahimContribution', {
+      args: { localId: nonNull(stringArg()) },
+      resolve: async (_parent, { localId }, ctx: Context) => {
+        const contributorId = getUserId(ctx)
+        const id = localId.trim()
+        const contribution = await ctx.prisma.catalogContribution.findUnique({ where: { contributorId_localId: { contributorId, localId: id } } })
+        if (!contribution) throw new GraphQLError('CONTRIBUTION_NOT_FOUND')
+        if (contribution.status !== 'PENDING') throw new GraphQLError('SUBMISSION_NOT_PENDING')
+        await ctx.prisma.$transaction(async (tx) => {
+          // The status condition prevents a cancellation from racing an admin review.
+          const deleted = await tx.catalogContribution.deleteMany({ where: { id: contribution.id, contributorId, status: 'PENDING' } })
+          if (!deleted.count) throw new GraphQLError('SUBMISSION_NOT_PENDING')
+          await tx.auditLog.create({ data: { actorId: contributorId, action: 'SAHIM_CANCELLED', entity: 'CatalogContribution', entityId: contribution.id, metadata: { kind: contribution.kind } } })
+        })
+        return true
+      },
+    })
+    t.nonNull.field('updateSahimContributionImage', {
+      type: Contribution,
+      args: { id: nonNull(stringArg()), target: nonNull(stringArg()), source: nonNull(stringArg()) },
+      resolve: async (_parent, { id, target, source }, ctx: Context) => ctx.prisma.$transaction(async (tx) => {
+        const contribution = await tx.catalogContribution.findUnique({ where: { id } })
+        if (!contribution || contribution.status !== 'PENDING') throw new GraphQLError('SUBMISSION_NOT_PENDING')
+        const reset = source.trim() === '__ORIGINAL__'
+        const image = reset ? '' : storedSahimImage.test(source) ? source : (await importReviewImage(source.trim())).url
+        const payload = { ...(contribution.payload as Record<string, any>) }
+        const reviewImages: ReviewImages = { ...(payload.reviewImages as ReviewImages | undefined), variants: { ...((payload.reviewImages as ReviewImages | undefined)?.variants || {}) } }
+        if (target === 'PRODUCT' || target === 'BARCODE') {
+          if ((target === 'PRODUCT' && contribution.kind !== 'PRODUCT') || (target === 'BARCODE' && contribution.kind !== 'BARCODE')) throw new GraphQLError('INVALID_IMAGE_TARGET')
+          if (target === 'PRODUCT') {
+            if (reset) delete reviewImages.product
+            else reviewImages.product = image
+          } else if (reset) delete reviewImages.barcode
+          else reviewImages.barcode = image
+        } else {
+          const match = /^VARIANT:(\d{1,2})$/.exec(target)
+          const index = match ? Number(match[1]) : -1
+          if (contribution.kind !== 'PRODUCT' || !Array.isArray(payload.variants) || index < 0 || index >= payload.variants.length) throw new GraphQLError('INVALID_IMAGE_TARGET')
+          if (reset) delete reviewImages.variants![String(index)]
+          else reviewImages.variants![String(index)] = image
+        }
+        payload.reviewImages = reviewImages
+        const updated = await tx.catalogContribution.update({ where: { id }, data: { payload } })
+        await tx.auditLog.create({ data: { actorId: getUserId(ctx), action: reset ? 'SAHIM_IMAGE_RESET' : 'SAHIM_IMAGE_REPLACED', entity: 'CatalogContribution', entityId: id, metadata: { target, image: image || null } } })
+        return updated
+      }),
+    })
     t.nonNull.field('reviewSahimContribution', {
       type: Contribution,
       args: { id: nonNull(stringArg()), approve: nonNull(booleanArg()), note: stringArg(), mergeTemplateId: intArg() },
@@ -261,7 +381,7 @@ const Mutation = extendType({
         const contribution = await tx.catalogContribution.findUnique({ where: { id } })
         if (!contribution || contribution.status !== 'PENDING') throw new GraphQLError('SUBMISSION_NOT_PENDING')
         if (approve) {
-          const payload = contribution.payload as any
+          const payload = reviewPayload(contribution.payload as Record<string, any>) as any
           if (contribution.kind === 'BARCODE') {
             const owner = await tx.variant.findUnique({ where: { barcode: payload.barcode } })
             const target = await tx.variant.findUnique({ where: { id: payload.variantId } })

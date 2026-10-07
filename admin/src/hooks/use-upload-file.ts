@@ -10,7 +10,7 @@ type UploadedFile = {
   url: string
 }
 
-export function useUploadFile(REQUEST: string) {
+export function useUploadFile(REQUEST: string, responseField = "uploadFile") {
   const { data: session } = useSession()
   const [uploadedFiles, setUploadedFiles] =
     React.useState<UploadedFile[]>([])
@@ -61,7 +61,8 @@ export function useUploadFile(REQUEST: string) {
           throw new Error(res.data.errors[0].message)
         }
         else {
-          const uploadedFile = res.data.data.uploadFile as UploadedFile
+          const uploadedFile = res.data.data[responseField] as UploadedFile
+          if (!uploadedFile?.url) throw new Error("Upload returned an invalid file.")
           uploaded.push(uploadedFile)
           setUploadedFiles((currentFiles) => [...currentFiles, uploadedFile])
         }

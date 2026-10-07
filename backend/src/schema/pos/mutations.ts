@@ -214,7 +214,6 @@ const Mutation = extendType({
         await assertPartner(ctx, partnerId)
         if (!data.lines?.length) throw new GraphQLError('REFUND_ITEMS_REQUIRED')
         if (new Set(data.lines.map((line: any) => line.productId)).size !== data.lines.length) throw new GraphQLError('DUPLICATE_REFUND_ITEM')
-        if (String(data.reason || '').trim().length < 3) throw new GraphQLError('REFUND_REASON_REQUIRED')
         const duplicate = await ctx.prisma.saleRefund.findUnique({ where: { id: data.refundId } })
         if (duplicate) return duplicate
 

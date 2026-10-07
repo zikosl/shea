@@ -42,6 +42,12 @@ const REVIEW_QUEUE = gql`query SahimReviewQueue { sahimReviewQueue { id kind con
 const REVIEW = gql`mutation ReviewSahimContribution($id: String!, $approve: Boolean!, $note: String, $mergeTemplateId: Int) {
   reviewSahimContribution(id: $id, approve: $approve, note: $note, mergeTemplateId: $mergeTemplateId) { id status }
 }`;
+export const SAHIM_REVIEW_UPLOAD = gql`mutation UploadSahimReviewPhoto($file: File!) {
+  uploadSahimReviewPhoto(file: $file) { url }
+}`;
+const UPDATE_IMAGE = gql`mutation UpdateSahimContributionImage($id: String!, $target: String!, $source: String!) {
+  updateSahimContributionImage(id: $id, target: $target, source: $source) { id payloadJson }
+}`;
 
 function errorMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
@@ -74,6 +80,25 @@ export async function reviewSahimItem(id: string, approve: boolean, note: string
     if (message.includes("SKU_CONFLICT")) return { ok: false, message: "A variant already uses this SKU." };
     if (message.includes("MERGE_CATEGORY_MISMATCH")) return { ok: false, message: "The chosen template is not in the same category." };
     return { ok: false, message: "Review could not be saved. Refresh and try again." };
+  }
+}
+
+export async function updateSahimItemImage(id: string, target: string, source: string): Promise<ActionResult> {
+  if (!id || !["PRODUCT", "BARCODE"].includes(target) && !/^VARIANT:\d{1,2}$/.test(target)) return { ok: false, message: "Invalid image selection." };
+  if (!source.trim()) return { ok: false, message: "Choose an image file or paste an HTTPS image URL." };
+  try {
+    await requestServerGraphQL(UPDATE_IMAGE, { id, target, source: source.trim() });
+    revalidatePath("/sahim");
+    return { ok: true };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (message.includes("INVALID_IMAGE_URL")) return { ok: false, message: "Paste a valid HTTPS image URL." };
+    if (message.includes("UNSAFE_IMAGE_URL")) return { ok: false, message: "That image URL is not safe to import." };
+    if (message.includes("IMAGE_URL_NOT_AVAILABLE")) return { ok: false, message: "Shea could not download a supported image from that URL." };
+    if (message.includes("IMAGE_TOO_LARGE")) return { ok: false, message: "The image must be smaller than 8 MB." };
+    if (message.includes("INVALID_IMAGE")) return { ok: false, message: "Use a valid JPEG, PNG, or WebP image." };
+    if (message.includes("SUBMISSION_NOT_PENDING")) return { ok: false, message: "This contribution was already reviewed. Refresh the queue." };
+    return { ok: false, message: "The image could not be updated. Try again." };
   }
 }
 
