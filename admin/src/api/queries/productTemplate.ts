@@ -88,3 +88,53 @@ export const FIND_MANY_PRODUCT_TEMPLATES = gql`
     }
   }
 `;
+
+export const FIND_TEMPLATE_MERGE_DATA = gql`
+  query FindTemplateMergeData($id: Int!) {
+    findOneProductTemplate(id: $id) {
+      id
+      name
+      name_ar
+      description
+      category_id
+      brand_id
+      brand { id name }
+      category { id name name_ar }
+      images { id url }
+      variants {
+        id
+        name
+        name_ar
+        sku
+        barcode
+        products { id }
+      }
+    }
+  }
+`;
+
+export const SEARCH_TEMPLATE_MERGE_CANDIDATES = gql`
+  query SearchTemplateMergeCandidates($search: String!, $category_id: Int, $page: Int!, $limit: Int!) {
+    findManyProductTemplates(search: $search, category_id: $category_id, page: $page, limit: $limit, isFull: false) {
+      productTemplates {
+        id
+        name
+        name_ar
+        category_id
+        brand_id
+        brand { id name }
+        category { id name name_ar }
+        images { id url }
+        variants {
+          id
+          name
+          name_ar
+          sku
+          barcode
+          products { id }
+        }
+      }
+      totalProductTemplates
+    }
+  }
+`;

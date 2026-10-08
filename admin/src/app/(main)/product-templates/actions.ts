@@ -13,6 +13,8 @@ import {
   UPDATE_ITEM,
   UPDATE_ITEM_IMAGES,
 } from "./_constant/request";
+import { MERGE_PRODUCT_TEMPLATES } from "@/api/mutations/productTemplate";
+import { FIND_TEMPLATE_MERGE_DATA, SEARCH_TEMPLATE_MERGE_CANDIDATES } from "@/api/queries/productTemplate";
 
 type ProductTemplateResponse = {
   id: number;
@@ -51,6 +53,26 @@ type SearchParams = {
   category_id?: number;
   product_type_id?: number;
   brand_id?: number;
+};
+
+export type MergeTemplate = {
+  id: number;
+  name: string;
+  name_ar?: string | null;
+  description?: string | null;
+  category_id?: number | null;
+  brand_id?: number | null;
+  brand?: { id: number; name: string } | null;
+  category?: { id: number; name: string; name_ar?: string | null } | null;
+  images: Array<{ id: number; url: string }>;
+  variants: Array<{
+    id: number;
+    name?: string | null;
+    name_ar?: string | null;
+    sku?: string | null;
+    barcode?: string | null;
+    products: Array<{ id: number }>;
+  }>;
 };
 
 function mapItem(data: ProductTemplateResponse): ProductTemplate {
@@ -164,4 +186,52 @@ export async function deleteItem(id: string) {
 
   revalidatePath(`/${link}`);
   return response.deleteProductTemplate.id;
+}
+
+export async function getTemplateForMerge(id: number) {
+  const response = await requestServerGraphQL<{ findOneProductTemplate: MergeTemplate | null }>(
+    FIND_TEMPLATE_MERGE_DATA,
+    { id },
+  );
+  return response.findOneProductTemplate;
+}
+
+export async function searchTemplateMergeCandidates(targetId: number, categoryId: number | null, search: string) {
+  const response = await requestServerGraphQL<{
+    findManyProductTemplates: { productTemplates: MergeTemplate[]; totalProductTemplates: number };
+  }>(SEARCH_TEMPLATE_MERGE_CANDIDATES, {
+    search,
+    category_id: categoryId,
+    page: 1,
+    limit: 12,
+  });
+
+  return response.findManyProductTemplates.productTemplates.filter(
+    (template) => template.id !== targetId && template.category_id === categoryId,
+  );
+}
+
+export async function mergeProductTemplates(targetId: number, sourceIds: number[]) {
+  try {
+    const response = await requestServerGraphQL<{ mergeProductTemplates: { id: number; name: string } }>(
+      MERGE_PRODUCT_TEMPLATES,
+      { targetId, sourceIds },
+    );
+    revalidatePath(`/${link}`);
+    revalidatePath(`/${link}/${targetId}`);
+    revalidatePath(`/${link}/${targetId}/variants`);
+    return { ok: true as const, name: response.mergeProductTemplates.name };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Could not merge these templates.";
+    if (message.includes("MERGE_CATEGORY_MISMATCH")) {
+      return { ok: false as const, message: "Templates must belong to the same category." };
+    }
+    if (message.includes("MERGE_TARGET_NOT_FOUND") || message.includes("MERGE_SOURCE_NOT_FOUND")) {
+      return { ok: false as const, message: "A selected template no longer exists. Refresh and try again." };
+    }
+    if (message.includes("INVALID_TEMPLATE_MERGE")) {
+      return { ok: false as const, message: "Select between 1 and 50 other templates to merge." };
+    }
+    return { ok: false as const, message: "Merge failed. No changes were applied. Please try again." };
+  }
 }

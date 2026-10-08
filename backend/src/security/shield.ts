@@ -121,6 +121,7 @@ export const permissions = shield(
       updateProductTemplate: isAdmin,
       updateProductTemplateImages: isAdmin,
       deleteProductTemplate: isAdmin,
+      mergeProductTemplates: isAdmin,
       createVariant: isAdmin,
       updateVariant: isAdmin,
       submitBarcodeCandidate: isAdmin,

@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { arg, intArg, nonNull, inputObjectType, list, extendType, objectType, stringArg, floatArg, booleanArg } from "nexus"
+import { GraphQLError } from "graphql"
 import { getUserId } from "../../../utils"
 import { Context } from "../../../context"
 import { publishStoreProducts } from "../../../modules/store-network/service"
@@ -221,6 +222,96 @@ const ProductTemplateMutation = extendType({
                     where: { id },
                 })
                 return deletedProduct
+            },
+        })
+        t.nonNull.field('mergeProductTemplates', {
+            type: 'ProductTemplate',
+            args: {
+                targetId: nonNull(intArg()),
+                sourceIds: nonNull(list(nonNull(intArg()))),
+            },
+            resolve: async (_parent, { targetId, sourceIds }, ctx: Context) => {
+                const sources = [...new Set<number>(sourceIds)].filter((id) => id !== targetId)
+                if (!Number.isSafeInteger(targetId) || targetId < 1 || !sources.length || sources.length > 50) throw new GraphQLError('INVALID_TEMPLATE_MERGE')
+
+                return ctx.prisma.$transaction(async (tx) => {
+                    const [target, sourceTemplates] = await Promise.all([
+                        tx.productTemplate.findUnique({ where: { id: targetId } }),
+                        tx.productTemplate.findMany({
+                            where: { id: { in: sources } },
+                            include: {
+                                variants: {
+                                    select: {
+                                        id: true, name: true, name_ar: true, sku: true, barcode: true,
+                                        tags: { select: { value: true } },
+                                        images: { select: { url: true } },
+                                    },
+                                },
+                                images: { select: { url: true } },
+                            },
+                        }),
+                    ])
+                    if (!target) throw new GraphQLError('MERGE_TARGET_NOT_FOUND')
+                    if (sourceTemplates.length !== sources.length) throw new GraphQLError('MERGE_SOURCE_NOT_FOUND')
+                    if (sourceTemplates.some((source) => source.category_id !== target.category_id)) throw new GraphQLError('MERGE_CATEGORY_MISMATCH')
+
+                    const sourceIdsSet = sourceTemplates.map((source) => source.id)
+                    const sourceImageRows = await tx.productImage.findMany({ where: { product_template_id: { in: sourceIdsSet } }, select: { id: true, url: true } })
+                    const targetImages = await tx.productImage.findMany({ where: { product_template_id: targetId }, select: { url: true } })
+                    const targetImageUrls = new Set(targetImages.map((image) => image.url))
+                    let movedImageCount = 0
+                    for (const image of sourceImageRows) {
+                        if (targetImageUrls.has(image.url)) await tx.productImage.delete({ where: { id: image.id } })
+                        else {
+                            await tx.productImage.update({ where: { id: image.id }, data: { product_template_id: targetId } })
+                            movedImageCount += 1
+                        }
+                    }
+
+                    const movedVariantIds = sourceTemplates.flatMap((source) => source.variants.map((variant) => variant.id))
+                    if (movedVariantIds.length) await tx.variant.updateMany({ where: { id: { in: movedVariantIds } }, data: { productId: targetId } })
+                    await tx.productTemplateRequest.updateMany({ where: { approvedTemplateId: { in: sourceIdsSet } }, data: { approvedTemplateId: targetId } })
+                    await tx.productTemplateRequest.updateMany({ where: { mergedIntoTemplateId: { in: sourceIdsSet } }, data: { mergedIntoTemplateId: targetId } })
+
+                    const contributions = await tx.catalogContribution.findMany({
+                        where: {
+                            kind: 'PRODUCT',
+                            OR: sourceIdsSet.map((sourceId) => ({ payload: { path: ['mergeTemplateId'], equals: sourceId } })),
+                        },
+                        select: { id: true, payload: true },
+                    })
+                    for (const contribution of contributions) {
+                        const payload = contribution.payload as Record<string, unknown>
+                        if (typeof payload?.mergeTemplateId === 'number' && sourceIdsSet.includes(payload.mergeTemplateId)) {
+                            await tx.catalogContribution.update({ where: { id: contribution.id }, data: { payload: { ...payload, mergeTemplateId: targetId } } })
+                        }
+                    }
+
+                    await tx.productTemplate.deleteMany({ where: { id: { in: sourceIdsSet } } })
+                    await tx.auditLog.create({ data: {
+                        actorId: getUserId(ctx), action: 'PRODUCT_TEMPLATES_MERGED', entity: 'ProductTemplate', entityId: String(targetId),
+                        metadata: {
+                            targetId,
+                            sourceIds: sourceIdsSet,
+                            movedVariantIds,
+                            movedImageCount,
+                            removedDuplicateImageCount: sourceImageRows.length - movedImageCount,
+                            sourceSnapshots: sourceTemplates.map((source) => ({
+                                id: source.id,
+                                name: source.name,
+                                name_ar: source.name_ar,
+                                description: source.description,
+                                description_ar: source.description_ar,
+                                category_id: source.category_id,
+                                product_type_id: source.product_type_id,
+                                brand_id: source.brand_id,
+                                images: source.images.map((image) => image.url),
+                                variants: source.variants,
+                            })),
+                        },
+                    } })
+                    return tx.productTemplate.findUniqueOrThrow({ where: { id: targetId } })
+                }, { timeout: 15000 })
             },
         })
     },

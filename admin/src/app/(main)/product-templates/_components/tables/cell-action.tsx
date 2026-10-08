@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Edit, MoreHorizontal, Trash } from 'lucide-react';
+import { Combine, Edit, MoreHorizontal, Trash } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { AlertModal } from '@/components/modal/alert-modal';
@@ -64,6 +64,9 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
           </DropdownMenuLabel>
           <DropdownMenuItem className="gap-2 rounded-lg px-2 py-2 text-sm" onClick={() => router.push(`/${link}/${data.id}`)}>
             <Edit className="h-4 w-4" /> Update
+          </DropdownMenuItem>
+          <DropdownMenuItem className="gap-2 rounded-lg px-2 py-2 text-sm" onClick={() => router.push(`/${link}/${data.id}/merge`)}>
+            <Combine className="h-4 w-4" /> Merge duplicates
           </DropdownMenuItem>
           <DropdownMenuItem className="gap-2 rounded-lg px-2 py-2 text-sm text-destructive focus:text-destructive" onClick={() => setOpen(true)}>
             <Trash className="h-4 w-4" /> Delete
