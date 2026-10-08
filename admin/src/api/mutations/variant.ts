@@ -38,3 +38,12 @@ export const DELETE_VARIANT = gql`
     }
   }
 `;
+
+export const MOVE_VARIANT_TO_TEMPLATE = gql`
+  mutation MoveVariantToTemplate($variantId: Int!, $targetTemplateId: Int!) {
+    moveVariantToTemplate(variantId: $variantId, targetTemplateId: $targetTemplateId) {
+      id
+      productId
+    }
+  }
+`;

@@ -1,6 +1,7 @@
 import { arg, intArg, list, inputObjectType, nonNull, extendType, stringArg, floatArg, booleanArg } from "nexus"
 import { Context } from "../../../context"
 import { GraphQLError } from 'graphql';
+import { getUserId } from "../../../utils";
 
 
 
@@ -184,6 +185,41 @@ export const VariantMutation = extendType({
                     return tx.variant.delete({ where: { id } });
                 });
             },
+        });
+        t.nonNull.field("moveVariantToTemplate", {
+            type: "Variant",
+            args: {
+                variantId: nonNull(intArg()),
+                targetTemplateId: nonNull(intArg()),
+            },
+            resolve: async (_parent, { variantId, targetTemplateId }, ctx: Context) => ctx.prisma.$transaction(async (tx) => {
+                const variant = await tx.variant.findUnique({
+                    where: { id: variantId },
+                    include: { product: { select: { id: true, category_id: true } } },
+                });
+                if (!variant) throw new GraphQLError("VARIANT_NOT_FOUND");
+                if (variant.productId === targetTemplateId) throw new GraphQLError("VARIANT_ALREADY_IN_TEMPLATE");
+
+                const target = await tx.productTemplate.findUnique({
+                    where: { id: targetTemplateId },
+                    select: { id: true, category_id: true },
+                });
+                if (!target) throw new GraphQLError("TARGET_TEMPLATE_NOT_FOUND");
+                if (target.category_id !== variant.product.category_id) throw new GraphQLError("TEMPLATE_CATEGORY_MISMATCH");
+
+                const moved = await tx.variant.update({
+                    where: { id: variantId },
+                    data: { productId: targetTemplateId },
+                });
+                await tx.auditLog.create({ data: {
+                    actorId: getUserId(ctx),
+                    action: "VARIANT_MOVED_TEMPLATE",
+                    entity: "Variant",
+                    entityId: String(variantId),
+                    metadata: { variantId, sourceTemplateId: variant.productId, targetTemplateId },
+                } });
+                return moved;
+            }),
         });
     },
 });

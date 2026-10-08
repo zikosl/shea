@@ -2,8 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 
-import { CREATE_VARIANTS, DELETE_VARIANT, UPDATE_VARIANT } from "@/api/mutations";
+import { CREATE_VARIANTS, DELETE_VARIANT, MOVE_VARIANT_TO_TEMPLATE, UPDATE_VARIANT } from "@/api/mutations";
 import { FIND_MANY_VARIANTS } from "@/api/queries";
+import { SEARCH_TEMPLATE_MERGE_CANDIDATES } from "@/api/queries/productTemplate";
 import { requestServerGraphQL } from "@/lib/server-request";
 import { SUBMIT_BARCODE_CANDIDATE } from "@/api/mutations/barcode-candidates";
 
@@ -19,6 +20,14 @@ type VariantResponse = {
   tags?: Array<{ id: number; value: string }>;
   images?: Array<{ id: number; url: string }>;
   products?: Array<{ id: number }>;
+};
+
+export type VariantMoveTarget = {
+  id: number;
+  name: string;
+  category_id: number;
+  brand?: { id: number; name: string } | null;
+  variants: Array<{ id: number; name?: string | null; products: Array<{ id: number }> }>;
 };
 
 function mapVariant(variant: VariantResponse): ProductVariant {
@@ -107,4 +116,37 @@ export async function submitPhysicalBarcode(productId: number, variantId: number
   });
   revalidatePath(`/product-templates/${productId}/variants`);
   revalidatePath("/barcode-review");
+}
+
+export async function searchVariantMoveTargets(sourceTemplateId: number, categoryId: number, search: string) {
+  const response = await requestServerGraphQL<{
+    findManyProductTemplates: { productTemplates: VariantMoveTarget[] };
+  }>(SEARCH_TEMPLATE_MERGE_CANDIDATES, {
+    search,
+    category_id: categoryId,
+    page: 1,
+    limit: 12,
+  });
+
+  return response.findManyProductTemplates.productTemplates.filter(
+    (template) => template.id !== sourceTemplateId && template.category_id === categoryId,
+  );
+}
+
+export async function moveVariantToTemplate(sourceTemplateId: number, variantId: number, targetTemplateId: number) {
+  try {
+    await requestServerGraphQL(MOVE_VARIANT_TO_TEMPLATE, { variantId, targetTemplateId });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Could not move this variant.";
+    if (message.includes("TEMPLATE_CATEGORY_MISMATCH")) throw new Error("The destination must be in the same category.");
+    if (message.includes("VARIANT_NOT_FOUND") || message.includes("TARGET_TEMPLATE_NOT_FOUND")) {
+      throw new Error("The variant or destination template no longer exists. Refresh and try again.");
+    }
+    if (message.includes("VARIANT_ALREADY_IN_TEMPLATE")) throw new Error("This variant is already in that template.");
+    throw new Error("Move failed. No changes were applied. Please try again.");
+  }
+
+  revalidatePath(`/product-templates/${sourceTemplateId}/variants`);
+  revalidatePath(`/product-templates/${targetTemplateId}/variants`);
+  revalidatePath("/product-templates");
 }

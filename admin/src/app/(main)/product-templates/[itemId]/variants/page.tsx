@@ -22,7 +22,11 @@ export default async function VariantPage({ params, searchParams }: Props) {
 
   const page = Math.max(1, Number(query.page) || 1);
   const limit = 20;
-  const result = await getVariants(productId, query.search?.trim() ?? "", page, limit);
+  const search = query.search?.trim() ?? "";
+  const [result, unfilteredResult] = await Promise.all([
+    getVariants(productId, search, page, limit),
+    search ? getVariants(productId, "", 1, 1) : Promise.resolve(null),
+  ]);
 
-  return <VariantsManager productId={productId} productName={product.name} variants={result.variants} total={result.total} page={page} limit={limit} search={query.search ?? ""} />;
+  return <VariantsManager productId={productId} productName={product.name} categoryId={Number(product.category_id)} variants={result.variants} allVariantCount={unfilteredResult?.total ?? result.total} total={result.total} page={page} limit={limit} search={query.search ?? ""} />;
 }

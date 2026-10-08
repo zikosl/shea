@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ImageIcon, Layers3, Loader2, Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { ArrowLeft, ArrowRightLeft, ImageIcon, Layers3, Loader2, Pencil, Plus, Search, Trash2, TriangleAlert, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { FILE_UPLOAD } from "@/api/mutations";
@@ -19,19 +19,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-import { createVariantCombinations, deleteVariantItem, submitPhysicalBarcode, updateVariantItem } from "./actions";
+import { createVariantCombinations, deleteVariantItem, moveVariantToTemplate, searchVariantMoveTargets, submitPhysicalBarcode, updateVariantItem, type VariantMoveTarget } from "./actions";
 
 type Props = {
   productId: number;
   productName: string;
+  categoryId: number;
   variants: ProductVariant[];
+  allVariantCount: number;
   total: number;
   page: number;
   limit: number;
   search: string;
 };
 
-export default function VariantsManager({ productId, productName, variants, total, page, limit, search }: Props) {
+export default function VariantsManager({ productId, productName, categoryId, variants, allVariantCount, total, page, limit, search }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [createOpen, setCreateOpen] = useState(false);
@@ -46,6 +48,12 @@ export default function VariantsManager({ productId, productName, variants, tota
   const [candidateBarcode, setCandidateBarcode] = useState("");
   const [editImages, setEditImages] = useState<string[]>([]);
   const [deleting, setDeleting] = useState<ProductVariant | null>(null);
+  const [movingVariant, setMovingVariant] = useState<ProductVariant | null>(null);
+  const [moveSearch, setMoveSearch] = useState("");
+  const [moveTargets, setMoveTargets] = useState<VariantMoveTarget[]>([]);
+  const [moveTarget, setMoveTarget] = useState<VariantMoveTarget | null>(null);
+  const [moveSearchLoading, setMoveSearchLoading] = useState(false);
+  const moveRequestId = useRef(0);
   const { uploadFiles, progresses, isUploading } = useUploadFile(FILE_UPLOAD);
 
   const parsedDimensions = useMemo(
@@ -57,6 +65,40 @@ export default function VariantsManager({ productId, productName, variants, tota
     ? validDimensions.reduce((count, values) => count * values.length, 1)
     : 0;
   const pageCount = Math.max(1, Math.ceil(total / limit));
+
+  useEffect(() => {
+    const query = moveSearch.trim();
+    const currentRequest = ++moveRequestId.current;
+    if (!movingVariant || query.length < 2) {
+      setMoveTargets([]);
+      setMoveSearchLoading(false);
+      return;
+    }
+
+    setMoveSearchLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const results = await searchVariantMoveTargets(productId, categoryId, query);
+        if (currentRequest === moveRequestId.current) setMoveTargets(results);
+      } catch {
+        if (currentRequest === moveRequestId.current) {
+          setMoveTargets([]);
+          toast.error("Could not search destination templates. Try again.");
+        }
+      } finally {
+        if (currentRequest === moveRequestId.current) setMoveSearchLoading(false);
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [categoryId, moveSearch, movingVariant, productId]);
+
+  function closeMoveDialog() {
+    setMovingVariant(null);
+    setMoveSearch("");
+    setMoveTargets([]);
+    setMoveTarget(null);
+  }
 
   function run(action: () => Promise<void>, success: string, close?: () => void) {
     startTransition(async () => {
@@ -129,8 +171,9 @@ export default function VariantsManager({ productId, productName, variants, tota
                   {variant.tags.map((tag) => <Badge key={tag.id} variant="outline">{tag.value}</Badge>)}
                 </div>
               </div>
-              <div className="flex gap-2 sm:justify-end">
+              <div className="flex flex-wrap gap-2 sm:justify-end">
                 <Button type="button" variant="outline" size="sm" onClick={() => beginEdit(variant)}><Pencil /> Edit</Button>
+                <Button type="button" variant="outline" size="sm" onClick={() => { setMovingVariant(variant); setMoveTarget(null); setMoveSearch(""); }}><ArrowRightLeft /> Move</Button>
                 <Button type="button" variant="ghost" size="icon" disabled={variant.productCount > 0} onClick={() => setDeleting(variant)} aria-label="Delete variant"><Trash2 /></Button>
               </div>
             </div>
@@ -200,6 +243,53 @@ export default function VariantsManager({ productId, productName, variants, tota
 
       <Dialog open={Boolean(deleting)} onOpenChange={(open) => !open && setDeleting(null)}>
         <DialogContent><DialogHeader><DialogTitle>Delete this variant?</DialogTitle><DialogDescription>This removes the variant and its images. Variants already used by a partner cannot be deleted.</DialogDescription></DialogHeader><DialogFooter><Button type="button" variant="outline" onClick={() => setDeleting(null)}>Cancel</Button><Button type="button" variant="destructive" disabled={isPending} onClick={() => deleting && run(() => deleteVariantItem(productId, Number(deleting.id)), "Variant deleted", () => setDeleting(null))}>{isPending && <Loader2 className="animate-spin" />} Delete variant</Button></DialogFooter></DialogContent>
+      </Dialog>
+
+      <Dialog open={Boolean(movingVariant)} onOpenChange={(open) => !open && !isPending && closeMoveDialog()}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Move variant to another template</DialogTitle>
+            <DialogDescription>Its barcode, SKU, images, tags, partner listings, stock and sales history stay with this variant.</DialogDescription>
+          </DialogHeader>
+
+          {movingVariant && <div className="rounded-lg border bg-muted/40 p-3">
+            <p className="text-xs text-muted-foreground">Moving from</p>
+            <p className="mt-1 text-sm font-medium">{productName} <span className="font-normal text-muted-foreground">/ {movingVariant.name || "Unnamed variant"}</span></p>
+            {movingVariant.productCount > 0 && <p className="mt-1 text-xs text-muted-foreground">Affects {movingVariant.productCount} partner listing{movingVariant.productCount === 1 ? "" : "s"}; their inventory and order history remain linked.</p>}
+          </div>}
+
+          {!moveTarget ? <div className="space-y-2">
+            <Label htmlFor="move-template-search">Destination template</Label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input id="move-template-search" value={moveSearch} onChange={(event) => setMoveSearch(event.target.value)} placeholder="Search within the same category..." className="pl-9" />
+            </div>
+            <p className="text-xs text-muted-foreground">Only templates in the same category are shown.</p>
+            {moveSearchLoading && <div className="flex items-center justify-center gap-2 py-5 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Searching…</div>}
+            {!moveSearchLoading && moveSearch.trim().length >= 2 && moveTargets.length === 0 && <p className="py-5 text-center text-sm text-muted-foreground">No destination templates found.</p>}
+            {moveTargets.length > 0 && <div className="max-h-56 divide-y overflow-y-auto rounded-lg border">
+              {moveTargets.map((template) => <button key={template.id} type="button" onClick={() => setMoveTarget(template)} className="flex w-full items-center gap-3 p-3 text-left hover:bg-muted/50">
+                <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{template.name}</span><span className="mt-0.5 block text-xs text-muted-foreground">{template.brand?.name ?? "No brand"} · {template.variants.length} variants · {template.variants.reduce((count, item) => count + item.products.length, 0)} partner listings</span></span>
+                <ArrowRightLeft className="h-4 w-4 shrink-0 text-muted-foreground" />
+              </button>)}
+            </div>}
+            {moveSearch.trim().length < 2 && <p className="py-5 text-center text-sm text-muted-foreground">Enter at least 2 characters to find a destination.</p>}
+          </div> : <div className="space-y-3">
+            <div className="flex items-center gap-3 rounded-lg border p-3">
+              <div className="min-w-0 flex-1"><p className="text-xs text-muted-foreground">Variant</p><p className="truncate text-sm font-medium">{movingVariant?.name || "Unnamed variant"}</p></div>
+              <ArrowRightLeft className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <div className="min-w-0 flex-1"><p className="text-xs text-muted-foreground">Destination</p><p className="truncate text-sm font-medium">{moveTarget.name}</p><p className="text-xs text-muted-foreground">{moveTarget.variants.length} existing variants</p></div>
+            </div>
+            {moveTarget.variants.some((item) => (item.name ?? "").trim().toLocaleLowerCase() === (movingVariant?.name ?? "").trim().toLocaleLowerCase()) && movingVariant?.name && <p className="flex gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs"><TriangleAlert className="h-4 w-4 shrink-0 text-amber-600" />A variant with the same name already exists there. Both will remain separate.</p>}
+            {allVariantCount === 1 && <p className="flex gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs"><TriangleAlert className="h-4 w-4 shrink-0 text-amber-600" />This is the last variant. The source template will remain in the catalog with no variants; it will not be deleted.</p>}
+            <Button type="button" variant="ghost" size="sm" onClick={() => setMoveTarget(null)}>Choose another destination</Button>
+          </div>}
+
+          <DialogFooter>
+            <Button type="button" variant="outline" disabled={isPending} onClick={closeMoveDialog}>Cancel</Button>
+            {moveTarget && movingVariant && <Button type="button" disabled={isPending} onClick={() => run(() => moveVariantToTemplate(productId, Number(movingVariant.id), moveTarget.id), "Variant moved", closeMoveDialog)}>{isPending && <Loader2 className="animate-spin" />} Move variant</Button>}
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
     </div>
   );

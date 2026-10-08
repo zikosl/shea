@@ -139,6 +139,7 @@ export const permissions = shield(
       reviewSahimContribution: isAdmin,
       reviewBarcodeCandidate: isAdmin,
       deleteVariant: isAdmin,
+      moveVariantToTemplate: isAdmin,
       approveProductTemplateRequest: isAdmin,
       rejectProductTemplateRequest: isAdmin,
       mergeProductTemplateRequest: isAdmin,
