@@ -1,9 +1,8 @@
-import { DataTable } from '@/components/ui/table/data-table';
 import { searchParamsCache } from '@/lib/searchparams';
 
 import { getSearchItem } from '../actions';
 import { Item } from '../_constant';
-import { columns } from './tables/columns';
+import ProductTemplatesTable from './product-templates-table';
 
 export default async function ListingPage() {
   const page = searchParamsCache.get('page');
@@ -28,5 +27,5 @@ export default async function ListingPage() {
   const totalItems = data.totalItems;
   const items: Item[] = data.items;
 
-  return <DataTable columns={columns} data={items} totalItems={totalItems} />;
+  return <ProductTemplatesTable data={items} totalItems={totalItems} />;
 }
