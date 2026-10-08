@@ -92,6 +92,7 @@ type ProductTemplate = {
     category?: Category | null;
     niche?: Niche | null;
     images: ProductTemplateImage[];
+    variantCount?: number;
 }
 
 type ProductVariant = {

@@ -285,8 +285,19 @@ export const ProductTemplateQuery = extendType({
                     }
                 }
                 const products = await ctx.prisma.productTemplateView.findMany(args);
+                const variantCounts = products.length
+                    ? await ctx.prisma.variant.groupBy({
+                        by: ['productId'],
+                        where: { productId: { in: products.map((product) => product.id) } },
+                        _count: { _all: true },
+                    })
+                    : []
+                const variantCountByTemplateId = new Map(variantCounts.map((entry) => [entry.productId, entry._count._all]))
                 return {
-                    productTemplates: products,
+                    productTemplates: products.map((product) => ({
+                        ...product,
+                        variantCount: variantCountByTemplateId.get(product.id) ?? 0,
+                    })),
                     totalProductTemplates: totalProducts,
                 };
             },

@@ -174,6 +174,12 @@ const ProductTemplate = objectType({
         })
 
         t.int('brand_id')
+        t.int('variantCount', {
+            resolve: async (parent, _args, ctx) => {
+                if (Number.isInteger(parent.variantCount)) return parent.variantCount
+                return ctx.prisma.variant.count({ where: { productId: parent.id } })
+            },
+        })
         t.field('brand', {
             type: 'Brand',
             resolve: async (parent, _args, ctx) => {

@@ -26,6 +26,7 @@ type ProductTemplateResponse = {
   brand_id: number;
   category_id?: number | null;
   niche_id?: number | null;
+  variantCount?: number | null;
   productType?: ProductType | null;
   brand?: Brand | null;
   category?: Category | null;
@@ -94,6 +95,7 @@ function mapItem(data: ProductTemplateResponse): ProductTemplate {
       id: image.id ? String(image.id) : undefined,
       url: image.url,
     })),
+    variantCount: data.variantCount ?? 0,
   };
 }
 

@@ -50,6 +50,7 @@ export const FIND_MANY_PRODUCT_TEMPLATES = gql`
         id
         name
         name_ar
+        variantCount
         description
         description_ar
         product_type_id
