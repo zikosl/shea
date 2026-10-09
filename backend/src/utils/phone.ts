@@ -18,6 +18,7 @@ export async function sendOtpViaPhoneServer(
 ): Promise<OtpResult> {
   const otp = Math.floor(100000 + Math.random() * 900000).toString()
   const message = `Your OTP is: ${otp}`
+  const smsToken = process.env.OTP_SMS_TOKEN?.trim() ?? '';
   const phoneServerUrl =
     process.env.OTP_PHONE_SERVER_URL?.trim() ||
     process.env.PHONE_SERVER_URL?.trim() ||
@@ -43,6 +44,7 @@ export async function sendOtpViaPhoneServer(
       {
         headers: { 'Content-Type': 'application/json' },
         timeout: 5000,
+        ...(smsToken ? { Authorization: `Bearer ${smsToken}` } : {}),
       },
     )
 
