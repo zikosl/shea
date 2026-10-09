@@ -193,6 +193,107 @@ export const ProductQuery = extendType({
 
 
                 if (!userId) Object.assign(where, { isActive: true });
+
+                // The catalog preview intentionally exposes one representative variant per
+                // template/store. For a variant-specific query, promote the matching
+                // partner product so the card and its details start on that exact variant.
+                if (terms.length) {
+                    const onlinePartnerIds = availableOnly
+                        ? (await ctx.prisma.partner.findMany({ where: { online: true }, select: { userId: true } })).map(item => item.userId)
+                        : undefined
+                    const eligiblePartnerIds = onlinePartnerIds?.filter(id => !partnerId || id === partnerId)
+                    const nicheCategoryIds = niche_id
+                        ? (await ctx.prisma.category.findMany({ where: { niche_id }, select: { id: true } })).map(item => item.id)
+                        : undefined
+                    let variantWhere: Prisma.ProductViewWhereInput = {
+                        ...(partnerId ? { partnerId } : {}),
+                        ...productSearchWhere(terms),
+                        ...(brand_id ? { brand_id } : {}),
+                        ...(product_type_id ? { product_type_id } : {}),
+                        ...(category_id && !product_type_id ? { category_id } : {}),
+                        ...(!userId ? { isActive: true } : {}),
+                        ...(availableOnly ? {
+                            available: true,
+                            isActive: true,
+                            onlineVisible: true,
+                            partnerId: { in: eligiblePartnerIds ?? [] },
+                        } : {}),
+                    }
+                    variantWhere.AND = [
+                        ...(Array.isArray(variantWhere.AND) ? variantWhere.AND : variantWhere.AND ? [variantWhere.AND] : []),
+                        ...(nicheCategoryIds ? [{ category_id: { in: nicheCategoryIds } }] : []),
+                        { OR: terms.map(term => ({ variantName: { contains: term, mode: 'insensitive' } })) },
+                    ]
+                    const variantRows = await ctx.prisma.productView.findMany({ where: variantWhere })
+                    const [attachedRows, tracking] = await Promise.all([
+                        attachCatalogPartners(ctx, variantRows),
+                        variantRows.length
+                            ? ctx.prisma.product.findMany({ where: { id: { in: variantRows.map(item => item.id) } }, select: { id: true, trackInventory: true, stock: true } })
+                            : Promise.resolve([]),
+                    ])
+                    const trackedById = new Map(tracking.map(item => [item.id, item]))
+                    const typedRows = attachedRows as Array<(typeof variantRows)[number] & { partner?: { online?: boolean } | null }>
+                    const rowsWithPartners = (availableOnly
+                        ? typedRows.filter(row => {
+                            const tracked = trackedById.get(row.id)
+                            return tracked && (!tracked.trackInventory || tracked.stock > 0)
+                        })
+                        : typedRows)
+                    const trackById = new Map(tracking.map(item => [item.id, item.trackInventory]))
+                    const termsInVariant = (value?: string | null) => terms.filter(term => value?.normalize('NFKC').toLocaleLowerCase().includes(term)).length
+                    const bestByTemplate = new Map<string, (typeof rowsWithPartners)[number]>()
+                    for (const row of rowsWithPartners) {
+                        const key = `${row.product_template_id}:${row.partnerId}`
+                        const previous = bestByTemplate.get(key)
+                        const score = termsInVariant(row.variantName)
+                        const previousScore = termsInVariant(previous?.variantName)
+                        const availableScore = Number(row.available && row.isActive && row.onlineVisible && (!trackById.get(row.id) || row.stock > 0))
+                        const previousAvailableScore = Number(previous?.available && previous.isActive && previous.onlineVisible && (!trackById.get(previous?.id ?? -1) || (previous?.stock ?? 0) > 0))
+                        if (!previous || score > previousScore || (score === previousScore && availableScore > previousAvailableScore) || (score === previousScore && availableScore === previousAvailableScore && row.id < previous.id)) {
+                            bestByTemplate.set(key, row)
+                        }
+                    }
+                    const prioritized = [...bestByTemplate.values()]
+                        .sort((a, b) => termsInVariant(b.variantName) - termsInVariant(a.variantName) || a.product_template_id - b.product_template_id || a.partnerId - b.partnerId)
+                        .map(row => ({
+                            ...row,
+                            product_template_id: row.product_template_id,
+                            variantId: row.variantId,
+                            variant_name: row.variantName,
+                            variant_name_ar: row.variantNameAr,
+                            variant_sku: row.sku,
+                            product_id: row.id,
+                            brand_id: row.brand_id,
+                            trackInventory: trackById.get(row.id) ?? true,
+                            partnerOnline: row.partner?.online ?? false,
+                        }))
+
+                    if (prioritized.length) {
+                        const excludedGroups = prioritized.map(row => ({ product_template_id: row.product_template_id, partnerId: row.partnerId }))
+                        const standardWhere: Prisma.ProductTemplatePartnerPreviewWhereInput = {
+                            ...where,
+                            NOT: excludedGroups,
+                        }
+                        const standardTotal = await ctx.prisma.productTemplatePartnerPreview.count({ where: standardWhere })
+                        const total = prioritized.length + standardTotal
+                        const offset = isFull ? 0 : limit * (page - 1)
+                        const prioritizedPage = prioritized.slice(offset, isFull ? undefined : offset + limit)
+                        const standardOffset = Math.max(0, offset - prioritized.length)
+                        const remaining = isFull ? undefined : Math.max(0, limit - prioritizedPage.length)
+                        const standardRows = remaining === 0 ? [] : await ctx.prisma.productTemplatePartnerPreview.findMany({
+                            where: standardWhere,
+                            ...(isFull ? {} : { skip: standardOffset, take: remaining }),
+                            orderBy: [
+                                { product_template_id: order ?? 'asc' },
+                                { partnerId: 'asc' },
+                                { product_id: 'asc' },
+                            ],
+                        })
+                        const result = [...prioritizedPage, ...standardRows]
+                        return { productPartners: await attachCatalogPartners(ctx, result), totalProductPartners: total }
+                    }
+                }
+
                 const totalProductPartners = await ctx.prisma.productTemplatePartnerPreview.count({ where });
 
                 const args: Prisma.ProductTemplatePartnerPreviewFindManyArgs = isFull ? { where } : {
