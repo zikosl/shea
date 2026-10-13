@@ -943,7 +943,7 @@ model CashSession {
   id            String            @id @default(uuid())
   partnerId     Int
   deviceId      String?
-  openedById    Int
+  openedById    Int?
   closedById    Int?
   status        CashSessionStatus @default(OPEN)
   openingAmount Float             @default(0)
@@ -958,7 +958,7 @@ model CashSession {
 
   partner  Partner @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
   device   Device? @relation(fields: [deviceId], references: [id])
-  openedBy User    @relation("CashSessionOpenedBy", fields: [openedById], references: [id])
+  openedBy User?   @relation("CashSessionOpenedBy", fields: [openedById], references: [id], onDelete: SetNull)
   closedBy User?   @relation("CashSessionClosedBy", fields: [closedById], references: [id])
 
   @@index([partnerId, status])

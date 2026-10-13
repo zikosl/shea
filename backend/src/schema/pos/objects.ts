@@ -166,7 +166,7 @@ const CashSession = objectType({
     t.nonNull.string('id')
     t.nonNull.int('partnerId')
     t.string('deviceId')
-    t.nonNull.int('openedById')
+    t.int('openedById')
     t.int('closedById')
     t.nonNull.field('status', { type: 'CashSessionStatus' })
     t.nonNull.float('openingAmount')

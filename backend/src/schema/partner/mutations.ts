@@ -9,6 +9,7 @@ import {
   normalizePartnerPrimaryColor,
 } from '../../application/partner/partner.service'
 import { createBadRequestError } from '../../core/errors/app-error'
+import { GraphQLError } from 'graphql'
 import {
     ensureEmailAvailable,
     throwAccountWriteError,
@@ -192,6 +193,13 @@ export const PartnerMutation = extendType({
                         await tx.sale.updateMany({ where: { cashierId: partner.userId }, data: { cashierId: null } })
                         await tx.stockMovement.updateMany({ where: { userId: partner.userId, partnerId: { not: partner.userId } }, data: { userId: null } })
                         await tx.cashSession.updateMany({ where: { closedById: partner.userId, partnerId: { not: partner.userId } }, data: { closedById: null } })
+                        await tx.cashSession.updateMany({ where: { openedById: partner.userId, partnerId: { not: partner.userId } }, data: { openedById: null } })
+                        if (productIds.length) {
+                            await tx.stockMovement.deleteMany({ where: { productId: { in: productIds }, partnerId: { not: partner.userId } } })
+                        }
+                        if (saleIds.length) {
+                            await tx.stockMovement.updateMany({ where: { saleId: { in: saleIds }, partnerId: { not: partner.userId } }, data: { saleId: null } })
+                        }
                         if (addressIds.length) {
                             await tx.order.updateMany({ where: { addressId: { in: addressIds }, partnerId: { not: partner.userId } }, data: { addressId: null } })
                             await tx.delivery.updateMany({ where: { addressId: { in: addressIds } }, data: { addressId: null } })
@@ -221,17 +229,29 @@ export const PartnerMutation = extendType({
                             ...(deliveryIds.length ? [{ deliveryId: { in: deliveryIds } }] : []),
                         ] } })
                         if (deliveryIds.length) await tx.delivery.deleteMany({ where: { id: { in: deliveryIds } } })
+                        await tx.cashSession.deleteMany({ where: { partnerId: partner.userId } })
+                        await tx.syncEvent.deleteMany({ where: { partnerId: partner.userId } })
                         await tx.sale.deleteMany({ where: { partnerId: partner.userId } })
                         await tx.order.deleteMany({ where: { partnerId: partner.userId } })
                         await tx.stockMovement.deleteMany({ where: { partnerId: partner.userId } })
                         await tx.product.deleteMany({ where: { partnerId: partner.userId } })
                         if (addressIds.length) await tx.address.deleteMany({ where: { id: { in: addressIds } } })
+                        await tx.device.deleteMany({ where: { partnerId: partner.userId } })
                         await tx.partner.delete({ where: { id } })
                         await tx.user.delete({ where: { id: partner.userId } })
                         return { id }
                     })
-                } catch {
-                    throw createBadRequestError('PARTNER_DELETE_FAILED')
+                } catch (error) {
+                    const dbError = error as { code?: string; message?: string }
+                    console.error('[deletePartner] Failed to delete partner data', {
+                        partnerId: id,
+                        userId: partner.userId,
+                        databaseCode: dbError?.code,
+                        databaseMessage: dbError?.message,
+                    })
+                    throw new GraphQLError('PARTNER_DELETE_FAILED', {
+                        extensions: { code: 'INTERNAL_SERVER_ERROR', http: { status: 500 } },
+                    })
                 }
             },
         })
