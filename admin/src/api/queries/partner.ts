@@ -6,6 +6,7 @@ export const FIND_ONE_PARTNER = gql`
     findOnePartner(id: $id) {
       id
       companyName
+      clientVisible
       primaryColor
       feeType
       feeRate
@@ -34,6 +35,7 @@ export const FIND_MANY_PARTNERS = gql`
       partners {
         id
         companyName
+        clientVisible
         primaryColor
         feeType
         feeRate

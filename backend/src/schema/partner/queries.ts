@@ -2,7 +2,7 @@
 import { nonNull, extendType, stringArg, intArg, booleanArg } from "nexus"
 import { CapabilityCode, Prisma } from "@prisma/client"
 import { Context } from "../../context"
-import { getUserId } from "../../utils"
+import { getOptionalUserId, getUserId } from "../../utils"
 import { createBadRequestError } from "../../core/errors/app-error"
 import { partnerUserIdsWithCapability } from '../../modules/capabilities/service'
 
@@ -23,9 +23,16 @@ export const Query = extendType({
                 id: nonNull(intArg()),
             },
             resolve: async (_parent, { id }, ctx: Context) => {
-                return ctx.prisma.partner.findUnique({
+                const partner = await ctx.prisma.partner.findUnique({
                     where: { id },
                 })
+                if (!partner) return null
+                const requesterId = getOptionalUserId(ctx)
+                const requester = requesterId
+                    ? await ctx.prisma.user.findUnique({ where: { id: requesterId }, select: { role: true } })
+                    : null
+                if (requester?.role !== 'ADMIN' && !partner.clientVisible) return null
+                return partner
             },
         })
 
@@ -51,6 +58,11 @@ export const Query = extendType({
                         ],
                     }
                     : {};
+                const requesterId = getOptionalUserId(ctx)
+                const requester = requesterId
+                    ? await ctx.prisma.user.findUnique({ where: { id: requesterId }, select: { role: true } })
+                    : null
+                if (requester?.role !== 'ADMIN') where.clientVisible = true
                 const args: Prisma.PartnerFindManyArgs = { where }
                 if (online != null) where.online = online
                 if (niche_id) {

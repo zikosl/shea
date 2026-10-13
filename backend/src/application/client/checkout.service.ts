@@ -26,7 +26,7 @@ export async function previewCheckout(tx: Prisma.TransactionClient, userId: numb
     quantities.set(item!.productId!, (quantities.get(item!.productId!) ?? 0) + Number(item!.quantity))
   }
   const partner = await tx.partner.findUnique({ where: { userId: input.partnerId! } })
-  if (!partner?.online) fail('STORE_UNAVAILABLE')
+  if (!partner?.online || !partner.clientVisible) fail('STORE_UNAVAILABLE')
   let address = null
   if (input.deliveryType !== DeliveryType.PICKUP) {
     address = await tx.address.findFirst({ where: { userId, ...(input.addressId ? { id: input.addressId } : { isDefault: true }) } })

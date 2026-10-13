@@ -41,6 +41,7 @@ const formSchema = z.object({
   companyName: z.string().min(2, {
     message: "Company name must be at least 2 characters.",
   }),
+  clientVisible: z.boolean().default(true),
   email: z.string().trim().email({
     message: "Email must be valid.",
   }).transform((value) => value.toLowerCase()),
@@ -76,6 +77,7 @@ export default function ItemForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       companyName: initialData?.companyName ?? "",
+      clientVisible: initialData?.clientVisible ?? true,
       email: initialData?.email ?? "",
       primaryColor: initialData?.primaryColor ?? "#CC6F98",
       feeType: initialData?.feeType ?? "NONE",
@@ -133,6 +135,31 @@ export default function ItemForm({
             </p>
           </CardHeader>
           <CardContent className="space-y-8">
+            {initialData ? (
+              <FormField
+                control={form.control}
+                name="clientVisible"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between gap-4 rounded-2xl border bg-muted/20 p-4">
+                    <div>
+                      <FormLabel>Visible in Shea Client</FormLabel>
+                      <FormDescription>
+                        Hidden partners and their products are removed from client browsing, search, and checkout. Partner access and past orders are unaffected.
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <input
+                        type="checkbox"
+                        checked={field.value}
+                        onChange={(event) => field.onChange(event.target.checked)}
+                        className="h-5 w-5 shrink-0 accent-primary"
+                        aria-label="Visible in Shea Client"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            ) : null}
             <div className="grid w-full items-start gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}

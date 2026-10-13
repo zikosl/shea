@@ -12,7 +12,7 @@ function fixture() {
   }
   const state = { created: 0, addressReads: 0, existing: null as any, notifications: [] as any[] }
   const db: any = {
-    partner: { findUnique: async () => ({ userId: 2, online: true }) },
+    partner: { findUnique: async () => ({ userId: 2, online: true, clientVisible: true }) },
     address: { findFirst: async () => { state.addressReads++; return { id: 3, latitude: 36, longitude: 7 } } },
     product: { findMany: async () => [product] },
     pricing: { findMany: async () => [{ name: PricingName.APP_TAX, price: 10 }, { name: PricingName.NORMAL_DELIVERY_TAX, price: 50 }] },
@@ -64,6 +64,12 @@ test('pickup does not require or read a delivery address', async () => {
   assert.equal(result.address, null)
   assert.equal(state.addressReads, 0)
   assert.equal(result.deliveryTax, 0)
+})
+
+test('hidden partners cannot receive new client orders', async () => {
+  const { db, input } = fixture()
+  ;(db.partner.findUnique as any) = async () => ({ userId: 2, online: true, clientVisible: false })
+  await assert.rejects(previewCheckout(db, 1, input), /STORE_UNAVAILABLE/)
 })
 
 test('duplicate lines cannot bypass stock checks', async () => {

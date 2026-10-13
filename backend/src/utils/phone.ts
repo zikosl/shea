@@ -42,9 +42,11 @@ export async function sendOtpViaPhoneServer(
         message,
       },
       {
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(smsToken ? { Authorization: `Bearer ${smsToken}` } : {}),
+        },
         timeout: 5000,
-        ...(smsToken ? { Authorization: `Bearer ${smsToken}` } : {}),
       },
     )
 

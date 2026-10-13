@@ -85,8 +85,9 @@ export const PartnerMutation = extendType({
                 fixedFee: floatArg(),
                 driverRequestFee: floatArg(),
                 primaryColor: stringArg(),
+                clientVisible: booleanArg(),
             },
-            resolve: async (_parent, { id, email, companyName, niches, feeType, feeRate, fixedFee, driverRequestFee, primaryColor }, ctx: Context) => {
+            resolve: async (_parent, { id, email, companyName, niches, feeType, feeRate, fixedFee, driverRequestFee, primaryColor, clientVisible }, ctx: Context) => {
                 const partner = await ctx.prisma.partner.findUnique({
                     where: { id },
                     select: { userId: true },
@@ -108,6 +109,7 @@ export const PartnerMutation = extendType({
                             fixedFee: fixedFee ?? undefined,
                             driverRequestFee: driverRequestFee === null ? null : driverRequestFee ?? undefined,
                             primaryColor: normalizePartnerPrimaryColor(primaryColor),
+                            clientVisible: clientVisible ?? undefined,
                             user: normalizedEmail
                                 ? { update: { email: normalizedEmail } }
                                 : undefined,
@@ -165,18 +167,71 @@ export const PartnerMutation = extendType({
                 id: nonNull(intArg()),
             },
             resolve: async (_parent, { id }, ctx: Context) => {
-                // Option A: delete partner profile only
-                // const deleted = await ctx.prisma.partner.delete({ where: { id }, include: { user: true } })
+                const partner = await ctx.prisma.partner.findUnique({ where: { id }, select: { userId: true } })
+                if (!partner) throw createBadRequestError('PARTNER_NOT_FOUND')
 
-                // Option B: delete the whole User (cascades to partner via `onDelete: Cascade`)
                 try {
-                    const deletedUser = await ctx.prisma.user.delete({
-                        where: { id },               // here `id` is the userId
-                        include: { partner: true },
+                    return await ctx.prisma.$transaction(async (tx) => {
+                        const [orders, sales, products, addresses, deliveries] = await Promise.all([
+                            tx.order.findMany({ where: { partnerId: partner.userId }, select: { id: true } }),
+                            tx.sale.findMany({ where: { partnerId: partner.userId }, select: { id: true } }),
+                            tx.product.findMany({ where: { partnerId: partner.userId }, select: { id: true } }),
+                            tx.address.findMany({ where: { userId: partner.userId }, select: { id: true } }),
+                            tx.delivery.findMany({ where: { order: { partnerId: partner.userId } }, select: { id: true } }),
+                        ])
+                        const orderIds = orders.map(({ id }) => id)
+                        const saleIds = sales.map(({ id }) => id)
+                        const productIds = products.map(({ id }) => id)
+                        const addressIds = addresses.map(({ id }) => id)
+                        const deliveryIds = deliveries.map(({ id }) => id)
+
+                        await tx.auditLog.updateMany({ where: { partnerId: partner.userId }, data: { partnerId: null } })
+                        await tx.auditLog.updateMany({ where: { actorId: partner.userId }, data: { actorId: null } })
+                        await tx.log.updateMany({ where: { userId: partner.userId }, data: { userId: null } })
+                        await tx.sale.updateMany({ where: { sourceOrderId: { in: orderIds }, partnerId: { not: partner.userId } }, data: { sourceOrderId: null } })
+                        await tx.sale.updateMany({ where: { cashierId: partner.userId }, data: { cashierId: null } })
+                        await tx.stockMovement.updateMany({ where: { userId: partner.userId, partnerId: { not: partner.userId } }, data: { userId: null } })
+                        await tx.cashSession.updateMany({ where: { closedById: partner.userId, partnerId: { not: partner.userId } }, data: { closedById: null } })
+                        if (addressIds.length) {
+                            await tx.order.updateMany({ where: { addressId: { in: addressIds }, partnerId: { not: partner.userId } }, data: { addressId: null } })
+                            await tx.delivery.updateMany({ where: { addressId: { in: addressIds } }, data: { addressId: null } })
+                            await tx.customOrder.updateMany({ where: { addressId: { in: addressIds }, partnerId: { not: partner.userId } }, data: { addressId: null } })
+                        }
+                        await tx.customOrder.deleteMany({ where: { partnerId: partner.userId } })
+                        await tx.giftTemplate.deleteMany({ where: { partnerId: partner.userId } })
+                        if (productIds.length) await tx.stockReservation.deleteMany({ where: { productId: { in: productIds } } })
+                        const refundItemFilters = [
+                            ...(productIds.length ? [{ productId: { in: productIds } }] : []),
+                            ...(saleIds.length ? [{ refund: { saleId: { in: saleIds } } }] : []),
+                        ]
+                        if (refundItemFilters.length) await tx.saleRefundItem.deleteMany({ where: { OR: refundItemFilters } })
+                        const saleItemFilters = [
+                            ...(productIds.length ? [{ productId: { in: productIds } }] : []),
+                            ...(saleIds.length ? [{ saleId: { in: saleIds } }] : []),
+                        ]
+                        if (saleItemFilters.length) await tx.saleItem.deleteMany({ where: { OR: saleItemFilters } })
+                        const orderItemFilters = [
+                            ...(productIds.length ? [{ productId: { in: productIds } }] : []),
+                            ...(orderIds.length ? [{ orderId: { in: orderIds } }] : []),
+                        ]
+                        if (orderItemFilters.length) await tx.orderItem.deleteMany({ where: { OR: orderItemFilters } })
+                        if (saleIds.length) await tx.saleRefund.deleteMany({ where: { saleId: { in: saleIds } } })
+                        await tx.orderDispatch.deleteMany({ where: { OR: [
+                            ...(orderIds.length ? [{ orderId: { in: orderIds } }] : []),
+                            ...(deliveryIds.length ? [{ deliveryId: { in: deliveryIds } }] : []),
+                        ] } })
+                        if (deliveryIds.length) await tx.delivery.deleteMany({ where: { id: { in: deliveryIds } } })
+                        await tx.sale.deleteMany({ where: { partnerId: partner.userId } })
+                        await tx.order.deleteMany({ where: { partnerId: partner.userId } })
+                        await tx.stockMovement.deleteMany({ where: { partnerId: partner.userId } })
+                        await tx.product.deleteMany({ where: { partnerId: partner.userId } })
+                        if (addressIds.length) await tx.address.deleteMany({ where: { id: { in: addressIds } } })
+                        await tx.partner.delete({ where: { id } })
+                        await tx.user.delete({ where: { id: partner.userId } })
+                        return { id }
                     })
-                    return deletedUser.partner!
-                } catch (error) {
-                    throw createBadRequestError('Failed to delete partner')
+                } catch {
+                    throw createBadRequestError('PARTNER_DELETE_FAILED')
                 }
             },
         })

@@ -28,10 +28,11 @@ const CREATE_PARTNER = gql`
 
 // Mutation to update an existing partner
 const UPDATE_PARTNER = gql`
-  mutation updatePartner($id: Int!, $companyName: String, $email: String, $niches: [Int!], $feeType: PartnerFeeType, $feeRate: Float, $fixedFee: Float, $driverRequestFee: Float, $primaryColor: String) {
-    updatePartner(id: $id, companyName: $companyName, email: $email, niches: $niches, feeType: $feeType, feeRate: $feeRate, fixedFee: $fixedFee, driverRequestFee: $driverRequestFee, primaryColor: $primaryColor) {
+  mutation updatePartner($id: Int!, $companyName: String, $email: String, $niches: [Int!], $feeType: PartnerFeeType, $feeRate: Float, $fixedFee: Float, $driverRequestFee: Float, $primaryColor: String, $clientVisible: Boolean) {
+    updatePartner(id: $id, companyName: $companyName, email: $email, niches: $niches, feeType: $feeType, feeRate: $feeRate, fixedFee: $fixedFee, driverRequestFee: $driverRequestFee, primaryColor: $primaryColor, clientVisible: $clientVisible) {
       id
       companyName
+      clientVisible
       primaryColor
       feeType
       feeRate

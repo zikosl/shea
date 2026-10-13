@@ -87,6 +87,7 @@ export const Partner = objectType({
         t.string('companyName');
         t.string('avatar');
         t.boolean('online');
+        t.nonNull.boolean('clientVisible');
         t.float('latitude');
         t.float('longitude');
         t.string('address');

@@ -8,8 +8,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { Edit, MoreHorizontal, Package2, Trash } from 'lucide-react';
-import { redirect, useRouter } from 'next/navigation';
+import { Edit, MoreHorizontal, Trash } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { deleteItem } from '../../actions';
@@ -22,6 +22,7 @@ interface CellActionProps {
 export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [confirmation, setConfirmation] = useState("");
   const router = useRouter();
 
   const onConfirm = async () => {
@@ -33,20 +34,27 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
         toast.success(`${response} deleted successfully`);
       }
       router.replace(`/${name_plural}`)
-    } catch (error) {
+    } catch {
       setLoading(false);
-      toast.error("Something wrong")
+      toast.error("The partner could not be fully deleted. Check related account records and try again.")
     }
     setOpen(false);
+    setConfirmation("");
   };
 
   return (
     <>
       <AlertModal
         isOpen={open}
-        onClose={() => setOpen(false)}
+        onClose={() => { setOpen(false); setConfirmation(""); }}
         onConfirm={onConfirm}
         loading={loading}
+        title={`Delete ${data.companyName}?`}
+        description="This permanently erases the partner account, products, inventory, stores, devices, gift data, client orders, POS sales, refunds, and related history. Audit logs are retained without the partner identity. This cannot be undone."
+        confirmLabel="Delete partner"
+        confirmationPhrase={data.companyName}
+        confirmationValue={confirmation}
+        onConfirmationValueChange={setConfirmation}
       />
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>

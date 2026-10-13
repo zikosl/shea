@@ -16,6 +16,15 @@ export const columns: ColumnDef<Item>[] = [
     header: 'Email',
   },
   {
+    accessorKey: 'clientVisible',
+    header: 'Client visibility',
+    cell: ({ row }) => (
+      <Badge variant={row.original.clientVisible === false ? "secondary" : "outline"} className="rounded-full">
+        {row.original.clientVisible === false ? "Hidden" : "Visible"}
+      </Badge>
+    ),
+  },
+  {
     accessorKey: 'partnerNiches',
     header: 'Niches',
     cell: ({ row }) => {

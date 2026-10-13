@@ -1,9 +1,19 @@
 import { nonNull, extendType, stringArg, intArg, booleanArg, arg } from "nexus"
 import { CapabilityCode, Prisma } from "@prisma/client"
-import { getOptionalUserId } from "../../../utils"
+import { checkUser, getOptionalUserId } from "../../../utils"
 import { Context } from "../../../context"
 import { partnerUserIdsWithCapability } from '../../../modules/capabilities/service'
 import { catalogSearchTerms, previewSearchWhere, productSearchWhere, templateSearchWhere } from '../../../modules/catalog/search'
+
+async function clientVisiblePartnerIds(ctx: Context) {
+    const userId = getOptionalUserId(ctx)
+    if (userId) {
+        const role = await ctx.prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+        if (role?.role === 'ADMIN' || role?.role === 'PARTNER') return null
+    }
+    const partners = await ctx.prisma.partner.findMany({ where: { clientVisible: true }, select: { userId: true } })
+    return partners.map(({ userId }) => userId)
+}
 
 async function attachCatalogPartners(ctx: Context, products: Array<Record<string, unknown>>) {
     const partnerIds = [...new Set(products.map(product => Number(product.partnerId)).filter(Number.isFinite))]
@@ -23,9 +33,13 @@ export const ProductQuery = extendType({
                 id: nonNull(intArg()),
             },
             resolve: async (_parent, { id }, ctx: Context) => {
-                return ctx.prisma.productView.findFirst({
+                const product = await ctx.prisma.productView.findFirst({
                     where: { id, ...(!getOptionalUserId(ctx) ? { isActive: true } : {}) },
                 })
+                if (!product) return null
+                const visibleIds = await clientVisiblePartnerIds(ctx)
+                if (visibleIds && !visibleIds.includes(product.partnerId)) return null
+                return product
             },
         })
 
@@ -36,6 +50,8 @@ export const ProductQuery = extendType({
                 partnerId: nonNull(intArg()),
             },
             resolve: async (_parent, { id, partnerId }, ctx: Context) => {
+                const visibleIds = await clientVisiblePartnerIds(ctx)
+                if (visibleIds && !visibleIds.includes(partnerId)) return null
                 const product = await ctx.prisma.productTemplatePartnerPreview.findFirst({
                     where: {
                         product_template_id: id, partnerId,
@@ -74,6 +90,8 @@ export const ProductQuery = extendType({
 
                 const terms = catalogSearchTerms(search)
                 let where: Prisma.ProductViewWhereInput = { partnerId, ...(terms.length ? productSearchWhere(terms) : {}) };
+                const visibleIds = await clientVisiblePartnerIds(ctx)
+                if (visibleIds) where.AND = [...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []), { partnerId: { in: visibleIds } }]
                 if (brand_id) {
                     where = {
                         ...where,
@@ -152,6 +170,8 @@ export const ProductQuery = extendType({
 
                 const terms = catalogSearchTerms(search)
                 let where: Prisma.ProductTemplatePartnerPreviewWhereInput = { partnerId, ...(terms.length ? previewSearchWhere(terms) : {}) };
+                const visibleIds = await clientVisiblePartnerIds(ctx)
+                if (visibleIds) where.AND = [...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []), { partnerId: { in: visibleIds } }]
                 if (giftPartnerIds) where.partnerId = partnerId ?? { in: giftPartnerIds }
                 if (availableOnly) {
                     Object.assign(where, {
@@ -219,6 +239,7 @@ export const ProductQuery = extendType({
                             partnerId: { in: eligiblePartnerIds ?? [] },
                         } : {}),
                     }
+                    if (visibleIds) variantWhere.AND = [...(Array.isArray(variantWhere.AND) ? variantWhere.AND : variantWhere.AND ? [variantWhere.AND] : []), { partnerId: { in: visibleIds } }]
                     variantWhere.AND = [
                         ...(Array.isArray(variantWhere.AND) ? variantWhere.AND : variantWhere.AND ? [variantWhere.AND] : []),
                         ...(nicheCategoryIds ? [{ category_id: { in: nicheCategoryIds } }] : []),

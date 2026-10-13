@@ -352,6 +352,7 @@ model Partner {
   // partner-only fields
   companyName         String
   online              Boolean                     @default(false)
+  clientVisible       Boolean                     @default(true)
   avatar              String?
   latitude            Float                       @default(0)
   longitude           Float                       @default(0)

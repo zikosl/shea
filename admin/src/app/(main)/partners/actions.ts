@@ -21,6 +21,7 @@ import {
 type PartnerResponse = {
   id: string;
   companyName: string;
+  clientVisible?: boolean;
   primaryColor?: string | null;
   feeType?: "NONE" | "PERCENTAGE" | "FIXED" | "MIXED";
   feeRate?: number | null;
@@ -42,6 +43,7 @@ const mapPartner = (data: PartnerResponse) =>
     ? {
         id: data.id,
     companyName: data.companyName,
+    clientVisible: data.clientVisible ?? true,
     primaryColor: data.primaryColor ?? "#CC6F98",
     feeType: data.feeType ?? "NONE",
     feeRate: Number(data.feeRate ?? 0),
@@ -78,6 +80,7 @@ export const {
 
 type PartnerAccountInput = Partial<{
   companyName: string;
+  clientVisible: boolean;
   email: string;
   primaryColor: string;
   feeType: "NONE" | "PERCENTAGE" | "FIXED" | "MIXED";
