@@ -153,7 +153,10 @@ const wsServer = new ws.WebSocketServer({
 useServer(
   {
     schema,
+    keepAlive: 25000,
     onConnect: async (ctx: any) => {
+      const authorization = ctx.connectionParams?.authorization
+      if (typeof authorization === 'string') ctx.extra.request.headers.authorization = authorization
       if (await consumeRequest(ctx.extra.request.socket.remoteAddress || 'unknown')) throw new Error('RATE_LIMITED')
       const origin = ctx.extra.request.headers?.origin
       if (origin && !env.allowedCorsOrigins.includes(origin)) {

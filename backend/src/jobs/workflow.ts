@@ -1,6 +1,6 @@
 import { Job, Worker } from 'bullmq'
 import { OrderStatus } from '@prisma/client'
-import { dispatchQueue, prisma, redis, workflowQueue } from '../servers'
+import { dispatchQueue, prisma, pubsub, redis, workflowQueue } from '../servers'
 import { getExpoPushReceipts, sendNotification } from '../servers/firebase'
 import { DeliveryStatus, DeliveryType } from '../types'
 import { getOrderPushCopy } from '../modules/notifications/order'
@@ -61,6 +61,16 @@ async function processOutbox() {
       const clientId = Number(payload.clientId)
       const partnerId = Number(payload.partnerId)
       const actorId = Number(payload.actorId)
+      if (event.topic === 'order.status.changed' && Number.isSafeInteger(partnerId)) {
+        await pubsub.publish(`NOTIF_${partnerId}`, {
+          notification: JSON.stringify({
+            type: 'ORDER_UPDATED',
+            eventId: event.id,
+            orderId: Number(payload.orderId ?? event.aggregateId),
+            status,
+          }),
+        })
+      }
       const deliveredUserIds = new Set(
         Array.isArray(payload.deliveredUserIds)
           ? payload.deliveredUserIds.map(Number).filter(Number.isSafeInteger)
@@ -247,7 +257,7 @@ workflowWorker.on('error', (error) => console.error('[workflow-worker]', error))
 
 void workflowQueue.upsertJobScheduler('gift-scheduler', { every: 60_000 }, { name: 'gift-scheduler' })
   .catch((error) => console.error('[gift-scheduler]', error))
-void workflowQueue.upsertJobScheduler('outbox-pump', { every: 15_000 }, { name: 'outbox-pump' })
+void workflowQueue.upsertJobScheduler('outbox-pump', { every: 5_000 }, { name: 'outbox-pump' })
   .catch((error) => console.error('[outbox-pump]', error))
 void workflowQueue.upsertJobScheduler('push-receipts', { every: 2 * 60_000 }, { name: 'push-receipts' })
   .catch((error) => console.error('[push-receipts]', error))
