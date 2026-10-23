@@ -1,8 +1,9 @@
 import { ContentLayout } from "@/components/admin-panel/content-layout";
 import { Badge } from "@/components/ui/badge";
 import { requestServerGraphQL } from "@/lib/server-request";
-import { Clock3, Database, MonitorSmartphone, Network, ServerOff, Wifi } from "lucide-react";
+import { ArrowRightLeft, Clock3, Database, MonitorSmartphone, Network, ServerOff, Wifi } from "lucide-react";
 import { NetworkConfigForm } from "./network-config-form";
+import { DeviceTransferControl } from "./device-transfer-control";
 
 export const metadata = { title: "Store Networks | Shea Admin" };
 export const instant = false;
@@ -29,11 +30,35 @@ type Store = {
   terminals: Terminal[];
 };
 
+type PosDevice = {
+  id: string;
+  name: string;
+  partnerId: number;
+  partnerName: string;
+  platform: string;
+  storeName?: string | null;
+  lastSyncAt?: string;
+  revokedAt?: string;
+  transferTargetPartnerId?: number | null;
+  transferAuthorizedAt?: string;
+};
+
+type TransferPartner = { user: { id: number }; companyName: string };
+
 const QUERY = `query AdminStoreNetworks {
   adminStoreNetworks {
     id code name partnerName timezone deploymentMode status gatewayLastSeenAt
     cloudSyncEnabled cloudGatewayUrl localGatewayUrl
     terminals { id name status lastSeenAt }
+  }
+}`;
+
+const DEVICE_QUERY = `query AdminPosTransferDevices {
+  adminPosDevices {
+    id name partnerId partnerName platform storeName lastSyncAt revokedAt transferTargetPartnerId transferAuthorizedAt
+  }
+  findManyPartners(page: 1, limit: 200, isFull: true) {
+    partners { companyName user { id } }
   }
 }`;
 
@@ -51,8 +76,13 @@ function relativeTime(value?: string) {
 }
 
 export default async function StoreNetworksPage() {
-  const response = await requestServerGraphQL<{ adminStoreNetworks: Store[] }>(QUERY);
+  const [response, deviceResponse] = await Promise.all([
+    requestServerGraphQL<{ adminStoreNetworks: Store[] }>(QUERY),
+    requestServerGraphQL<{ adminPosDevices: PosDevice[]; findManyPartners: { partners: TransferPartner[] } }>(DEVICE_QUERY),
+  ]);
   const stores = response.adminStoreNetworks;
+  const posDevices = deviceResponse.adminPosDevices;
+  const transferPartners = deviceResponse.findManyPartners.partners.map((partner) => ({ userId: partner.user.id, companyName: partner.companyName }));
   const multi = stores.filter((store) => store.deploymentMode === "MULTI_POS");
   const online = multi.filter((store) => isFresh(store.gatewayLastSeenAt));
   const terminals = stores.flatMap((store) => store.terminals);
@@ -68,6 +98,40 @@ export default async function StoreNetworksPage() {
           <Metric icon={Wifi} label="Gateways online" value={online.length} detail={`${multi.length - online.length} need attention`} />
           <Metric icon={MonitorSmartphone} label="Registered terminals" value={terminals.length} detail={`${terminals.filter((item) => item.status === "ACTIVE").length} active`} />
         </div>
+
+        <section className="rounded-2xl border bg-card p-5 shadow-sm">
+          <div className="mb-4 flex items-start gap-3">
+            <ArrowRightLeft className="mt-0.5 h-5 w-5 text-primary" />
+            <div>
+              <h2 className="text-lg font-semibold">POS installation transfers</h2>
+              <p className="text-sm text-muted-foreground">Authorize a specific POS to move to another partner. Its local data is backed up and cleared only when that partner completes the transfer from the POS.</p>
+            </div>
+          </div>
+          <div className="space-y-3">
+            {posDevices.length ? posDevices.map((device) => (
+              <article key={device.id} className="rounded-xl border p-4">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <p className="font-medium">{device.name}</p>
+                    <p className="text-xs text-muted-foreground">{device.partnerName}{device.storeName ? ` · ${device.storeName}` : ""} · {device.platform}</p>
+                  </div>
+                  <Badge variant={device.revokedAt ? "destructive" : device.transferTargetPartnerId ? "secondary" : "outline"}>
+                    {device.revokedAt ? "Released" : device.transferTargetPartnerId ? "Transfer pending" : "Active"}
+                  </Badge>
+                </div>
+                <DeviceTransferControl
+                  deviceId={device.id}
+                  currentPartnerId={device.partnerId}
+                  targetPartnerId={device.transferTargetPartnerId}
+                  targetPartnerName={transferPartners.find((partner) => partner.userId === device.transferTargetPartnerId)?.companyName}
+                  partners={transferPartners}
+                  deviceName={device.name}
+                  revoked={Boolean(device.revokedAt)}
+                />
+              </article>
+            )) : <p className="rounded-xl border border-dashed p-4 text-center text-sm text-muted-foreground">No desktop POS installations registered.</p>}
+          </div>
+        </section>
 
         <div className="grid gap-4 xl:grid-cols-2">
           {stores.map((store) => {

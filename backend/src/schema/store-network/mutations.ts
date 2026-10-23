@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { arg, booleanArg, extendType, nonNull, stringArg } from 'nexus'
+import { arg, booleanArg, extendType, intArg, nonNull, stringArg } from 'nexus'
 import { GraphQLError } from 'graphql'
 import { getUserId } from '../../utils'
 import { issueGatewayToken, normalizeGatewayUrl } from '../../modules/store-network/service'
@@ -9,6 +9,72 @@ const normalizeCode = (value: string) => value.trim().toLowerCase().replace(/[^a
 export default extendType({
   type: 'Mutation',
   definition(t) {
+    t.nonNull.field('authorizePosDeviceTransfer', {
+      type: 'AdminPosDevice',
+      args: { deviceId: nonNull(stringArg()), targetPartnerId: nonNull(intArg()) },
+      resolve: async (_parent, { deviceId, targetPartnerId }, ctx) => {
+        const [device, target] = await Promise.all([
+          ctx.prisma.device.findFirst({ where: { id: deviceId, platform: 'DESKTOP', revokedAt: null }, include: { partner: true, storeTerminal: { include: { store: true } } } }),
+          ctx.prisma.partner.findUnique({ where: { userId: targetPartnerId } }),
+        ])
+        if (!device) throw new GraphQLError('POS_DEVICE_NOT_FOUND_OR_REVOKED')
+        if (!target) throw new GraphQLError('TRANSFER_TARGET_PARTNER_NOT_FOUND')
+        if (device.partnerId === targetPartnerId) throw new GraphQLError('TRANSFER_TARGET_IS_CURRENT_PARTNER')
+
+        const authorizedAt = new Date()
+        await ctx.prisma.$transaction([
+          ctx.prisma.device.update({ where: { id: device.id }, data: { transferTargetPartnerId: targetPartnerId, transferAuthorizedAt: authorizedAt } }),
+          ctx.prisma.auditLog.create({ data: {
+            actorId: getUserId(ctx), partnerId: device.partnerId, action: 'AUTHORIZE_POS_DEVICE_TRANSFER', entity: 'Device', entityId: device.id,
+            before: { transferTargetPartnerId: device.transferTargetPartnerId }, after: { transferTargetPartnerId: targetPartnerId, transferAuthorizedAt: authorizedAt.toISOString() },
+          } }),
+        ])
+        return { ...device, transferTargetPartnerId: targetPartnerId, transferAuthorizedAt: authorizedAt, partnerName: device.partner.companyName, storeName: device.storeTerminal?.store.name ?? null }
+      },
+    })
+
+    t.nonNull.field('cancelPosDeviceTransfer', {
+      type: 'Boolean',
+      args: { deviceId: nonNull(stringArg()) },
+      resolve: async (_parent, { deviceId }, ctx) => {
+        const device = await ctx.prisma.device.findFirst({ where: { id: deviceId, platform: 'DESKTOP', revokedAt: null } })
+        if (!device) throw new GraphQLError('POS_DEVICE_NOT_FOUND_OR_REVOKED')
+        if (!device.transferTargetPartnerId) return true
+        await ctx.prisma.$transaction([
+          ctx.prisma.device.update({ where: { id: device.id }, data: { transferTargetPartnerId: null, transferAuthorizedAt: null } }),
+          ctx.prisma.auditLog.create({ data: {
+            actorId: getUserId(ctx), partnerId: device.partnerId, action: 'CANCEL_POS_DEVICE_TRANSFER', entity: 'Device', entityId: device.id,
+            before: { transferTargetPartnerId: device.transferTargetPartnerId }, after: { transferTargetPartnerId: null },
+          } }),
+        ])
+        return true
+      },
+    })
+
+    t.nonNull.field('completePosDeviceTransfer', {
+      type: 'Boolean',
+      args: { deviceKey: nonNull(stringArg()) },
+      resolve: async (_parent, { deviceKey }, ctx) => {
+        const partnerId = getUserId(ctx)
+        const device = await ctx.prisma.device.findFirst({ where: { deviceKey, platform: 'DESKTOP', revokedAt: null, transferTargetPartnerId: partnerId, transferAuthorizedAt: { not: null } } })
+        if (!device) throw new GraphQLError('POS_DEVICE_TRANSFER_NOT_AUTHORIZED')
+        const now = new Date()
+        await ctx.prisma.$transaction(async (tx) => {
+          const result = await tx.device.updateMany({
+            where: { id: device.id, revokedAt: null, transferTargetPartnerId: partnerId, transferAuthorizedAt: { not: null } },
+            data: { revokedAt: now, transferTargetPartnerId: null, transferAuthorizedAt: null },
+          })
+          if (!result.count) throw new GraphQLError('POS_DEVICE_TRANSFER_NOT_AUTHORIZED')
+          await tx.storeTerminal.updateMany({ where: { deviceId: device.id }, data: { status: 'REVOKED' } })
+          await tx.auditLog.create({ data: {
+            actorId: partnerId, partnerId: device.partnerId, action: 'COMPLETE_POS_DEVICE_TRANSFER', entity: 'Device', entityId: device.id,
+            before: { partnerId: device.partnerId, name: device.name }, after: { transferTargetPartnerId: partnerId, revokedAt: now.toISOString() },
+          } })
+        })
+        return true
+      },
+    })
+
     t.nonNull.field('createStore', {
       type: 'Store',
       args: { name: nonNull(stringArg()), code: nonNull(stringArg()), timezone: stringArg() },

@@ -751,6 +751,8 @@ model Device {
   appVersion String?
   lastSyncAt DateTime?
   revokedAt  DateTime?
+  transferTargetPartnerId Int?
+  transferAuthorizedAt DateTime?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 

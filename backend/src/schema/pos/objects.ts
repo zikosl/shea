@@ -47,6 +47,8 @@ const Device = objectType({
     t.string('appVersion')
     t.field('lastSyncAt', { type: 'DateTime' })
     t.field('revokedAt', { type: 'DateTime' })
+    t.int('transferTargetPartnerId')
+    t.field('transferAuthorizedAt', { type: 'DateTime' })
     t.nonNull.field('createdAt', { type: 'DateTime' })
     t.nonNull.field('updatedAt', { type: 'DateTime' })
   },

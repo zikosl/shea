@@ -147,6 +147,19 @@ type AdminDispatchOrder {
   type: DeliveryType!
 }
 
+type AdminPosDevice {
+  id: String!
+  lastSyncAt: DateTime
+  name: String!
+  partnerId: Int!
+  partnerName: String!
+  platform: String!
+  revokedAt: DateTime
+  storeName: String
+  transferAuthorizedAt: DateTime
+  transferTargetPartnerId: Int
+}
+
 type AuthPayload {
   accessToken: String
   accessTokenExpires: DateTime
@@ -227,7 +240,7 @@ type CashSession {
   id: String!
   note: String
   openedAt: DateTime!
-  openedById: Int!
+  openedById: Int
   openingAmount: Float!
   partnerId: Int!
   status: CashSessionStatus!
@@ -498,6 +511,8 @@ type Device {
   partnerId: Int!
   platform: Platform!
   revokedAt: DateTime
+  transferAuthorizedAt: DateTime
+  transferTargetPartnerId: Int
   updatedAt: DateTime!
 }
 
@@ -664,9 +679,14 @@ type Mutation {
   adminUnassignDelivery(deliveryId: Int!, reason: String!): Delivery
   approveCatalogProposal(adminNote: String, id: String!): CatalogProposal
   approveProductTemplateRequest(adminNote: String, id: Int!): ProductTemplateRequest
+  authorizePosDeviceTransfer(deviceId: String!, targetPartnerId: Int!): AdminPosDevice!
   cancelPartnerDriverRequest(id: String!): PartnerDriverRequest!
-  closeCashSession(countedCash: Float!, id: String!, note: String): CashSession
+  cancelPosDeviceTransfer(deviceId: String!): Boolean!
+  cancelSahimContribution(localId: String!): Boolean!
+  closeCashSession(countedCash: Float, id: String!, note: String): CashSession
+  completePosDeviceTransfer(deviceKey: String!): Boolean!
   configureStoreNetwork(cloudGatewayUrl: String, cloudSyncEnabled: Boolean!, localGatewayUrl: String, storeId: String!): Store!
+  copySahimProductImageToVariants(id: String!, variantIndex: Int): SahimContribution!
   createAddress(address: String, label: String!, latitude: Float!, longitude: Float!): Address
   createBrand(image: String!, name: String!, name_ar: String, niche_id: Int): Brand
   createCatalogSubmission(localId: String, productRequestIds: [Int!], proposalIds: [String!], title: String): CatalogSubmission!
@@ -705,8 +725,11 @@ type Mutation {
   deliverOrder(id: Int!): OrderDispatch
   driverOrder(id: Int!, status: DispatchStatus!): OrderDispatch
   logout(tokenId: String): Boolean
+  markTestFlightInvitationSent(id: String!): TestFlightInviteRequest!
   mergeCatalogProposal(adminNote: String, id: String!, targetId: Int!): CatalogProposal
   mergeProductTemplateRequest(adminNote: String, id: Int!, targetTemplateId: Int!): ProductTemplateRequest
+  mergeProductTemplates(sourceIds: [Int!]!, targetId: Int!): ProductTemplate!
+  moveVariantToTemplate(targetTemplateId: Int!, variantId: Int!): Variant!
   openCashSession(deviceId: String, note: String, openingAmount: Float): CashSession
   partnerOrder(id: Int!, status: DeliveryStatus!): Order
   pickOrder(id: Int!): OrderDispatch
@@ -722,6 +745,7 @@ type Mutation {
   rejectCatalogProposal(adminNote: String, id: String!, rejectionReason: String!): CatalogProposal
   rejectProductTemplateRequest(adminNote: String, id: Int!, rejectionReason: String): ProductTemplateRequest
   requestClientPhoneChange(phone: String!): Boolean
+  requestTestFlightInvite(email: String!): Boolean!
   reserveGiftMaterials(customOrderId: String!): CustomOrder!
   resetContributorAccess(userId: Int!): Boolean!
   resetDriverAccessCode(id: Int!): Boolean!
@@ -759,16 +783,18 @@ type Mutation {
   updateDriverLocation(isAvailable: Boolean, latitude: Float!, longitude: Float!): Driver
   updateDriverProfile(firstname: String, lastname: String, online: Boolean): AuthPayload
   updateNiche(id: Int!, image: String, name: String, name_ar: String): Niche
-  updatePartner(companyName: String, driverRequestFee: Float, email: String, feeRate: Float, feeType: PartnerFeeType, fixedFee: Float, id: Int!, niches: [Int!], primaryColor: String): Partner
+  updatePartner(clientVisible: Boolean, companyName: String, driverRequestFee: Float, email: String, feeRate: Float, feeType: PartnerFeeType, fixedFee: Float, id: Int!, niches: [Int!], primaryColor: String): Partner
   updatePartnerProfile(address: String, avatar: String, companyName: String, language: String, latitude: Float, longitude: Float, online: Boolean, primaryColor: String): AuthPayload
   updateProduct(available: Boolean, costPrice: Float, customDescription: String, customImages: ImagesList, customName: String, discount: Float, id: Int!, isActive: Boolean, isVisibleInPos: Boolean, notes: String, onlineVisible: Boolean, price: Float, priceOnRequest: Boolean, reorderThreshold: Int, stock: Int, trackInventory: Boolean, vendorBarcode: String, vendorSku: String): ProductView
   updateProductTemplate(brand_id: Int, category_id: Int, description: String, description_ar: String, id: Int!, name: String, name_ar: String, product_type_id: Int): ProductTemplate
   updateProductTemplateImages(id: Int!, images: ImagesList): [ProductImage]
   updateProductType(id: Int!, name: String, name_ar: String): ProductType
   updateProfile(birthday: DateTime!, city: Int!, firstname: String!, lastname: String!): AuthPayload
+  updateSahimContributionImage(id: String!, source: String!, target: String!): SahimContribution!
   updateVariant(data: UpdateVariantInput!, id: Int!): Variant
   uploadFile(file: File!): FileUploadResponse
   uploadSahimPhoto(file: File!): FileUploadResponse!
+  uploadSahimReviewPhoto(file: File!): FileUploadResponse!
   upsertPricing(name: PricingName!, price: Int!): Pricing
   verifyClientPhoneChange(code: String!, phone: String!): AuthPayload
   verifyOtp(appVersion: String, code: String!, deviceKey: String, deviceName: String, phone: String!, platform: String): AuthPayload
@@ -869,6 +895,7 @@ type OrderItem {
 
 input OrderItemInput {
   price: Float
+  priceOnRequest: Boolean
   productId: Int
   quantity: Int
 }
@@ -943,6 +970,7 @@ type OrderStatusHistory {
 type Partner {
   address: String
   avatar: String
+  clientVisible: Boolean!
   companyName: String
   driverRequestFee: Float
   feeRate: Float
@@ -1213,6 +1241,7 @@ type ProductTemplate {
   niche_id: Int
   productType: ProductType
   product_type_id: Int
+  variantCount: Int
   variants: [Variant]
 }
 
@@ -1439,7 +1468,9 @@ type Query {
   adminCatalogSubmissions(status: CatalogSubmissionStatus): [CatalogSubmission!]!
   adminDashboardStats: AdminDashboardStats!
   adminDispatchBoard: AdminDispatchBoard!
+  adminPosDevices: [AdminPosDevice!]!
   adminStoreNetworks(search: String): [Store!]!
+  adminTestFlightRequests: [TestFlightInviteRequest!]!
   capabilityCatalog: [CapabilityCode!]!
   contributors: [ContributorAccount!]!
   effectiveCapabilities(partnerId: Int): [EffectiveCapability!]!
@@ -1591,6 +1622,7 @@ type SahimExternalProduct {
   quantity: String!
   sourceName: String!
   sourceUrl: String!
+  tags: [String!]!
 }
 
 type SahimTemplateMatch {
@@ -1787,6 +1819,14 @@ type Tag {
   id: Int!
   value: String!
   variantId: Int!
+}
+
+type TestFlightInviteRequest {
+  createdAt: DateTime!
+  email: String!
+  id: String!
+  invitedAt: DateTime
+  status: String!
 }
 
 enum ThemePreference {

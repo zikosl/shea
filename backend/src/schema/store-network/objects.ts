@@ -60,6 +60,22 @@ const StoreTerminal = objectType({
   },
 })
 
+const AdminPosDevice = objectType({
+  name: 'AdminPosDevice',
+  definition(t) {
+    t.nonNull.string('id')
+    t.nonNull.string('name')
+    t.nonNull.int('partnerId')
+    t.nonNull.string('partnerName')
+    t.nonNull.string('platform')
+    t.string('storeName')
+    t.field('lastSyncAt', { type: 'DateTime' })
+    t.field('revokedAt', { type: 'DateTime' })
+    t.int('transferTargetPartnerId')
+    t.field('transferAuthorizedAt', { type: 'DateTime' })
+  },
+})
+
 const StoreGatewayCredential = objectType({
   name: 'StoreGatewayCredential',
   definition(t) {
@@ -70,4 +86,4 @@ const StoreGatewayCredential = objectType({
   },
 })
 
-export default { StoreDeploymentMode, StoreStatus, StoreTerminalStatus, Store, StoreTerminal, StoreGatewayCredential }
+export default { StoreDeploymentMode, StoreStatus, StoreTerminalStatus, Store, StoreTerminal, StoreGatewayCredential, AdminPosDevice }

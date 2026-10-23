@@ -29,5 +29,20 @@ export default extendType({
         take: 500,
       }),
     })
+    t.nonNull.list.nonNull.field('adminPosDevices', {
+      type: 'AdminPosDevice',
+      resolve: async (_parent, _args, ctx) => {
+        const devices = await ctx.prisma.device.findMany({
+          where: { platform: 'DESKTOP' },
+          include: { partner: { select: { companyName: true } }, storeTerminal: { include: { store: { select: { name: true } } } } },
+          orderBy: [{ revokedAt: 'asc' }, { updatedAt: 'desc' }],
+        })
+        return devices.map((device) => ({
+          ...device,
+          partnerName: device.partner.companyName,
+          storeName: device.storeTerminal?.store.name ?? null,
+        }))
+      },
+    })
   },
 })

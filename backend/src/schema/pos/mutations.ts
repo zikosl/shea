@@ -322,12 +322,15 @@ const Mutation = extendType({
       type: 'CashSession',
       args: {
         id: nonNull(stringArg()),
-        countedCash: nonNull(floatArg()),
+        countedCash: floatArg(),
         note: stringArg(),
       },
       resolve: async (_parent, args, ctx: Context) => {
         const partnerId = getUserId(ctx)
         await assertPartner(ctx, partnerId)
+        if (args.countedCash == null && args.note !== 'SYSTEM_AUTO_CLOSE_NO_PHYSICAL_COUNT') {
+          throw new GraphQLError('CASH_COUNT_REQUIRED')
+        }
 
         const session = await ctx.prisma.cashSession.findFirst({
           where: { id: args.id, partnerId, status: 'OPEN' },
@@ -339,8 +342,8 @@ const Mutation = extendType({
           data: {
             status: 'CLOSED',
             closedById: partnerId,
-            countedCash: args.countedCash,
-            difference: args.countedCash - session.expectedCash,
+            countedCash: args.countedCash ?? null,
+            difference: args.countedCash == null ? null : args.countedCash - session.expectedCash,
             note: args.note ?? session.note,
             closedAt: new Date(),
           },
