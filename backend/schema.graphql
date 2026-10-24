@@ -147,6 +147,38 @@ type AdminDispatchOrder {
   type: DeliveryType!
 }
 
+type AdminPartnerCatalogTemplate {
+  id: Int!
+  image: String
+  name: String!
+  name_ar: String
+  variants: [AdminPartnerCatalogVariant!]!
+}
+
+type AdminPartnerCatalogTemplateResult {
+  productTemplates: [AdminPartnerCatalogTemplate!]!
+  totalProductTemplates: Int!
+}
+
+type AdminPartnerCatalogVariant {
+  alreadyAdded: Boolean!
+  barcode: String
+  id: Int!
+  image: String
+  name: String
+  name_ar: String
+  previouslyRemoved: Boolean!
+  sku: String
+}
+
+input AdminPartnerProductUpdateInput {
+  available: Boolean
+  id: Int!
+  onlineVisible: Boolean
+  price: Float
+  priceOnRequest: Boolean
+}
+
 type AdminPosDevice {
   id: String!
   lastSyncAt: DateTime
@@ -674,9 +706,12 @@ enum LogStatus {
 
 type Mutation {
   addPartnerNiche(niches: [Int!]!): [PartnerNiche]!
+  adminAddPartnerProducts(data: [InputProductVariant!]!, partnerId: Int!): Int!
   adminAssignDelivery(deliveryId: Int!, driverId: Int!, force: Boolean = false, reason: String): Delivery
   adminOfferDelivery(deliveryId: Int!, driverId: Int!): OrderDispatch
+  adminRemovePartnerProducts(ids: [Int!]!, partnerId: Int!): Int!
   adminUnassignDelivery(deliveryId: Int!, reason: String!): Delivery
+  adminUpdatePartnerProducts(partnerId: Int!, updates: [AdminPartnerProductUpdateInput!]!): Int!
   approveCatalogProposal(adminNote: String, id: String!): CatalogProposal
   approveProductTemplateRequest(adminNote: String, id: Int!): ProductTemplateRequest
   authorizePosDeviceTransfer(deviceId: String!, targetPartnerId: Int!): AdminPosDevice!
@@ -1468,6 +1503,8 @@ type Query {
   adminCatalogSubmissions(status: CatalogSubmissionStatus): [CatalogSubmission!]!
   adminDashboardStats: AdminDashboardStats!
   adminDispatchBoard: AdminDispatchBoard!
+  adminPartnerCatalogProducts(limit: Int!, page: Int!, partnerId: Int!, search: String): ProductViewResult
+  adminPartnerCatalogTemplates(limit: Int!, page: Int!, partnerId: Int!, search: String): AdminPartnerCatalogTemplateResult
   adminPosDevices: [AdminPosDevice!]!
   adminStoreNetworks(search: String): [Store!]!
   adminTestFlightRequests: [TestFlightInviteRequest!]!

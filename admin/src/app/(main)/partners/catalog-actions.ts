@@ -19,14 +19,13 @@ const PARTNER_PRODUCTS = gql`
 `;
 
 const SEARCH_CATALOG = gql`
-  query PartnerCatalogTemplateSearch($search: String!, $page: Int!, $limit: Int!) {
-    findManyProductTemplates(search: $search, page: $page, limit: $limit) {
+  query PartnerCatalogTemplateSearch($partnerId: Int!, $search: String, $page: Int!, $limit: Int!) {
+    adminPartnerCatalogTemplates(partnerId: $partnerId, search: $search, page: $page, limit: $limit) {
       totalProductTemplates
       productTemplates {
-        id name name_ar images { id url }
+        id name name_ar image
         variants {
-          id name name_ar sku barcode
-          products { id partnerId isActive }
+          id name name_ar sku barcode image alreadyAdded previouslyRemoved
         }
       }
     }
@@ -73,14 +72,16 @@ export type CatalogTemplate = {
   id: number;
   name: string;
   name_ar?: string | null;
-  images: Array<{ id: number; url: string }>;
+  image?: string | null;
   variants: Array<{
     id: number;
     name?: string | null;
     name_ar?: string | null;
     sku?: string | null;
     barcode?: string | null;
-    products: Array<{ id: number; partnerId: number; isActive: boolean }>;
+    image?: string | null;
+    alreadyAdded: boolean;
+    previouslyRemoved: boolean;
   }>;
 };
 
@@ -96,15 +97,13 @@ export async function getPartnerCatalog(partnerId: number, search: string, page:
   return result.adminPartnerCatalogProducts;
 }
 
-export async function searchPartnerCatalogTemplates(search: string, partnerId: number) {
+export async function searchPartnerCatalogTemplates(search: string, partnerId: number, page = 1, limit = 20) {
   validPartnerId(partnerId);
+  if (!Number.isSafeInteger(page) || page < 1 || !Number.isSafeInteger(limit) || limit < 1 || limit > 50) throw new Error("Invalid catalog page");
   const result = await requestServerGraphQL<{
-    findManyProductTemplates: { productTemplates: CatalogTemplate[]; totalProductTemplates: number };
-  }>(SEARCH_CATALOG, { search: search.trim(), page: 1, limit: 20 });
-  return result.findManyProductTemplates.productTemplates.map((template) => ({
-    ...template,
-    variants: template.variants.filter((variant) => !variant.products.some((product) => product.partnerId === partnerId && product.isActive)),
-  })).filter((template) => template.variants.length > 0);
+    adminPartnerCatalogTemplates: { productTemplates: CatalogTemplate[]; totalProductTemplates: number };
+  }>(SEARCH_CATALOG, { partnerId, search: search.trim() || undefined, page, limit });
+  return result.adminPartnerCatalogTemplates;
 }
 
 export async function addPartnerCatalogProducts(partnerId: number, items: Array<{ variantId: number; price: number }>) {

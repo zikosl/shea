@@ -35,6 +35,8 @@ export default function PartnerCatalog({ partnerId }: { partnerId: number }) {
   const [removeOpen, setRemoveOpen] = useState(false);
   const [bulkPrice, setBulkPrice] = useState('');
   const [templateSearch, setTemplateSearch] = useState('');
+  const [templatePage, setTemplatePage] = useState(1);
+  const [templateTotal, setTemplateTotal] = useState(0);
   const [templates, setTemplates] = useState<CatalogTemplate[]>([]);
   const [picked, setPicked] = useState<Record<number, { template: CatalogTemplate; variantId: number; price: string }>>({});
   const [templateLoading, setTemplateLoading] = useState(false);
@@ -67,22 +69,23 @@ export default function PartnerCatalog({ partnerId }: { partnerId: number }) {
   }, [searchInput]);
 
   useEffect(() => {
-    if (!addOpen || templateSearch.trim().length < 2) {
-      return;
-    }
+    if (!addOpen) return;
     let active = true;
     const timer = window.setTimeout(async () => {
       try {
-        const result = await searchPartnerCatalogTemplates(templateSearch, partnerId);
-        if (active) setTemplates(result);
+        const result = await searchPartnerCatalogTemplates(templateSearch, partnerId, templatePage, 20);
+        if (active) {
+          setTemplates(result.productTemplates);
+          setTemplateTotal(result.totalProductTemplates);
+        }
       } catch (error) {
         if (active) toast.error(error instanceof Error ? error.message : 'Catalog search failed.');
       } finally {
         if (active) setTemplateLoading(false);
       }
-    }, 250);
+    }, 180);
     return () => { active = false; window.clearTimeout(timer); };
-  }, [addOpen, partnerId, templateSearch]);
+  }, [addOpen, partnerId, templatePage, templateSearch]);
 
   const pageIds = useMemo(() => rows.map((row) => row.id), [rows]);
   const allOnPageSelected = pageIds.length > 0 && pageIds.every((id) => selected.includes(id));
@@ -177,7 +180,7 @@ export default function PartnerCatalog({ partnerId }: { partnerId: number }) {
           <h2 className="text-xl font-semibold">Partner catalog</h2>
           <p className="text-sm text-muted-foreground">Manage this partner’s listings and selling prices. Changes do not affect the shared catalog.</p>
         </div>
-        <Button onClick={() => setAddOpen(true)}><Plus /> Add products</Button>
+        <Button onClick={() => { setAddOpen(true); setTemplateLoading(true); setTemplatePage(1); }}><Plus /> Add products</Button>
       </div>
 
       <div className="flex flex-col gap-3 rounded-xl border bg-card p-3 sm:flex-row sm:items-center">
@@ -232,29 +235,33 @@ export default function PartnerCatalog({ partnerId }: { partnerId: number }) {
         <div className="flex gap-2"><Button size="icon" variant="outline" aria-label="Previous page" disabled={page <= 1 || loading} onClick={() => setPage((value) => value - 1)}><ChevronLeft /></Button><Button size="icon" variant="outline" aria-label="Next page" disabled={page >= pageCount || loading} onClick={() => setPage((value) => value + 1)}><ChevronRight /></Button></div>
       </div>
 
-      <Dialog open={addOpen} onOpenChange={(open) => { setAddOpen(open); if (!open) { setPicked({}); setTemplateSearch(''); } }}>
+      <Dialog open={addOpen} onOpenChange={(open) => { setAddOpen(open); if (open) setTemplateLoading(true); if (!open) { setPicked({}); setTemplateSearch(''); setTemplatePage(1); } }}>
         <DialogContent className="max-h-[88vh] max-w-3xl overflow-hidden">
           <DialogHeader><DialogTitle>Add products to partner</DialogTitle><DialogDescription>Search the shared catalog, choose variants, then set the partner’s selling price.</DialogDescription></DialogHeader>
-          <div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input autoFocus value={templateSearch} onChange={(event) => { const value = event.target.value; setTemplateSearch(value); setTemplateLoading(value.trim().length >= 2); if (value.trim().length < 2) setTemplates([]); }} placeholder="Search product templates" className="pl-9" /></div>
+          <div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input autoFocus value={templateSearch} onChange={(event) => { setTemplateSearch(event.target.value); setTemplatePage(1); setTemplateLoading(true); }} placeholder="Search all products" className="pl-9" /></div>
+          <p className="text-xs text-muted-foreground">Browse the full shared catalog. Variants already listed for this partner are marked and cannot be added twice.</p>
           <div className="max-h-[48vh] space-y-3 overflow-y-auto pr-1">
             {templateLoading && <p className="py-6 text-center text-sm text-muted-foreground"><Loader2 className="mr-2 inline h-4 w-4 animate-spin" />Searching catalog…</p>}
-            {!templateLoading && templateSearch.trim().length < 2 && <p className="py-6 text-center text-sm text-muted-foreground">Enter at least 2 characters to search.</p>}
-            {!templateLoading && templateSearch.trim().length >= 2 && templates.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">No unlisted variants match that search.</p>}
-            {templates.map((template) => <div key={template.id} className="rounded-xl border p-3">
-              <p className="mb-2 font-medium">{template.name}</p>
+            {!templateLoading && templates.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">No products match this search.</p>}
+            {!templateLoading && templates.map((template) => <div key={template.id} className="rounded-xl border p-3">
+              <div className="mb-2 flex items-center gap-2"><div className="h-9 w-9 shrink-0 rounded-md bg-muted bg-contain bg-center bg-no-repeat" style={template.image ? { backgroundImage: `url("${template.image.replaceAll('"', '%22')}")` } : undefined} /><p className="font-medium">{template.name}</p></div>
               <div className="divide-y">
                 {template.variants.map((variant) => {
                   const checked = Boolean(picked[variant.id]);
+                  const alreadyAdded = variant.alreadyAdded;
                   const label = [variant.name, variant.name_ar].filter(Boolean).join(' · ') || 'Standard';
                   return <div key={variant.id} className="flex flex-wrap items-center gap-3 py-2">
-                    <Checkbox checked={checked} onCheckedChange={(value) => toggleVariant(template, variant.id, value === true)} aria-label={`Select ${template.name} ${label}`} />
+                    <div className="h-10 w-10 shrink-0 rounded-md bg-muted bg-contain bg-center bg-no-repeat" style={variant.image ? { backgroundImage: `url("${variant.image.replaceAll('"', '%22')}")` } : undefined} />
+                    <Checkbox checked={checked} disabled={alreadyAdded} onCheckedChange={(value) => toggleVariant(template, variant.id, value === true)} aria-label={`Select ${template.name} ${label}`} />
                     <div className="min-w-40 flex-1"><p className="text-sm">{label}</p><p className="text-xs text-muted-foreground">{variant.sku || variant.barcode || `Variant #${variant.id}`}</p></div>
+                    {alreadyAdded ? <Badge variant="secondary">Already added</Badge> : variant.previouslyRemoved ? <Badge variant="outline">Removed · can restore</Badge> : null}
                     {checked && <Input aria-label={`Price for ${template.name} ${label}`} type="number" min="0" step="0.01" value={picked[variant.id].price} onChange={(event) => setPicked((current) => ({ ...current, [variant.id]: { ...current[variant.id], price: event.target.value } }))} placeholder="Selling price" className="w-36" />}
                   </div>;
                 })}
               </div>
             </div>)}
           </div>
+          <div className="flex items-center justify-between text-xs text-muted-foreground"><span>{templateTotal} catalog products</span><div className="flex items-center gap-2"><Button size="sm" variant="outline" disabled={templatePage <= 1 || templateLoading} onClick={() => { setTemplatePage((value) => value - 1); setTemplateLoading(true); }}>Previous</Button><span>{templatePage} / {Math.max(1, Math.ceil(templateTotal / 20))}</span><Button size="sm" variant="outline" disabled={templatePage >= Math.ceil(templateTotal / 20) || templateLoading} onClick={() => { setTemplatePage((value) => value + 1); setTemplateLoading(true); }}>Next</Button></div></div>
           <DialogFooter className="flex-row items-center justify-between sm:justify-between"><span className="self-center text-sm text-muted-foreground">{Object.keys(picked).length} variants selected</span><Button onClick={addPicked} disabled={busy || Object.keys(picked).length === 0}>{busy ? <Loader2 className="animate-spin" /> : <Plus />} Add selected</Button></DialogFooter>
         </DialogContent>
       </Dialog>

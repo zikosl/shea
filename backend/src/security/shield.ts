@@ -65,6 +65,7 @@ export const permissions = shield(
       previewCheckout: isClient,
       findOneProductPartner: allow,
       adminPartnerCatalogProducts: isAdmin,
+      adminPartnerCatalogTemplates: isAdmin,
       adminDashboardStats: isAdmin,
       adminDispatchBoard: isAdmin,
       adminCatalogSubmissions: isAdmin,

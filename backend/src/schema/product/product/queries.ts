@@ -1,9 +1,42 @@
-import { nonNull, extendType, stringArg, intArg, booleanArg, arg } from "nexus"
+import { nonNull, extendType, stringArg, intArg, booleanArg, arg, objectType } from "nexus"
 import { CapabilityCode, Prisma } from "@prisma/client"
 import { checkUser, getOptionalUserId } from "../../../utils"
 import { Context } from "../../../context"
 import { partnerUserIdsWithCapability } from '../../../modules/capabilities/service'
 import { catalogSearchTerms, previewSearchWhere, productSearchWhere, templateSearchWhere } from '../../../modules/catalog/search'
+
+const AdminPartnerCatalogVariant = objectType({
+    name: 'AdminPartnerCatalogVariant',
+    definition(t) {
+        t.nonNull.int('id')
+        t.string('name')
+        t.string('name_ar')
+        t.string('sku')
+        t.string('barcode')
+        t.string('image')
+        t.nonNull.boolean('alreadyAdded')
+        t.nonNull.boolean('previouslyRemoved')
+    },
+})
+
+const AdminPartnerCatalogTemplate = objectType({
+    name: 'AdminPartnerCatalogTemplate',
+    definition(t) {
+        t.nonNull.int('id')
+        t.nonNull.string('name')
+        t.string('name_ar')
+        t.string('image')
+        t.nonNull.list.nonNull.field('variants', { type: AdminPartnerCatalogVariant })
+    },
+})
+
+const AdminPartnerCatalogTemplateResult = objectType({
+    name: 'AdminPartnerCatalogTemplateResult',
+    definition(t) {
+        t.nonNull.list.nonNull.field('productTemplates', { type: AdminPartnerCatalogTemplate })
+        t.nonNull.int('totalProductTemplates')
+    },
+})
 
 async function clientVisiblePartnerIds(ctx: Context) {
     const userId = getOptionalUserId(ctx)
@@ -342,6 +375,66 @@ export const ProductQuery = extendType({
 export const ProductTemplateQuery = extendType({
     type: 'Query',
     definition(t) {
+        t.field('adminPartnerCatalogTemplates', {
+            type: AdminPartnerCatalogTemplateResult,
+            args: {
+                partnerId: nonNull(intArg()),
+                search: stringArg(),
+                page: nonNull(intArg()),
+                limit: nonNull(intArg()),
+            },
+            resolve: async (_parent, { partnerId, search, page, limit }, ctx: Context) => {
+                const partner = await ctx.prisma.partner.findUnique({ where: { userId: partnerId }, select: { userId: true } })
+                if (!partner) return { productTemplates: [], totalProductTemplates: 0 }
+                const terms = catalogSearchTerms(search)
+                const where: Prisma.ProductTemplateViewWhereInput = terms.length ? templateSearchWhere(terms) : {}
+                const safeLimit = Math.min(50, Math.max(1, limit))
+                const safePage = Math.max(1, page)
+                const [totalProductTemplates, templates] = await Promise.all([
+                    ctx.prisma.productTemplateView.count({ where }),
+                    ctx.prisma.productTemplateView.findMany({ where, orderBy: { id: 'asc' }, skip: (safePage - 1) * safeLimit, take: safeLimit }),
+                ])
+                const templateIds = templates.map((template) => template.id)
+                const variants = templateIds.length ? await ctx.prisma.variant.findMany({
+                    where: { productId: { in: templateIds } },
+                    select: { id: true, productId: true, name: true, name_ar: true, sku: true, barcode: true },
+                    orderBy: { id: 'asc' },
+                }) : []
+                const variantIds = variants.map((variant) => variant.id)
+                const [partnerProducts, images] = await Promise.all([
+                    variantIds.length ? ctx.prisma.product.findMany({ where: { partnerId, variantId: { in: variantIds } }, select: { variantId: true, isActive: true } }) : [],
+                    templateIds.length ? ctx.prisma.productImage.findMany({ where: { OR: [{ product_template_id: { in: templateIds } }, { variantId: { in: variantIds } }] }, orderBy: { id: 'asc' }, select: { url: true, product_template_id: true, variantId: true } }) : [],
+                ])
+                const partnerProductsByVariant = new Map(partnerProducts.map((product) => [product.variantId, product]))
+                const templateImages = new Map<number, string>()
+                const variantImages = new Map<number, string>()
+                for (const image of images) {
+                    if (image.product_template_id && !templateImages.has(image.product_template_id)) templateImages.set(image.product_template_id, image.url)
+                    if (image.variantId && !variantImages.has(image.variantId)) variantImages.set(image.variantId, image.url)
+                }
+                const variantsByTemplate = new Map<number, typeof variants>()
+                for (const variant of variants) variantsByTemplate.set(variant.productId, [...(variantsByTemplate.get(variant.productId) ?? []), variant])
+                return {
+                    totalProductTemplates,
+                    productTemplates: templates.map((template) => ({
+                        id: template.id,
+                        name: template.name,
+                        name_ar: template.name_ar,
+                        image: templateImages.get(template.id) ?? null,
+                        variants: (variantsByTemplate.get(template.id) ?? []).map((variant) => {
+                            const existing = partnerProductsByVariant.get(variant.id)
+                            return {
+                                ...variant,
+                                image: variantImages.get(variant.id) ?? templateImages.get(template.id) ?? null,
+                                alreadyAdded: existing?.isActive ?? false,
+                                previouslyRemoved: existing != null && !existing.isActive,
+                            }
+                        }),
+                    })),
+                }
+            },
+        })
+
         t.field('findOneProductTemplate', {
             type: 'ProductTemplate',
             args: {
