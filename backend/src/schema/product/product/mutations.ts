@@ -37,6 +37,17 @@ const BulkProductAvailabilityResult = objectType({
     },
 })
 
+const AdminPartnerProductUpdateInput = inputObjectType({
+    name: 'AdminPartnerProductUpdateInput',
+    definition(t) {
+        t.nonNull.int('id')
+        t.float('price')
+        t.boolean('available')
+        t.boolean('onlineVisible')
+        t.boolean('priceOnRequest')
+    },
+})
+
 const ProductMutation = extendType({
     type: 'Mutation',
     definition(t) {
@@ -155,6 +166,105 @@ const ProductMutation = extendType({
                 })
                 await publishPartnerCatalog(ctx, userId)
                 return deletedProduct
+            },
+        })
+
+        t.nonNull.int('adminUpdatePartnerProducts', {
+            args: {
+                partnerId: nonNull(intArg()),
+                updates: nonNull(list(nonNull('AdminPartnerProductUpdateInput'))),
+            },
+            resolve: async (_parent, { partnerId, updates }, ctx: Context) => {
+                const partner = await ctx.prisma.partner.findUnique({ where: { userId: partnerId }, select: { userId: true } })
+                if (!partner) throw new GraphQLError('PARTNER_NOT_FOUND')
+                const uniqueUpdates = [...new Map(updates.map((item: any) => [item.id, item])).values()]
+                if (!uniqueUpdates.length || uniqueUpdates.length > 500) throw new GraphQLError('INVALID_PARTNER_PRODUCT_UPDATES')
+                for (const update of uniqueUpdates) {
+                    if (update.price != null && (!Number.isFinite(update.price) || update.price < 0)) throw new GraphQLError('INVALID_PRODUCT_PRICE')
+                }
+                return ctx.prisma.$transaction(async (tx) => {
+                    const ids = uniqueUpdates.map((item: any) => item.id)
+                    const existing = await tx.product.findMany({ where: { id: { in: ids }, partnerId }, select: { id: true, price: true, available: true, onlineVisible: true, priceOnRequest: true } })
+                    if (existing.length !== ids.length) throw new GraphQLError('PARTNER_PRODUCTS_NOT_FOUND')
+                    for (const update of uniqueUpdates) {
+                        const before = existing.find((item) => item.id === update.id)!
+                        const data: any = {}
+                        for (const field of ['price', 'available', 'onlineVisible', 'priceOnRequest']) {
+                            if (update[field] !== undefined && update[field] !== null) data[field] = update[field]
+                        }
+                        if (!Object.keys(data).length) continue
+                        await tx.product.update({ where: { id: update.id }, data })
+                        await tx.auditLog.create({ data: { actorId: getUserId(ctx), partnerId, action: 'PARTNER_CATALOG_PRODUCT_UPDATED', entity: 'Product', entityId: String(update.id), before, after: { ...before, ...data } } })
+                    }
+                    return uniqueUpdates.length
+                }).then(async (count) => {
+                    await publishPartnerCatalog(ctx, partnerId)
+                    return count
+                })
+            },
+        })
+
+        t.nonNull.int('adminAddPartnerProducts', {
+            args: {
+                partnerId: nonNull(intArg()),
+                data: nonNull(list(nonNull('InputProductVariant'))),
+            },
+            resolve: async (_parent, { partnerId, data }, ctx: Context) => {
+                if (!data.length || data.length > 200) throw new GraphQLError('INVALID_PARTNER_PRODUCT_BATCH')
+                const partner = await ctx.prisma.partner.findUnique({ where: { userId: partnerId }, select: { userId: true } })
+                if (!partner) throw new GraphQLError('PARTNER_NOT_FOUND')
+                const variantIds = [...new Set(data.map((item: any) => item.variantId))]
+                if (variantIds.length !== data.length) throw new GraphQLError('DUPLICATE_VARIANT_IN_BATCH')
+                const variants = await ctx.prisma.variant.findMany({ where: { id: { in: variantIds } }, select: { id: true } })
+                if (variants.length !== variantIds.length) throw new GraphQLError('VARIANT_NOT_FOUND')
+                for (const item of data) {
+                    if (!Number.isFinite(item.price) || item.price < 0) throw new GraphQLError('INVALID_PRODUCT_PRICE')
+                }
+                return ctx.prisma.$transaction(async (tx) => {
+                    const existing = await tx.product.findMany({ where: { partnerId, variantId: { in: variantIds } }, select: { id: true, variantId: true, isActive: true } })
+                    const existingByVariant = new Map(existing.map((item) => [item.variantId, item]))
+                    const toCreate = data.filter((item: any) => !existingByVariant.has(item.variantId))
+                    const toRestore = data.filter((item: any) => existingByVariant.get(item.variantId)?.isActive === false)
+                    for (const item of toRestore) {
+                        const existingProduct = existingByVariant.get(item.variantId)!
+                        await tx.product.update({ where: { id: existingProduct.id }, data: { price: item.price, available: true, onlineVisible: true, isActive: true } })
+                    }
+                    const created = toCreate.length ? await tx.product.createMany({ data: toCreate.map((item: any) => ({
+                        partnerId,
+                        variantId: item.variantId,
+                        price: item.price,
+                        available: item.available ?? true,
+                        stock: 0,
+                        trackInventory: true,
+                        onlineVisible: item.onlineVisible ?? true,
+                        isVisibleInPos: item.isVisibleInPos ?? true,
+                        priceOnRequest: item.priceOnRequest ?? false,
+                        isActive: item.isActive ?? true,
+                    })) , skipDuplicates: true }) : { count: 0 }
+                    const changedCount = created.count + toRestore.length
+                    if (!changedCount) return 0
+                    await tx.auditLog.create({ data: { actorId: getUserId(ctx), partnerId, action: 'PARTNER_CATALOG_PRODUCTS_ADDED', entity: 'Partner', entityId: String(partnerId), metadata: { variantIds: [...toCreate.map((item: any) => item.variantId), ...toRestore.map((item: any) => item.variantId)], count: changedCount, restored: toRestore.length } } })
+                    return changedCount
+                }).then(async (count) => {
+                    if (count) await publishPartnerCatalog(ctx, partnerId)
+                    return count
+                })
+            },
+        })
+
+        t.nonNull.int('adminRemovePartnerProducts', {
+            args: { partnerId: nonNull(intArg()), ids: nonNull(list(nonNull(intArg()))) },
+            resolve: async (_parent, { partnerId, ids }, ctx: Context) => {
+                const uniqueIds = [...new Set<number>(ids)]
+                if (!uniqueIds.length || uniqueIds.length > 500) throw new GraphQLError('INVALID_PARTNER_PRODUCT_IDS')
+                const products = await ctx.prisma.product.findMany({ where: { id: { in: uniqueIds }, partnerId }, select: { id: true, isActive: true, available: true, onlineVisible: true } })
+                if (products.length !== uniqueIds.length) throw new GraphQLError('PARTNER_PRODUCTS_NOT_FOUND')
+                await ctx.prisma.$transaction(async (tx) => {
+                    await tx.product.updateMany({ where: { id: { in: uniqueIds }, partnerId }, data: { isActive: false, available: false, onlineVisible: false } })
+                    await tx.auditLog.create({ data: { actorId: getUserId(ctx), partnerId, action: 'PARTNER_CATALOG_PRODUCTS_REMOVED', entity: 'Partner', entityId: String(partnerId), before: products, metadata: { productIds: uniqueIds } } })
+                })
+                await publishPartnerCatalog(ctx, partnerId)
+                return uniqueIds.length
             },
         })
     },
@@ -335,6 +445,7 @@ const InputProductVariant = inputObjectType({
 })
 export default {
     InputProductVariant,
+    AdminPartnerProductUpdateInput,
     BulkProductAvailabilityResult,
     ProductMutation,
     ProductTemplateMutation

@@ -354,6 +354,27 @@ export const ProductTemplateQuery = extendType({
             },
         })
 
+        t.field('adminPartnerCatalogProducts', {
+            type: 'ProductViewResult',
+            args: {
+                partnerId: nonNull(intArg()),
+                search: stringArg(),
+                page: nonNull(intArg()),
+                limit: nonNull(intArg()),
+            },
+            resolve: async (_parent, { partnerId, search, page, limit }, ctx: Context) => {
+                const partner = await ctx.prisma.partner.findUnique({ where: { userId: partnerId }, select: { userId: true } })
+                if (!partner) return { products: [], totalProducts: 0 }
+                const terms = catalogSearchTerms(search)
+                const where: Prisma.ProductViewWhereInput = { partnerId, isActive: true, ...(terms.length ? productSearchWhere(terms) : {}) }
+                const [totalProducts, products] = await Promise.all([
+                    ctx.prisma.productView.count({ where }),
+                    ctx.prisma.productView.findMany({ where, orderBy: { id: 'asc' }, skip: Math.max(0, page - 1) * Math.min(100, Math.max(1, limit)), take: Math.min(100, Math.max(1, limit)) }),
+                ])
+                return { products, totalProducts }
+            },
+        })
+
         t.field('findManyProductTemplates', {
             type: 'ProductTemplateResult',
             args: {

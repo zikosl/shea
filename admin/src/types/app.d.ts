@@ -1,5 +1,6 @@
 type Partner = {
     id: string;
+    userId?: string;
     email: string;
     password: string;
     companyName: string;

@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import Form from './form';
+import PartnerProfileTabs from './partner-profile-tabs';
 import { getItemById, getPartnerCapabilities, getPartnerFormNiches } from '../actions';
 import { title_singular } from '../_constant';
 
@@ -26,6 +27,10 @@ export default async function ItemViewPage({
     }
     pageTitle = `Edit Partner`;
     capabilities = await getPartnerCapabilities(itemId);
+  }
+
+  if (item && capabilities) {
+    return <PartnerProfileTabs initialData={item} niches={niches} capabilities={capabilities} pageTitle={pageTitle} />;
   }
 
   return <Form initialData={item} niches={niches} capabilities={capabilities} pageTitle={pageTitle} />;

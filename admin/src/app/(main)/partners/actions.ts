@@ -20,6 +20,7 @@ import {
 
 type PartnerResponse = {
   id: string;
+  userId?: string | number;
   companyName: string;
   clientVisible?: boolean;
   primaryColor?: string | null;
@@ -42,6 +43,7 @@ const mapPartner = (data: PartnerResponse) =>
   data
     ? {
         id: data.id,
+    userId: data.userId == null ? undefined : String(data.userId),
     companyName: data.companyName,
     clientVisible: data.clientVisible ?? true,
     primaryColor: data.primaryColor ?? "#CC6F98",

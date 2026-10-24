@@ -5,6 +5,7 @@ export const FIND_ONE_PARTNER = gql`
   query findOnePartner($id: Int!) {
     findOnePartner(id: $id) {
       id
+      userId
       companyName
       clientVisible
       primaryColor
