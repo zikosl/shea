@@ -238,6 +238,13 @@ const ProductView = objectType({
         t.string('name')
         t.string('name_ar')
         t.string('sku')
+        t.string('barcode', {
+            resolve: async (parent, _args, ctx) => {
+                if (typeof parent.variantId !== 'number') return null
+                const variant = await ctx.prisma.variant.findUnique({ where: { id: parent.variantId }, select: { barcode: true } })
+                return variant?.barcode ?? null
+            },
+        })
         t.string('variantName')
         t.string('variantNameAr', {
             resolve: async (parent, _args, ctx) => {

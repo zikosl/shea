@@ -121,7 +121,7 @@ export const Query = extendType({
                     }),
                     drivers: drivers.map((driver) => {
                         const hasLocation = Number.isFinite(driver.latitude) && Number.isFinite(driver.longitude) && !(driver.latitude === 0 && driver.longitude === 0)
-                        const stale = Boolean(driver.locationUpdatedAt && driver.locationUpdatedAt < new Date(now.getTime() - 5 * 60 * 1000))
+                        const stale = !driver.locationUpdatedAt || driver.locationUpdatedAt < new Date(now.getTime() - 5 * 60 * 1000)
                         const activeDeliveryCount = driver.deliveries.length
                         const state = !driver.online ? 'OFFLINE' : !hasLocation || stale ? 'STALE' : activeDeliveryCount > 0 ? 'IN_DELIVERY' : !driver.isAvailable ? 'UNAVAILABLE' : 'AVAILABLE'
                         return {

@@ -9,7 +9,7 @@ const PARTNER_PRODUCTS = gql`
     adminPartnerCatalogProducts(partnerId: $partnerId, search: $search, page: $page, limit: $limit) {
       totalProducts
       products {
-        id partnerId variantId product_template_id name name_ar variantName variantNameAr
+        id partnerId variantId product_template_id name name_ar variantName variantNameAr barcode
         price priceOnRequest available onlineVisible isActive stock trackInventory
         images { id url }
         category { id name name_ar }
@@ -55,11 +55,17 @@ const REMOVE_PRODUCTS = gql`
     adminRemovePartnerProducts(partnerId: $partnerId, ids: $ids)
   }
 `;
+const SET_VARIANT_BARCODE = gql`
+  mutation SetVariantBarcode($variantId: Int!, $barcode: String!) {
+    setVariantBarcode(variantId: $variantId, barcode: $barcode) { id barcode }
+  }
+`;
 
 export type PartnerCatalogProduct = {
   id: number;
   partnerId: number;
   variantId: number;
+  barcode?: string | null;
   product_template_id: number;
   name: string;
   name_ar?: string | null;
@@ -164,4 +170,18 @@ export async function removePartnerCatalogProducts(partnerId: number, ids: numbe
   const result = await requestServerGraphQL<{ adminRemovePartnerProducts: number }>(REMOVE_PRODUCTS, { partnerId, ids });
   revalidatePath('/partners/[itemId]', 'page');
   return result.adminRemovePartnerProducts;
+}
+
+export async function setPartnerCatalogVariantBarcode(variantId: number, barcode: string) {
+  if (!Number.isSafeInteger(variantId) || variantId < 1) throw new Error("Invalid product variant");
+  const normalized = barcode.trim().replace(/[\s-]/g, "");
+  if (!/^(?:\d{8}|\d{12}|\d{13}|\d{14})$/.test(normalized)) {
+    throw new Error("Enter an 8, 12, 13, or 14 digit barcode.");
+  }
+  const result = await requestServerGraphQL<{ setVariantBarcode: { id: number; barcode: string } }>(SET_VARIANT_BARCODE, {
+    variantId,
+    barcode: normalized,
+  });
+  revalidatePath('/partners/[itemId]/products', 'page');
+  return result.setVariantBarcode;
 }

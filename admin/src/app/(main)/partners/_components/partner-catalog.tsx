@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { Check, ChevronLeft, ChevronRight, Loader2, Plus, Search, Trash2 } from 'lucide-react';
+import { Barcode, Check, ChevronLeft, ChevronRight, Loader2, Plus, Search, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import {
   getPartnerCatalog,
   removePartnerCatalogProducts,
+  setPartnerCatalogVariantBarcode,
   updatePartnerCatalogProducts,
   type PartnerCatalogProduct,
 } from '../catalog-actions';
@@ -31,6 +32,8 @@ export default function PartnerCatalog({ partnerId, partnerRouteId }: { partnerI
   const [loading, setLoading] = useState(true);
   const [removeOpen, setRemoveOpen] = useState(false);
   const [bulkPrice, setBulkPrice] = useState('');
+  const [barcodeRow, setBarcodeRow] = useState<PartnerCatalogProduct | null>(null);
+  const [barcodeDraft, setBarcodeDraft] = useState('');
   const requestVersion = useRef(0);
 
   const refresh = useCallback(async (nextPage = page, nextSearch = search) => {
@@ -92,6 +95,21 @@ export default function PartnerCatalog({ partnerId, partnerRouteId }: { partnerI
     saveUpdates([{ id: row.id, price }], 'Price updated.');
   }
 
+  function saveBarcode() {
+    if (!barcodeRow) return;
+    startTransition(async () => {
+      try {
+        await setPartnerCatalogVariantBarcode(barcodeRow.variantId, barcodeDraft);
+        toast.success('Barcode added to the shared product variant.');
+        setBarcodeRow(null);
+        setBarcodeDraft('');
+        await refresh();
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Could not add this barcode.');
+      }
+    });
+  }
+
   function applyBulkPrice() {
     const price = Number(bulkPrice);
     if (!Number.isFinite(price) || price < 0) return toast.error('Enter a valid non-negative price.');
@@ -149,11 +167,11 @@ export default function PartnerCatalog({ partnerId, partnerRouteId }: { partnerI
       <Table>
         <TableHeader><TableRow>
           <TableHead className="w-10"><Checkbox checked={allOnPageSelected} onCheckedChange={(checked) => togglePage(checked === true)} aria-label="Select all products on this page" /></TableHead>
-          <TableHead>Product</TableHead><TableHead>Category</TableHead><TableHead>Stock</TableHead><TableHead>Price</TableHead><TableHead>Availability</TableHead><TableHead className="text-right">Action</TableHead>
+          <TableHead>Product</TableHead><TableHead>Category</TableHead><TableHead>Barcode</TableHead><TableHead>Stock</TableHead><TableHead>Price</TableHead><TableHead>Availability</TableHead><TableHead className="text-right">Action</TableHead>
         </TableRow></TableHeader>
         <TableBody>
-          {loading ? <TableRow><TableCell colSpan={7} className="h-28 text-center text-muted-foreground"><Loader2 className="mr-2 inline h-4 w-4 animate-spin" />Loading catalog…</TableCell></TableRow>
-            : rows.length === 0 ? <TableRow><TableCell colSpan={7} className="h-28 text-center text-muted-foreground">No products found for this partner.</TableCell></TableRow>
+          {loading ? <TableRow><TableCell colSpan={8} className="h-28 text-center text-muted-foreground"><Loader2 className="mr-2 inline h-4 w-4 animate-spin" />Loading catalog…</TableCell></TableRow>
+            : rows.length === 0 ? <TableRow><TableCell colSpan={8} className="h-28 text-center text-muted-foreground">No products found for this partner.</TableCell></TableRow>
               : rows.map((row) => (
                 <TableRow key={row.id} data-state={selected.includes(row.id) ? 'selected' : undefined}>
                   <TableCell><Checkbox checked={selected.includes(row.id)} onCheckedChange={(checked) => toggleRow(row.id, checked === true)} aria-label={`Select ${row.name} ${row.variantName ?? ''}`} /></TableCell>
@@ -164,6 +182,13 @@ export default function PartnerCatalog({ partnerId, partnerRouteId }: { partnerI
                     <div className="min-w-0"><p className="truncate font-medium">{row.name}</p><p className="truncate text-xs text-muted-foreground">{row.variantName || row.variantNameAr || 'Standard'}</p></div>
                   </div></TableCell>
                   <TableCell>{row.category?.name ?? '—'}</TableCell>
+                  <TableCell>
+                    {row.barcode ? <code className="rounded bg-muted px-2 py-1 text-xs">{row.barcode}</code> : (
+                      <Button size="sm" variant="outline" onClick={() => { setBarcodeRow(row); setBarcodeDraft(''); }} disabled={busy}>
+                        <Barcode /> Add barcode
+                      </Button>
+                    )}
+                  </TableCell>
                   <TableCell>{row.trackInventory ? row.stock : 'Unlimited'}</TableCell>
                   <TableCell><Input aria-label={`Price for ${row.name}`} type="number" min="0" step="0.01" value={draftPrices[row.id] ?? ''} onChange={(event) => setDraftPrices((draft) => ({ ...draft, [row.id]: event.target.value }))} className="w-32" /></TableCell>
                   <TableCell><label className="flex items-center gap-2 text-sm"><Checkbox checked={row.available} onCheckedChange={(checked) => saveUpdates([{ id: row.id, available: checked === true }], 'Availability updated.')} disabled={busy} aria-label={`Set availability for ${row.name}`} /><span>{row.available ? 'Available' : 'Unavailable'}</span></label></TableCell>
@@ -180,6 +205,27 @@ export default function PartnerCatalog({ partnerId, partnerRouteId }: { partnerI
 
       <Dialog open={removeOpen} onOpenChange={setRemoveOpen}>
         <DialogContent><DialogHeader><DialogTitle>Remove selected products?</DialogTitle><DialogDescription>This hides the listings from this partner’s catalog. Sales history and stock records are preserved.</DialogDescription></DialogHeader><DialogFooter><Button variant="outline" onClick={() => setRemoveOpen(false)}>Cancel</Button><Button variant="destructive" onClick={confirmRemove} disabled={busy}>{busy ? <Loader2 className="animate-spin" /> : <Trash2 />} Remove {selected.length}</Button></DialogFooter></DialogContent>
+      </Dialog>
+
+      <Dialog open={Boolean(barcodeRow)} onOpenChange={(open) => { if (!open && !busy) { setBarcodeRow(null); setBarcodeDraft(''); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add product barcode</DialogTitle>
+            <DialogDescription>
+              {barcodeRow ? `${barcodeRow.name} · ${barcodeRow.variantName || barcodeRow.variantNameAr || 'Standard'}. ` : ''}
+              This code is saved to the shared catalog variant and must be a valid GTIN/EAN/UPC not used by another variant.
+            </DialogDescription>
+          </DialogHeader>
+          <label className="space-y-2 text-sm font-medium">
+            Barcode
+            <Input autoFocus inputMode="numeric" value={barcodeDraft} onChange={(event) => setBarcodeDraft(event.target.value)} placeholder="Enter or scan barcode" aria-label="Product barcode" />
+            <span className="block text-xs font-normal text-muted-foreground">8, 12, 13, or 14 digits. The check digit is validated when saved.</span>
+          </label>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBarcodeRow(null)} disabled={busy}>Cancel</Button>
+            <Button onClick={saveBarcode} disabled={busy || !barcodeDraft.trim()}>{busy ? <Loader2 className="animate-spin" /> : <Check />} Save barcode</Button>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
     </section>
   );

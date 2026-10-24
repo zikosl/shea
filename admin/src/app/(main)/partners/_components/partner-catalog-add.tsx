@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Grid2X2, Layers2, Loader2, Plus, Search } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Grid2X2, Layers2, Loader2, Plus, Search, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -24,6 +24,7 @@ export default function PartnerCatalogAdd({ partnerId, partnerRouteId, partnerNa
   const [categoryId, setCategoryId] = useState('all');
   const [brandId, setBrandId] = useState('all');
   const [view, setView] = useState<'grouped' | 'flat'>('grouped');
+  const [hideAdded, setHideAdded] = useState(true);
   const [page, setPage] = useState(1);
   const [templates, setTemplates] = useState<CatalogTemplate[]>([]);
   const [total, setTotal] = useState(0);
@@ -75,7 +76,29 @@ export default function PartnerCatalogAdd({ partnerId, partnerRouteId, partnerNa
   const selectedValues = Object.values(picked);
   const visibleCategories = useMemo(() => filters.categories.filter((item) => nicheId === 'all' || String(item.niche_id) === nicheId), [filters.categories, nicheId]);
   const visibleBrands = useMemo(() => filters.brands.filter((item) => nicheId === 'all' || String(item.niche_id) === nicheId), [filters.brands, nicheId]);
-  const flatVariants = useMemo(() => templates.flatMap((template) => template.variants.map((variant) => ({ template, variant }))), [templates]);
+  const visibleTemplates = useMemo(() => templates.map((template) => ({
+    ...template,
+    variants: hideAdded ? template.variants.filter((variant) => !variant.alreadyAdded) : template.variants,
+  })).filter((template) => template.variants.length > 0), [hideAdded, templates]);
+  const flatVariants = useMemo(() => visibleTemplates.flatMap((template) => template.variants.map((variant) => ({ template, variant }))), [visibleTemplates]);
+  const selectableVariantIds = flatVariants.filter(({ variant }) => !variant.alreadyAdded).map(({ variant }) => variant.id);
+  const selectedOnPage = selectableVariantIds.filter((id) => Boolean(picked[id])).length;
+  const allPageSelected = selectableVariantIds.length > 0 && selectedOnPage === selectableVariantIds.length;
+  const somePageSelected = selectedOnPage > 0 && !allPageSelected;
+
+  function togglePageSelection(checked: boolean) {
+    setPicked((current) => {
+      const next = { ...current };
+      for (const template of visibleTemplates) {
+        for (const variant of template.variants) {
+          if (variant.alreadyAdded) continue;
+          if (checked) next[variant.id] = { template, variantId: variant.id, price: next[variant.id]?.price ?? '' };
+          else delete next[variant.id];
+        }
+      }
+      return next;
+    });
+  }
 
   function updateFilters(update: () => void) { setLoading(true); update(); setPage(1); }
 
@@ -150,15 +173,29 @@ export default function PartnerCatalogAdd({ partnerId, partnerRouteId, partnerNa
           </Select>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3">
-          <div className="flex items-center gap-2"><span className="text-sm text-muted-foreground">View</span><Button size="sm" variant={view === 'grouped' ? 'secondary' : 'ghost'} onClick={() => setView('grouped')}><Layers2 /> Grouped</Button><Button size="sm" variant={view === 'flat' ? 'secondary' : 'ghost'} onClick={() => setView('flat')}><Grid2X2 /> All variants</Button></div>
-          <span className="text-sm text-muted-foreground">{total} products · {selectedValues.length} selected{filtersLoading ? ' · loading filters' : ''}</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="flex min-h-9 cursor-pointer items-center gap-2 rounded-md px-2 text-sm text-muted-foreground hover:bg-muted/60">
+              <Checkbox checked={hideAdded} onCheckedChange={(checked) => setHideAdded(checked === true)} aria-label="Hide variants already added to this partner" />
+              Hide added variants
+            </label>
+            <span className="hidden h-5 border-l sm:block" />
+            <span className="text-sm text-muted-foreground">View</span><Button size="sm" variant={view === 'grouped' ? 'secondary' : 'ghost'} onClick={() => setView('grouped')}><Layers2 /> Grouped</Button><Button size="sm" variant={view === 'flat' ? 'secondary' : 'ghost'} onClick={() => setView('flat')}><Grid2X2 /> All variants</Button>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="flex min-h-9 items-center gap-2 text-sm text-muted-foreground">
+              <Checkbox checked={somePageSelected ? 'indeterminate' : allPageSelected} disabled={loading || selectableVariantIds.length === 0} onCheckedChange={(checked) => togglePageSelection(checked === true)} aria-label="Select all addable variants on this page" />
+              Select page
+            </label>
+            {selectedOnPage > 0 && <Button size="sm" variant="ghost" onClick={() => togglePageSelection(false)}><X /> Clear page</Button>}
+            <span className="text-sm text-muted-foreground">{total} products · {selectedValues.length} selected{filtersLoading ? ' · loading filters' : ''}</span>
+          </div>
         </div>
       </section>
 
       <section className="space-y-3">
         {loading ? <div className="flex min-h-44 items-center justify-center rounded-xl border text-sm text-muted-foreground"><Loader2 className="mr-2 h-4 w-4 animate-spin" />Loading shared catalog…</div>
-          : templates.length === 0 ? <div className="rounded-xl border py-14 text-center text-sm text-muted-foreground">No products match these filters.</div>
-            : view === 'grouped' ? templates.map((template) => {
+          : visibleTemplates.length === 0 ? <div className="rounded-xl border py-14 text-center text-sm text-muted-foreground">{hideAdded ? 'No products to add on this page. Try another filter or show already-added variants.' : 'No products match these filters.'}</div>
+            : view === 'grouped' ? visibleTemplates.map((template) => {
               const isExpanded = expanded[template.id] ?? true;
               const selectableCount = template.variants.filter((item) => !item.alreadyAdded).length;
               return <article key={template.id} className="rounded-xl border bg-card px-4">

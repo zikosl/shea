@@ -61,6 +61,35 @@ const BarcodeCandidateQuery = extendType({
 const BarcodeCandidateMutation = extendType({
   type: 'Mutation',
   definition(t) {
+    t.nonNull.field('setVariantBarcode', {
+      type: 'Variant',
+      args: {
+        variantId: nonNull(intArg()),
+        barcode: nonNull(stringArg()),
+      },
+      resolve: async (_parent, { variantId, barcode }, ctx: Context) => {
+        const code = requireGtin(barcode)
+        const variant = await ctx.prisma.variant.findUnique({ where: { id: variantId }, select: { id: true, barcode: true } })
+        if (!variant) throw new GraphQLError('Variant not found')
+        if (variant.barcode) throw new GraphQLError('This variant already has a barcode')
+
+        try {
+          const result = await ctx.prisma.variant.updateMany({
+            where: { id: variantId, barcode: null },
+            data: { barcode: code, barcodeSource: 'admin-manual', barcodeVerifiedAt: new Date() },
+          })
+          if (!result.count) throw new GraphQLError('This variant already has a barcode')
+        } catch (error) {
+          if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
+            throw new GraphQLError('This barcode is already assigned to another variant')
+          }
+          throw error
+        }
+
+        return ctx.prisma.variant.findUniqueOrThrow({ where: { id: variantId } })
+      },
+    })
+
     t.nonNull.field('submitBarcodeCandidate', {
       type: 'BarcodeCandidate',
       args: {

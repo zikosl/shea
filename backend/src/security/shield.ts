@@ -127,6 +127,7 @@ export const permissions = shield(
       mergeProductTemplates: isAdmin,
       createVariant: isAdmin,
       updateVariant: isAdmin,
+      setVariantBarcode: isAdmin,
       submitBarcodeCandidate: isAdmin,
       createContributor: isAdmin,
       resetContributorAccess: isAdmin,

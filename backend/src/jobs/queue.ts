@@ -42,11 +42,11 @@ new Worker('dispatch-queue', async (job: Job) => {
             select: { driverId: true, status: true },
         })
         const previouslyRejected = new Set(previousDispatches.filter((entry) => entry.status === DispatchStatus.REJECTED).map((entry) => entry.driverId))
-        const freshnessCutoff = Date.now() - 10 * 60 * 1000
+        const freshnessCutoff = Date.now() - 5 * 60 * 1000
         const targetDrivers = drivers
             .filter((driver) => {
                 const validLocation = Number.isFinite(driver.latitude) && Number.isFinite(driver.longitude) && !(driver.latitude === 0 && driver.longitude === 0)
-                const freshEnough = !driver.locationUpdatedAt || driver.locationUpdatedAt.getTime() >= freshnessCutoff
+                const freshEnough = Boolean(driver.locationUpdatedAt && driver.locationUpdatedAt.getTime() >= freshnessCutoff)
                 return validLocation && freshEnough && !previouslyRejected.has(driver.userId)
             })
             .map((driver) => ({

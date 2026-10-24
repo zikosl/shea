@@ -683,6 +683,7 @@ const Mutation = extendType({
                 if (!delivery || delivery.type !== DeliveryType.NORMAL || delivery.status !== DeliveryStatus.READY) throw new GraphQLError('DELIVERY_NOT_READY')
                 if (!driver?.online || !driver.isAvailable) throw new GraphQLError('DRIVER_NOT_AVAILABLE')
                 if ((driver.latitude === 0 && driver.longitude === 0) || !Number.isFinite(driver.latitude) || !Number.isFinite(driver.longitude)) throw new GraphQLError('DRIVER_LOCATION_UNAVAILABLE')
+                if (!driver.locationUpdatedAt || driver.locationUpdatedAt.getTime() < Date.now() - 5 * 60 * 1000) throw new GraphQLError('DRIVER_LOCATION_STALE')
 
                 const dispatch = await ctx.prisma.$transaction(async (tx) => {
                     await tx.orderDispatch.updateMany({
@@ -738,6 +739,7 @@ const Mutation = extendType({
                 if (!delivery || delivery.type !== DeliveryType.NORMAL || ![DeliveryStatus.READY, DeliveryStatus.ASSIGNED].includes(delivery.status)) throw new GraphQLError('DELIVERY_CANNOT_BE_ASSIGNED')
                 if (!driver?.online) throw new GraphQLError('DRIVER_OFFLINE')
                 if (!force && (!driver.isAvailable || driver.deliveries.some((entry) => entry.id !== deliveryId))) throw new GraphQLError('DRIVER_NOT_AVAILABLE')
+                if (!force && (!driver.locationUpdatedAt || driver.locationUpdatedAt.getTime() < Date.now() - 5 * 60 * 1000)) throw new GraphQLError('DRIVER_LOCATION_STALE')
                 if (force && !reason?.trim()) throw new GraphQLError('FORCE_ASSIGNMENT_REASON_REQUIRED')
 
                 const previousDriverId = delivery.driverId
