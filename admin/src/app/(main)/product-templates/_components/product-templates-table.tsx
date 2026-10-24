@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { getTemplateForMerge, mergeProductTemplates, type MergeTemplate } from "../actions";
 import { Item } from "../_constant";
 import { columns } from "./tables/columns";
+import { useProductTemplateSelection } from "./product-template-selection";
 
 type Props = { data: Item[]; totalItems: number };
 type Step = "choose" | "confirm";
@@ -32,7 +33,7 @@ function summary(template: MergeTemplate) {
 
 export default function ProductTemplatesTable({ data, totalItems }: Props) {
   const router = useRouter();
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const { selectedById, setSelected, setManySelected, clearSelection } = useProductTemplateSelection();
   const [mergeOpen, setMergeOpen] = useState(false);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [merging, setMerging] = useState(false);
@@ -40,14 +41,12 @@ export default function ProductTemplatesTable({ data, totalItems }: Props) {
   const [templates, setTemplates] = useState<MergeTemplate[]>([]);
   const [targetId, setTargetId] = useState<number | null>(null);
 
-  const pageKey = data.map((item) => item.id).join(",");
-  useEffect(() => setSelectedIds([]), [pageKey]);
-
-  const selectedItems = useMemo(() => data.filter((item) => selectedIds.includes(item.id)), [data, selectedIds]);
+  const selectedIds = Object.keys(selectedById);
+  const selectedItems = useMemo(() => Object.values(selectedById), [selectedById]);
   const selectedCategoryIds = new Set(selectedItems.map((item) => item.category_id ?? ""));
   const mixedCategories = selectedCategoryIds.size > 1;
-  const selectedOnPage = data.filter((item) => selectedIds.includes(item.id)).length;
-  const allVisibleSelected = data.length > 0 && data.every((item) => selectedIds.includes(item.id));
+  const selectedOnPage = data.filter((item) => selectedById[item.id]).length;
+  const allVisibleSelected = data.length > 0 && selectedOnPage === data.length;
   const mergeTarget = templates.find((template) => template.id === targetId) ?? null;
   const sourceTemplates = templates.filter((template) => template.id !== targetId);
   const combined = templates.reduce((total, template) => {
@@ -59,16 +58,12 @@ export default function ProductTemplatesTable({ data, totalItems }: Props) {
   const nameCounts = variantNames.reduce((counts, name) => counts.set(name, (counts.get(name) ?? 0) + 1), new Map<string, number>());
   const duplicateVariantNames = [...nameCounts.values()].reduce((count, occurrences) => count + Math.max(0, occurrences - 1), 0);
 
-  const toggleRow = (id: string, checked: boolean) => {
-    setSelectedIds((current) => checked
-      ? current.includes(id) ? current : [...current, id]
-      : current.filter((selectedId) => selectedId !== id));
+  const toggleRow = (item: Item, checked: boolean) => {
+    setSelected(item, checked);
   };
 
   const togglePage = (checked: boolean) => {
-    setSelectedIds((current) => checked
-      ? [...new Set([...current, ...data.map((item) => item.id)])]
-      : current.filter((id) => !data.some((item) => item.id === id)));
+    setManySelected(data, checked);
   };
 
   const closeMerge = () => {
@@ -113,7 +108,7 @@ export default function ProductTemplatesTable({ data, totalItems }: Props) {
       return;
     }
     toast.success(`${sourceTemplates.length} template${sourceTemplates.length === 1 ? "" : "s"} merged into ${result.name}.`);
-    setSelectedIds([]);
+    clearSelection();
     setMergeOpen(false);
     router.refresh();
   };
@@ -121,7 +116,7 @@ export default function ProductTemplatesTable({ data, totalItems }: Props) {
   const selectionColumn: ColumnDef<Item> = {
     id: "select",
     header: () => <Checkbox checked={selectedOnPage > 0 && !allVisibleSelected ? "indeterminate" : allVisibleSelected} onCheckedChange={(checked) => togglePage(checked === true)} aria-label="Select all templates on this page" />,
-    cell: ({ row }) => <Checkbox checked={selectedIds.includes(row.original.id)} onCheckedChange={(checked) => toggleRow(row.original.id, checked === true)} aria-label={`Select ${row.original.name}`} />,
+    cell: ({ row }) => <Checkbox checked={Boolean(selectedById[row.original.id])} onCheckedChange={(checked) => toggleRow(row.original, checked === true)} aria-label={`Select ${row.original.name}`} />,
     size: 44,
     minSize: 44,
     maxSize: 44,
@@ -130,9 +125,9 @@ export default function ProductTemplatesTable({ data, totalItems }: Props) {
 
   return <div className="space-y-4">
     {selectedIds.length > 0 && <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3 shadow-sm">
-      <div className="flex items-center gap-2 text-sm"><Badge variant="secondary" className="rounded-full">{selectedIds.length} selected</Badge><span className="text-muted-foreground">Selection applies to this page only.</span></div>
+      <div className="flex items-center gap-2 text-sm"><Badge variant="secondary" className="rounded-full">{selectedIds.length} selected</Badge><span className="text-muted-foreground">Selection stays active across pages.</span></div>
       <div className="flex flex-wrap items-center gap-2">
-        <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedIds([])} className="gap-1.5"><X className="h-4 w-4" /> Clear</Button>
+        <Button type="button" variant="ghost" size="sm" onClick={clearSelection} className="gap-1.5"><X className="h-4 w-4" /> Clear</Button>
         <Button type="button" disabled={selectedItems.length < 2 || mixedCategories} onClick={() => void beginMerge()} className="gap-2"><Combine className="h-4 w-4" /> Merge templates</Button>
       </div>
       {mixedCategories && <p className="basis-full text-xs text-amber-700">Choose templates from one category to merge them.</p>}

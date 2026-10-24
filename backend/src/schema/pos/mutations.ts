@@ -333,9 +333,13 @@ const Mutation = extendType({
         }
 
         const session = await ctx.prisma.cashSession.findFirst({
-          where: { id: args.id, partnerId, status: 'OPEN' },
+          where: { id: args.id, partnerId },
         })
-        if (!session) throw new GraphQLError('OPEN_CASH_SESSION_NOT_FOUND')
+        if (!session) throw new GraphQLError('CASH_SESSION_NOT_FOUND')
+        // A close may have committed remotely even if the POS lost the response.
+        // Return the committed record on retry so its outbox item can be acknowledged.
+        if (session.status === 'CLOSED') return session
+        if (session.status !== 'OPEN') throw new GraphQLError('OPEN_CASH_SESSION_NOT_FOUND')
 
         return ctx.prisma.cashSession.update({
           where: { id: session.id },

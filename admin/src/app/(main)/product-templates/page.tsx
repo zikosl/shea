@@ -12,6 +12,7 @@ import { getCatalogFilterOptions } from "@/lib/catalog-filter-options";
 import { searchParamsCache, serialize } from '@/lib/searchparams';
 import { cn } from '@/lib/utils';
 import { link, title_plural, title_singular } from "./_constant";
+import { ProductTemplateSelectionProvider } from "./_components/product-template-selection";
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
 // See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
@@ -32,6 +33,13 @@ export default async function Page({ searchParams: search }: PageProps) {
   searchParamsCache.parse(searchParams);
   const { niches, categories, productTypes, brands } = await getCatalogFilterOptions();
   const key = serialize({ ...searchParams });
+  const selectionScope = JSON.stringify([
+    searchParams.q ?? "",
+    searchParams.niche_id ?? "",
+    searchParams.category_id ?? "",
+    searchParams.product_type_id ?? "",
+    searchParams.brand_id ?? "",
+  ]);
 
   return (
     <ResourcePage
@@ -47,9 +55,11 @@ export default async function Page({ searchParams: search }: PageProps) {
       }
       filters={<TableAction niches={niches} categories={categories} productTypes={productTypes} brands={brands} />}
     >
-      <Suspense key={key} fallback={<DataTableSkeleton columnCount={5} rowCount={10} />}>
-        <ListingPage />
-      </Suspense>
+      <ProductTemplateSelectionProvider key={selectionScope}>
+        <Suspense key={key} fallback={<DataTableSkeleton columnCount={5} rowCount={10} />}>
+          <ListingPage />
+        </Suspense>
+      </ProductTemplateSelectionProvider>
     </ResourcePage>
   );
 }
