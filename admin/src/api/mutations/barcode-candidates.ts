@@ -1,5 +1,11 @@
 import { gql } from "graphql-request";
 
+export const SET_VARIANT_BARCODE = gql`
+  mutation SetVariantBarcode($variantId: Int!, $barcode: String!) {
+    setVariantBarcode(variantId: $variantId, barcode: $barcode) { id barcode }
+  }
+`;
+
 export const REVIEW_BARCODE_CANDIDATE = gql`
   mutation ReviewBarcodeCandidate($id: String!, $approve: Boolean!) {
     reviewBarcodeCandidate(id: $id, approve: $approve) { id status }

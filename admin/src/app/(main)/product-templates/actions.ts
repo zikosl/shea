@@ -14,7 +14,20 @@ import {
   UPDATE_ITEM_IMAGES,
 } from "./_constant/request";
 import { MERGE_PRODUCT_TEMPLATES } from "@/api/mutations/productTemplate";
+import { SET_VARIANT_BARCODE } from "@/api/mutations/barcode-candidates";
 import { FIND_TEMPLATE_MERGE_DATA, SEARCH_TEMPLATE_MERGE_CANDIDATES } from "@/api/queries/productTemplate";
+import { ADMIN_CATALOG_VARIANTS } from "@/api/queries/variant";
+
+export type CatalogVariantRow = {
+  id: number;
+  name?: string | null;
+  name_ar?: string | null;
+  sku?: string | null;
+  barcode?: string | null;
+  productId: number;
+  image?: string | null;
+  product: { id: number; name?: string | null; name_ar?: string | null; category?: { id: number; name: string; name_ar?: string | null } | null; images?: Array<{ url: string }> };
+};
 
 type ProductTemplateResponse = {
   id: number;
@@ -152,6 +165,41 @@ export async function getSearchItem({
     items: response.findManyProductTemplates.productTemplates.map(mapItem),
     totalItems: response.findManyProductTemplates.totalProductTemplates,
   };
+}
+
+export async function getCatalogVariants({
+  search,
+  page,
+  limit,
+  niche_id,
+  category_id,
+  product_type_id,
+  brand_id,
+}: Omit<SearchParams, "isFull">) {
+  const response = await requestServerGraphQL<{
+    adminCatalogVariants: { variants: CatalogVariantRow[]; totalVariants: number };
+  }>(ADMIN_CATALOG_VARIANTS, {
+    search,
+    page,
+    limit,
+    nicheId: niche_id,
+    categoryId: category_id,
+    productTypeId: product_type_id,
+    brandId: brand_id,
+  });
+  return { items: response.adminCatalogVariants.variants, totalItems: response.adminCatalogVariants.totalVariants };
+}
+
+export async function setCatalogVariantBarcode(productId: number, variantId: number, barcode: string) {
+  if (!Number.isSafeInteger(productId) || productId < 1) throw new Error("Invalid product template");
+  if (!Number.isSafeInteger(variantId) || variantId < 1) throw new Error("Invalid product variant");
+  const normalized = barcode.trim().replace(/[\s-]/g, "");
+  if (!/^(?:\d{8}|\d{12}|\d{13}|\d{14})$/.test(normalized)) {
+    throw new Error("Enter an 8, 12, 13, or 14 digit barcode.");
+  }
+  await requestServerGraphQL(SET_VARIANT_BARCODE, { variantId, barcode: normalized });
+  revalidatePath(`/${link}`);
+  revalidatePath(`/product-templates/${productId}/variants`);
 }
 
 export async function updateItem(id: string, itemData: ProductTemplatePayload) {

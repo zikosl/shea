@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { gql } from "graphql-request";
 import { requestServerGraphQL } from "@/lib/server-request";
+import { SET_VARIANT_BARCODE } from "@/api/mutations/barcode-candidates";
 
 const PARTNER_PRODUCTS = gql`
   query PartnerCatalogProducts($partnerId: Int!, $search: String, $page: Int!, $limit: Int!) {
@@ -53,11 +54,6 @@ const UPDATE_PRODUCTS = gql`
 const REMOVE_PRODUCTS = gql`
   mutation AdminRemovePartnerProducts($partnerId: Int!, $ids: [Int!]!) {
     adminRemovePartnerProducts(partnerId: $partnerId, ids: $ids)
-  }
-`;
-const SET_VARIANT_BARCODE = gql`
-  mutation SetVariantBarcode($variantId: Int!, $barcode: String!) {
-    setVariantBarcode(variantId: $variantId, barcode: $barcode) { id barcode }
   }
 `;
 

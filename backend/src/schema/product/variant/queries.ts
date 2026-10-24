@@ -1,5 +1,7 @@
 import { nonNull, extendType, stringArg, intArg, booleanArg } from "nexus"
 import { Context } from "../../../context"
+import { Prisma } from "@prisma/client"
+import { catalogSearchTerms } from "../../../modules/catalog/search"
 
 export const VariantQuery = extendType({
     type: 'Query',
@@ -53,6 +55,53 @@ export const VariantQuery = extendType({
                 };
             },
         });
+        t.field('adminCatalogVariants', {
+            type: 'VariantResult',
+            args: {
+                search: stringArg(),
+                nicheId: intArg(),
+                categoryId: intArg(),
+                productTypeId: intArg(),
+                brandId: intArg(),
+                page: nonNull(intArg()),
+                limit: nonNull(intArg()),
+            },
+            resolve: async (_parent, { search, nicheId, categoryId, productTypeId, brandId, page, limit }, ctx: Context) => {
+                if (page < 1 || limit < 1 || limit > 100) throw new Error('Invalid catalog page')
+                const terms = catalogSearchTerms(search)
+                const templateFilter: Prisma.ProductTemplateWhereInput = {
+                    ...(nicheId ? { niche_id: nicheId } : {}),
+                    ...(categoryId ? { category_id: categoryId } : {}),
+                    ...(productTypeId ? { product_type_id: productTypeId } : {}),
+                    ...(brandId ? { brand_id: brandId } : {}),
+                }
+                const where: Prisma.VariantWhereInput = {
+                    ...(Object.keys(templateFilter).length ? { product: { is: templateFilter } } : {}),
+                    ...(terms.length ? {
+                        AND: terms.map((term) => ({
+                            OR: [
+                                { name: { contains: term, mode: 'insensitive' } },
+                                { name_ar: { contains: term, mode: 'insensitive' } },
+                                { sku: { contains: term, mode: 'insensitive' } },
+                                { barcode: { contains: term, mode: 'insensitive' } },
+                                { product: { is: { name: { contains: term, mode: 'insensitive' } } } },
+                                { product: { is: { name_ar: { contains: term, mode: 'insensitive' } } } },
+                            ],
+                        })),
+                    } : {}),
+                }
+                const [totalVariants, variants] = await Promise.all([
+                    ctx.prisma.variant.count({ where }),
+                    ctx.prisma.variant.findMany({
+                        where,
+                        orderBy: [{ productId: 'asc' }, { id: 'asc' }],
+                        skip: (page - 1) * limit,
+                        take: limit,
+                    }),
+                ])
+                return { variants, totalVariants }
+            },
+        })
     },
 })
 
