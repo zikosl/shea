@@ -70,10 +70,10 @@ export const VariantQuery = extendType({
                 if (page < 1 || limit < 1 || limit > 100) throw new Error('Invalid catalog page')
                 const terms = catalogSearchTerms(search)
                 const templateFilter: Prisma.ProductTemplateWhereInput = {
-                    ...(nicheId ? { niche_id: nicheId } : {}),
                     ...(categoryId ? { category_id: categoryId } : {}),
                     ...(productTypeId ? { product_type_id: productTypeId } : {}),
                     ...(brandId ? { brand_id: brandId } : {}),
+                    ...(nicheId ? { category: { is: { niche_id: nicheId } } } : {}),
                 }
                 const where: Prisma.VariantWhereInput = {
                     ...(Object.keys(templateFilter).length ? { product: { is: templateFilter } } : {}),
