@@ -137,17 +137,54 @@ export async function searchPartnerCatalogTemplates(
   return result.adminPartnerCatalogTemplates;
 }
 
+export async function searchAllPartnerCatalogTemplates(
+  search: string,
+  partnerId: number,
+  filters: { nicheId?: number; categoryId?: number; brandId?: number } = {},
+) {
+  validPartnerId(partnerId);
+  const pageSize = 50;
+  const fetchPage = async (page: number) => {
+    const result = await requestServerGraphQL<{
+      adminPartnerCatalogTemplates: { productTemplates: CatalogTemplate[]; totalProductTemplates: number };
+    }>(SEARCH_CATALOG, { partnerId, search: search.trim() || undefined, ...filters, page, limit: pageSize });
+    return result.adminPartnerCatalogTemplates;
+  };
+
+  const firstPage = await fetchPage(1);
+  const pageCount = Math.ceil(firstPage.totalProductTemplates / pageSize);
+  if (pageCount > 100) throw new Error('There are too many matches to select at once. Narrow your filters and try again.');
+
+  const templates = [...firstPage.productTemplates];
+  for (let start = 2; start <= pageCount; start += 4) {
+    const pages = Array.from({ length: Math.min(4, pageCount - start + 1) }, (_, index) => start + index);
+    const results = await Promise.all(pages.map(fetchPage));
+    for (const result of results) templates.push(...result.productTemplates);
+  }
+  return templates;
+}
+
 export async function addPartnerCatalogProducts(partnerId: number, items: Array<{ variantId: number; price: number }>) {
   validPartnerId(partnerId);
-  if (!items.length || items.length > 200 || items.some((item) => !Number.isSafeInteger(item.variantId) || !Number.isFinite(item.price) || item.price < 0)) {
+  if (!items.length || items.length > 5_000 || items.some((item) => !Number.isSafeInteger(item.variantId) || !Number.isFinite(item.price) || item.price < 0)) {
     throw new Error("Check the selected products and prices, then try again.");
   }
-  const result = await requestServerGraphQL<{ adminAddPartnerProducts: number }>(ADD_PRODUCTS, {
-    partnerId,
-    data: items.map(({ variantId, price }) => ({ variantId, price, stock: 0, trackInventory: true, available: true, onlineVisible: true, isVisibleInPos: true })),
-  });
+  let added = 0;
+  try {
+    for (let start = 0; start < items.length; start += 200) {
+      const batch = items.slice(start, start + 200);
+      const result = await requestServerGraphQL<{ adminAddPartnerProducts: number }>(ADD_PRODUCTS, {
+        partnerId,
+        data: batch.map(({ variantId, price }) => ({ variantId, price, stock: 0, trackInventory: true, available: true, onlineVisible: true, isVisibleInPos: true })),
+      });
+      added += result.adminAddPartnerProducts;
+    }
+  } catch (error) {
+    if (added > 0) throw new Error(`${added} products were added before the request stopped. Retry to add the remaining selections.`);
+    throw error;
+  }
   revalidatePath('/partners/[itemId]', 'page');
-  return result.adminAddPartnerProducts;
+  return added;
 }
 
 export async function updatePartnerCatalogProducts(partnerId: number, updates: Array<{ id: number; price?: number; available?: boolean; onlineVisible?: boolean }>) {

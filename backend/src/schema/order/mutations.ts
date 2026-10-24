@@ -13,6 +13,36 @@ import { syncLegacyDeliveryTransition, transitionOrderStatus } from '../../modul
 import { createOrderQuotation, respondToOrderQuotation } from '../../modules/orders/quotes'
 // import { DeliveryStatus } from "../../types"
 
+const DELIVERY_STOP_RADIUS_METERS = 200
+const DRIVER_LOCATION_MAX_AGE_MS = 90_000
+
+const assertDriverNearStop = async (prisma: Context['prisma'], userId: number, target: { latitude?: number; longitude?: number } | null | undefined, errorCode: string) => {
+    if (!target || !Number.isFinite(target.latitude) || !Number.isFinite(target.longitude)
+        || Math.abs(target.latitude) > 90 || Math.abs(target.longitude) > 180
+        || (target.latitude === 0 && target.longitude === 0)) {
+        throw new GraphQLError('STOP_COORDINATES_UNAVAILABLE')
+    }
+
+    const driver = await prisma.driver.findUnique({
+        where: { userId },
+        select: { latitude: true, longitude: true, locationUpdatedAt: true },
+    })
+    if (!driver?.locationUpdatedAt || Date.now() - driver.locationUpdatedAt.getTime() > DRIVER_LOCATION_MAX_AGE_MS
+        || !Number.isFinite(driver.latitude) || !Number.isFinite(driver.longitude)
+        || (driver.latitude === 0 && driver.longitude === 0)) {
+        throw new GraphQLError('DRIVER_LOCATION_STALE')
+    }
+
+    const toRad = (value: number) => value * Math.PI / 180
+    const latDelta = toRad(target.latitude - driver.latitude)
+    const lonDelta = toRad(target.longitude - driver.longitude)
+    const haversine = Math.sin(latDelta / 2) ** 2
+        + Math.cos(toRad(driver.latitude)) * Math.cos(toRad(target.latitude))
+        * Math.sin(lonDelta / 2) ** 2
+    const distance = 6_371_000 * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine))
+    if (distance > DELIVERY_STOP_RADIUS_METERS) throw new GraphQLError(errorCode)
+}
+
 const Mutation = extendType({
     type: 'Mutation',
     definition(t) {
@@ -152,6 +182,7 @@ const Mutation = extendType({
                         order: {
                             include: {
                                 driverRequest: true,
+                                address: true,
                                 partner: {
                                     include: {
                                         user: {
@@ -177,6 +208,10 @@ const Mutation = extendType({
                     }
                 })
                 if (order?.order) {
+                    const pickupTarget = order.order.driverRequest
+                        ? { latitude: order.order.driverRequest.pickupLatitude, longitude: order.order.driverRequest.pickupLongitude }
+                        : order.order.partner
+                    await assertDriverNearStop(ctx.prisma, userId, pickupTarget, 'DRIVER_NOT_NEAR_PICKUP')
                     if (order.delivery.status === DeliveryStatus.ASSIGNED) {
                         await ctx.prisma.$transaction(async (tx) => {
                             await tx.delivery.update({
@@ -236,12 +271,17 @@ const Mutation = extendType({
                         order: {
                             include: {
                                 driverRequest: true,
+                                address: true,
                                 partner: { include: { user: { include: { pushTokens: { orderBy: { createdAt: 'desc' }, take: 1 } } } } },
                             },
                         }
                     }
                 })
                 if (order?.order) {
+                    const destinationTarget = order.order.driverRequest
+                        ? { latitude: order.order.driverRequest.destinationLatitude, longitude: order.order.driverRequest.destinationLongitude }
+                        : order.order.address
+                    await assertDriverNearStop(ctx.prisma, userId, destinationTarget, 'DRIVER_NOT_NEAR_DESTINATION')
                     if (order.delivery.status === DeliveryStatus.PICKED) {
                         await ctx.prisma.$transaction(async (tx) => {
                             await tx.delivery.update({

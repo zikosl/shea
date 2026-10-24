@@ -3,13 +3,13 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Grid2X2, Layers2, Loader2, Plus, Search, X } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Grid2X2, Layers2, Loader2, ListChecks, Plus, Search, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { addPartnerCatalogProducts, getPartnerCatalogFilters, searchPartnerCatalogTemplates, type CatalogTemplate, type PartnerCatalogFilters } from '../catalog-actions';
+import { addPartnerCatalogProducts, getPartnerCatalogFilters, searchAllPartnerCatalogTemplates, searchPartnerCatalogTemplates, type CatalogTemplate, type PartnerCatalogFilters } from '../catalog-actions';
 
 const PAGE_SIZE = 20;
 type PickedVariant = { template: CatalogTemplate; variantId: number; price: string };
@@ -30,6 +30,7 @@ export default function PartnerCatalogAdd({ partnerId, partnerRouteId, partnerNa
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [picked, setPicked] = useState<Record<number, PickedVariant>>({});
+  const [selectingAll, setSelectingAll] = useState(false);
   const [step, setStep] = useState<'browse' | 'review'>('browse');
   const [bulkPrice, setBulkPrice] = useState('');
   const [busy, startTransition] = useTransition();
@@ -98,6 +99,36 @@ export default function PartnerCatalogAdd({ partnerId, partnerRouteId, partnerNa
       }
       return next;
     });
+  }
+
+  async function selectAllMatchingVariants() {
+    setSelectingAll(true);
+    try {
+      const allTemplates = await searchAllPartnerCatalogTemplates(search, partnerId, {
+        nicheId: nicheId === 'all' ? undefined : Number(nicheId),
+        categoryId: categoryId === 'all' ? undefined : Number(categoryId),
+        brandId: brandId === 'all' ? undefined : Number(brandId),
+      });
+      const addableVariants = allTemplates.flatMap((template) =>
+        template.variants.filter((variant) => !variant.alreadyAdded).map((variant) => ({ template, variant })),
+      );
+      setPicked((current) => {
+        const next = { ...current };
+        for (const { template, variant } of addableVariants) {
+          next[variant.id] = {
+            template,
+            variantId: variant.id,
+            price: next[variant.id]?.price ?? '',
+          };
+        }
+        return next;
+      });
+      toast.success(`Selected ${addableVariants.length} matching variants. You can set their prices in review.`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not select all matching variants.');
+    } finally {
+      setSelectingAll(false);
+    }
   }
 
   function updateFilters(update: () => void) { setLoading(true); update(); setPage(1); }
@@ -187,8 +218,15 @@ export default function PartnerCatalogAdd({ partnerId, partnerRouteId, partnerNa
               Select page
             </label>
             {selectedOnPage > 0 && <Button size="sm" variant="ghost" onClick={() => togglePageSelection(false)}><X /> Clear page</Button>}
-            <span className="text-sm text-muted-foreground">{total} products · {selectedValues.length} selected{filtersLoading ? ' · loading filters' : ''}</span>
+            <span className="text-sm text-muted-foreground">{total} templates · {selectedValues.length} variants selected{filtersLoading ? ' · loading filters' : ''}</span>
           </div>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3">
+          <p className="text-sm text-muted-foreground">Selection includes every matching result, not only this page.</p>
+          <Button size="sm" variant="outline" onClick={() => void selectAllMatchingVariants()} disabled={loading || selectingAll || total === 0}>
+            {selectingAll ? <Loader2 className="animate-spin" /> : <ListChecks />}
+            {selectingAll ? 'Selecting all results…' : `Select all matching variants (${total} templates)`}
+          </Button>
         </div>
       </section>
 
@@ -216,7 +254,10 @@ export default function PartnerCatalogAdd({ partnerId, partnerRouteId, partnerNa
       </section>
       <div className="sticky bottom-3 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-background/95 p-3 shadow-lg backdrop-blur">
         <div><p className="font-medium">{selectedValues.length} variants selected</p><p className="text-xs text-muted-foreground">Selections stay with you across filters and pages.</p></div>
-        <Button onClick={() => setStep('review')} disabled={selectedValues.length === 0}><Check /> Review selection</Button>
+        <div className="flex items-center gap-2">
+          {selectedValues.length > 0 && <Button variant="ghost" onClick={() => setPicked({})}>Clear selection</Button>}
+          <Button onClick={() => setStep('review')} disabled={selectedValues.length === 0}><Check /> Review selection</Button>
+        </div>
       </div>
     </> : <>
       <section className="space-y-4 rounded-xl border bg-card p-4">
