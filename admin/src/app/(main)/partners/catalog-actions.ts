@@ -19,8 +19,8 @@ const PARTNER_PRODUCTS = gql`
 `;
 
 const SEARCH_CATALOG = gql`
-  query PartnerCatalogTemplateSearch($partnerId: Int!, $search: String, $page: Int!, $limit: Int!) {
-    adminPartnerCatalogTemplates(partnerId: $partnerId, search: $search, page: $page, limit: $limit) {
+  query PartnerCatalogTemplateSearch($partnerId: Int!, $search: String, $nicheId: Int, $categoryId: Int, $brandId: Int, $page: Int!, $limit: Int!) {
+    adminPartnerCatalogTemplates(partnerId: $partnerId, search: $search, nicheId: $nicheId, categoryId: $categoryId, brandId: $brandId, page: $page, limit: $limit) {
       totalProductTemplates
       productTemplates {
         id name name_ar image
@@ -29,6 +29,14 @@ const SEARCH_CATALOG = gql`
         }
       }
     }
+  }
+`;
+
+const CATALOG_FILTERS = gql`
+  query PartnerCatalogFilters {
+    getAllNiches { id name name_ar }
+    getAllCategories { id name name_ar niche_id }
+    getAllBrands { id name name_ar niche_id }
   }
 `;
 
@@ -85,6 +93,12 @@ export type CatalogTemplate = {
   }>;
 };
 
+export type PartnerCatalogFilters = {
+  niches: Array<{ id: number; name: string; name_ar?: string | null }>;
+  categories: Array<{ id: number; name: string; name_ar?: string | null; niche_id?: number | null }>;
+  brands: Array<{ id: number; name: string; name_ar?: string | null; niche_id?: number | null }>;
+};
+
 function validPartnerId(value: number) {
   if (!Number.isSafeInteger(value) || value < 1) throw new Error("Invalid partner");
 }
@@ -97,12 +111,27 @@ export async function getPartnerCatalog(partnerId: number, search: string, page:
   return result.adminPartnerCatalogProducts;
 }
 
-export async function searchPartnerCatalogTemplates(search: string, partnerId: number, page = 1, limit = 20) {
+export async function getPartnerCatalogFilters(): Promise<PartnerCatalogFilters> {
+  const result = await requestServerGraphQL<{
+    getAllNiches: PartnerCatalogFilters['niches'];
+    getAllCategories: PartnerCatalogFilters['categories'];
+    getAllBrands: PartnerCatalogFilters['brands'];
+  }>(CATALOG_FILTERS, {});
+  return { niches: result.getAllNiches, categories: result.getAllCategories, brands: result.getAllBrands };
+}
+
+export async function searchPartnerCatalogTemplates(
+  search: string,
+  partnerId: number,
+  page = 1,
+  limit = 20,
+  filters: { nicheId?: number; categoryId?: number; brandId?: number } = {},
+) {
   validPartnerId(partnerId);
   if (!Number.isSafeInteger(page) || page < 1 || !Number.isSafeInteger(limit) || limit < 1 || limit > 50) throw new Error("Invalid catalog page");
   const result = await requestServerGraphQL<{
     adminPartnerCatalogTemplates: { productTemplates: CatalogTemplate[]; totalProductTemplates: number };
-  }>(SEARCH_CATALOG, { partnerId, search: search.trim() || undefined, page, limit });
+  }>(SEARCH_CATALOG, { partnerId, search: search.trim() || undefined, ...filters, page, limit });
   return result.adminPartnerCatalogTemplates;
 }
 

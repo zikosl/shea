@@ -1504,7 +1504,7 @@ type Query {
   adminDashboardStats: AdminDashboardStats!
   adminDispatchBoard: AdminDispatchBoard!
   adminPartnerCatalogProducts(limit: Int!, page: Int!, partnerId: Int!, search: String): ProductViewResult
-  adminPartnerCatalogTemplates(limit: Int!, page: Int!, partnerId: Int!, search: String): AdminPartnerCatalogTemplateResult
+  adminPartnerCatalogTemplates(brandId: Int, categoryId: Int, limit: Int!, nicheId: Int, page: Int!, partnerId: Int!, search: String): AdminPartnerCatalogTemplateResult
   adminPosDevices: [AdminPosDevice!]!
   adminStoreNetworks(search: String): [Store!]!
   adminTestFlightRequests: [TestFlightInviteRequest!]!

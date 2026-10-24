@@ -26,7 +26,7 @@ export default async function PartnerProductsPage({ params }: PageProps) {
         <p className="text-sm text-muted-foreground">Partner · {partner.companyName}</p>
         <h1 className="text-2xl font-semibold tracking-tight">Products</h1>
       </div>
-      <PartnerCatalog partnerId={partnerId} />
+      <PartnerCatalog partnerId={partnerId} partnerRouteId={itemId} />
     </div>
   );
 }

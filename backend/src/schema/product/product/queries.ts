@@ -380,14 +380,22 @@ export const ProductTemplateQuery = extendType({
             args: {
                 partnerId: nonNull(intArg()),
                 search: stringArg(),
+                nicheId: intArg(),
+                categoryId: intArg(),
+                brandId: intArg(),
                 page: nonNull(intArg()),
                 limit: nonNull(intArg()),
             },
-            resolve: async (_parent, { partnerId, search, page, limit }, ctx: Context) => {
+            resolve: async (_parent, { partnerId, search, nicheId, categoryId, brandId, page, limit }, ctx: Context) => {
                 const partner = await ctx.prisma.partner.findUnique({ where: { userId: partnerId }, select: { userId: true } })
                 if (!partner) return { productTemplates: [], totalProductTemplates: 0 }
                 const terms = catalogSearchTerms(search)
-                const where: Prisma.ProductTemplateViewWhereInput = terms.length ? templateSearchWhere(terms) : {}
+                const where: Prisma.ProductTemplateViewWhereInput = {
+                    ...(terms.length ? templateSearchWhere(terms) : {}),
+                    ...(nicheId ? { niche_id: nicheId } : {}),
+                    ...(categoryId ? { category_id: categoryId } : {}),
+                    ...(brandId ? { brand_id: brandId } : {}),
+                }
                 const safeLimit = Math.min(50, Math.max(1, limit))
                 const safePage = Math.max(1, page)
                 const [totalProductTemplates, templates] = await Promise.all([
