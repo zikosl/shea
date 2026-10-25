@@ -151,7 +151,7 @@ export const Query = extendType({
                     },
                     orderBy: {
                         id: "desc"
-                    }
+                    },
                 })
             },
         })
@@ -189,7 +189,8 @@ export const Query = extendType({
                                 }
                             ]
                         }
-                    }
+                    },
+                    orderBy: [{ date: 'desc' }, { id: 'desc' }],
                 })
             },
         })
@@ -213,9 +214,7 @@ export const Query = extendType({
                             },
                         ],
                     },
-                    orderBy: {
-                        id: "desc"
-                    }
+                    orderBy: [{ sentAt: 'desc' }, { id: 'desc' }],
                 })
             },
         })
@@ -254,9 +253,7 @@ export const Query = extendType({
                         orderId,
                         driverId,
                     },
-                    orderBy: {
-                        id: "desc"
-                    }
+                    orderBy: [{ sentAt: 'desc' }, { id: 'desc' }],
                 })
             },
         })

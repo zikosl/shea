@@ -61,11 +61,11 @@ new Worker('dispatch-queue', async (job: Job) => {
         const expiresAt = new Date(Date.now() + ORDER_DELAY);
 
 
-        // Set all orders in prisma to EXPIRED if expiresAt < now
+        // Expiration applies only to unanswered offers. Accepted dispatches remain active until delivery ends.
         await prisma.orderDispatch.updateMany({
             where: {
                 expiresAt: { lt: new Date() },
-                status: { not: DispatchStatus.EXPIRED }
+                status: DispatchStatus.SENT,
             },
             data: {
                 status: DispatchStatus.EXPIRED
@@ -92,10 +92,11 @@ new Worker('dispatch-queue', async (job: Job) => {
         );
 
 
-        sendNotification({
-            tokens: targetDrivers
-                .map(v => v.user.pushTokens[0]?.token)
-                .filter((token): token is string => Boolean(token)),
+        const pushTokens = targetDrivers
+            .map((driver) => driver.user.pushTokens[0]?.token)
+            .filter((token): token is string => Boolean(token));
+        const pushResult = await sendNotification({
+            tokens: pushTokens,
             title: "New Delivery Available",
             body: "A new order is waiting for pickup. Accept now to grab this opportunity!",
             androidChannelId: "new_orders",
@@ -103,7 +104,16 @@ new Worker('dispatch-queue', async (job: Job) => {
                 event: "NEW_ORDER",
                 orderId: `${order.id}`,
             }
-        })
+        });
+        if (pushResult.sent < 1 || pushResult.permanentFailureTokens.length || pushResult.transientFailureTokens.length) {
+            console.warn('Rider order push delivery was incomplete.', {
+                orderId,
+                tokenCount: pushTokens.length,
+                sent: pushResult.sent,
+                permanentFailures: pushResult.permanentFailureTokens.length,
+                transientFailures: pushResult.transientFailureTokens.length,
+            });
+        }
         if (attempt < 3) {
             await dispatchQueue.add(
                 'dispatch-order',
