@@ -2,6 +2,7 @@ import { arg, intArg, list, inputObjectType, nonNull, extendType, stringArg, flo
 import { Context } from "../../../context"
 import { GraphQLError } from 'graphql';
 import { getUserId } from "../../../utils";
+import { requireGtin } from "../../../modules/catalog/barcodes";
 
 
 
@@ -15,6 +16,7 @@ const UpdateVariantInput = inputObjectType({
         t.string("sku") // optional manual SKU override
         t.list.string("tags")
         t.list.nonNull.string("images") // URLs of new images
+        t.string("barcode")
     },
 })
 
@@ -30,6 +32,7 @@ const ProductVariantInput = inputObjectType({
         t.string("sku")
         t.list.string("tags")
         t.list.string("images")
+        t.string("barcode")
     },
 })
 
@@ -42,7 +45,7 @@ export const VariantMutation = extendType({
                 productId: nonNull(intArg()),
                 data: nonNull(list(nonNull("ProductVariantInput"))),
             },
-            resolve: async (_parent, { productId, data }: { productId: number, data: Array<{ name?: string | null; name_ar?: string | null; description?: string | null; description_ar?: string | null; sku?: string | null; tags?: Array<string | null> | null; images?: Array<string | null> | null }> }, ctx: Context) => {
+            resolve: async (_parent, { productId, data }: { productId: number, data: Array<{ name?: string | null; name_ar?: string | null; description?: string | null; description_ar?: string | null; sku?: string | null; tags?: Array<string | null> | null; images?: Array<string | null> | null; barcode?: string | null }> }, ctx: Context) => {
                 const product = await ctx.prisma.productTemplate.findUnique({
                     where: { id: productId },
                 });
@@ -82,6 +85,7 @@ export const VariantMutation = extendType({
                         description: variant.description?.trim() || null,
                         description_ar: variant.description_ar?.trim() || null,
                         sku: variant.sku?.trim() || `${productSlug}-${generatedSuffix}`.substring(0, 50),
+                        barcode: variant.barcode?.trim() ? requireGtin(variant.barcode) : null,
                         tags,
                         images,
                     };
@@ -106,6 +110,9 @@ export const VariantMutation = extendType({
                             description: variant.description,
                             description_ar: variant.description_ar,
                             sku: variant.sku,
+                            barcode: variant.barcode,
+                            barcodeSource: variant.barcode ? 'admin-manual' : null,
+                            barcodeVerifiedAt: variant.barcode ? new Date() : null,
                             productId,
                             tags: {
                                 create: variant.tags.map((value) => ({ value })),
@@ -124,7 +131,7 @@ export const VariantMutation = extendType({
                 id: nonNull(intArg()),
                 data: nonNull(arg({ type: "UpdateVariantInput" })),
             },
-            resolve: async (_parent, { id, data }: { id: number; data: { name?: string | null; name_ar?: string | null; description?: string | null; description_ar?: string | null; sku?: string | null; tags?: string[] | null; images?: string[] | null } }, ctx: Context) => {
+            resolve: async (_parent, { id, data }: { id: number; data: { name?: string | null; name_ar?: string | null; description?: string | null; description_ar?: string | null; sku?: string | null; tags?: Array<string | null> | null; images?: Array<string | null> | null; barcode?: string | null } }, ctx: Context) => {
                 // Step 1: Fetch variant
                 const variant = await ctx.prisma.variant.findUnique({
                     where: { id },
@@ -134,12 +141,17 @@ export const VariantMutation = extendType({
 
                 const tags: string[] = data.tags === undefined
                     ? variant.tags.map((tag) => tag.value)
-                    : Array.from(new Set((data.tags ?? []).map((tag: string) => tag.trim()).filter(Boolean)));
+                    : Array.from(new Set((data.tags ?? []).filter((tag): tag is string => Boolean(tag?.trim())).map((tag) => tag.trim())));
                 const name = data.name === undefined ? variant.name : data.name?.trim() || null;
                 if (!name && !tags.length) {
                     throw new GraphQLError("Every variant needs a name or at least one tag");
                 }
                 const sku = data.sku === undefined ? variant.sku : data.sku?.trim() || null;
+                const barcode = data.barcode === undefined ? variant.barcode : data.barcode ? requireGtin(data.barcode) : null;
+                if (barcode && barcode !== variant.barcode) {
+                    const owner = await ctx.prisma.variant.findUnique({ where: { barcode }, select: { id: true } });
+                    if (owner && owner.id !== id) throw new GraphQLError('This barcode is already assigned to another variant');
+                }
 
                 // Step 3: Update variant basic info
                 await ctx.prisma.$transaction(async (tx) => {
@@ -151,6 +163,9 @@ export const VariantMutation = extendType({
                             description: data.description === undefined ? variant.description : data.description?.trim() || null,
                             description_ar: data.description_ar === undefined ? variant.description_ar : data.description_ar?.trim() || null,
                             sku,
+                            barcode,
+                            barcodeSource: data.barcode === undefined ? variant.barcodeSource : barcode ? 'admin-manual' : null,
+                            barcodeVerifiedAt: data.barcode === undefined ? variant.barcodeVerifiedAt : barcode ? new Date() : null,
                         },
                     });
                     if (data.tags !== undefined) {
@@ -160,7 +175,7 @@ export const VariantMutation = extendType({
                     if (data.images) {
                         await tx.productImage.deleteMany({ where: { variantId: id } });
                         if (data.images.length) {
-                            await tx.productImage.createMany({ data: data.images.map((url: string) => ({ url, variantId: id })) });
+                            await tx.productImage.createMany({ data: data.images.filter((url): url is string => Boolean(url?.trim())).map((url) => ({ url: url.trim(), variantId: id })) });
                         }
                     }
                 });

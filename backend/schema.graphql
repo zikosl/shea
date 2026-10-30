@@ -1415,8 +1415,10 @@ type ProductTypeResult {
 }
 
 input ProductVariantInput {
+  barcode: String
   description: String
   description_ar: String
+  images: [String]
   name: String
   name_ar: String
   sku: String
@@ -1581,6 +1583,7 @@ type Query {
   partnerStatistics: PartnerStatisticsResult!
   posBootstrap(deviceKey: String!): PosBootstrap!
   previewCheckout(data: OrderInput!): CheckoutPreview!
+  adminDiscoverBarcode(barcode: String!): SahimBarcodeDiscovery!
   sahimBarcodeLookup(barcode: String!): Variant
   sahimDiscoverBarcode(barcode: String!): SahimBarcodeDiscovery!
   sahimReviewQueue: [SahimContribution!]!
@@ -1646,6 +1649,7 @@ type SahimContribution {
 
 type SahimExistingBarcode {
   id: Int!
+  productId: Int!
   name: String
   productName: String!
 }
@@ -1873,6 +1877,7 @@ enum ThemePreference {
 }
 
 input UpdateVariantInput {
+  barcode: String
   description: String
   description_ar: String
   images: [String!]

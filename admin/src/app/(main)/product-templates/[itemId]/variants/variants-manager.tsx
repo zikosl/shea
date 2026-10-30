@@ -251,13 +251,13 @@ export default function VariantsManager({ productId, productName, categoryId, va
               type="button"
               disabled={isPending || isUploading || (!newVariantName.trim() && !newVariantTags.split(",").some((tag) => tag.trim()))}
               onClick={() => run(
-                () => createVariantItem(productId, {
+                async () => { await createVariantItem(productId, {
                   name: newVariantName,
                   name_ar: newVariantNameAr,
                   sku: newVariantSku,
                   tags: newVariantTags.split(","),
                   images: newVariantImages,
-                }),
+                }); },
                 "Variant created",
                 () => {
                   setCreateSingleOpen(false);

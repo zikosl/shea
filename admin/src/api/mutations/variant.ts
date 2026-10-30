@@ -9,6 +9,7 @@ export const CREATE_VARIANTS = gql`
       description
       description_ar
       sku
+      barcode
     }
   }
 `;
@@ -23,6 +24,7 @@ export const UPDATE_VARIANT = gql`
       description_ar
       tags { id value }
       sku
+      barcode
       images {
         id
         url

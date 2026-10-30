@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Barcode, Layers3, PlusCircle } from "lucide-react";
+import { Barcode, Layers3, PlusCircle, ScanBarcode } from "lucide-react";
 import { Suspense } from "react";
 import { SearchParams } from "nuqs";
 
@@ -77,6 +77,9 @@ export default async function Page({ searchParams: search }: PageProps) {
           {view === "templates" && <Link href={`/${link}/new`} className={cn(buttonVariants(), "text-xs md:text-sm")}>
             <PlusCircle className="mr-1 h-4 w-4" /> Add {title_singular}
           </Link>}
+          <Link href="/barcode-entry" className={cn(buttonVariants({ variant: "outline" }), "text-xs md:text-sm")}>
+            <ScanBarcode className="mr-1 h-4 w-4" /> Add by barcode
+          </Link>
         </div>
       }
       filters={<TableAction niches={niches} categories={categories} productTypes={productTypes} brands={brands} />}

@@ -83,7 +83,7 @@ export async function createVariantCombinations(productId: number, dimensions: s
 
 export async function createVariantItem(
   productId: number,
-  data: { name: string; name_ar: string; sku: string; tags: string[]; images: string[] },
+  data: { name: string; name_ar: string; sku: string; tags: string[]; images: string[]; description?: string; barcode?: string },
 ) {
   if (!Number.isInteger(productId) || productId < 1) throw new Error("Invalid product template");
   const tags = Array.from(new Set(data.tags.map((tag) => tag.trim()).filter(Boolean)));
@@ -92,23 +92,26 @@ export async function createVariantItem(
   if (!name && !tags.length) throw new Error("Add a variant name or at least one tag");
   if (images.length > 6) throw new Error("A variant can have at most 6 images");
 
-  await requestServerGraphQL(CREATE_VARIANTS, {
+  const response = await requestServerGraphQL<{ createVariant: Array<{ id: number }> }>(CREATE_VARIANTS, {
     productId,
     data: [{
       name: name || undefined,
       name_ar: data.name_ar.trim() || undefined,
+      description: data.description?.trim() || undefined,
+      barcode: data.barcode?.trim() || undefined,
       sku: data.sku.trim() || undefined,
       tags,
       images,
     }],
   });
   revalidatePath(`/product-templates/${productId}/variants`);
+  return response.createVariant[0]?.id ?? null;
 }
 
 export async function updateVariantItem(
   productId: number,
   id: number,
-  data: { name: string; name_ar: string; description: string; description_ar: string; sku: string; tags: string[]; images: string[] },
+  data: { name: string; name_ar: string; description: string; description_ar: string; sku: string; tags: string[]; images: string[]; barcode?: string },
 ) {
   const tags = Array.from(new Set(data.tags.map((tag) => tag.trim()).filter(Boolean)));
   if (!data.name.trim() && !tags.length) throw new Error("Add a variant name or at least one tag");
@@ -122,6 +125,7 @@ export async function updateVariantItem(
       sku: data.sku.trim() || null,
       tags,
       images: data.images,
+      barcode: data.barcode?.trim() || undefined,
     },
   });
   revalidatePath(`/product-templates/${productId}/variants`);

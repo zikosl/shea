@@ -136,7 +136,7 @@ const SahimTemplateMatch = objectType({ name: 'SahimTemplateMatch', definition(t
   t.nonNull.int('templateId'); t.nonNull.string('name'); t.nonNull.string('description'); t.nonNull.string('brand'); t.nonNull.int('categoryId'); t.int('nicheId'); t.int('productTypeId'); t.int('brandId'); t.nonNull.int('score'); t.nonNull.string('reason'); t.nonNull.list.nonNull.field('variants', { type: SahimCandidateVariant })
 } })
 const SahimExistingBarcode = objectType({ name: 'SahimExistingBarcode', definition(t) {
-  t.nonNull.int('id'); t.string('name'); t.nonNull.string('productName')
+  t.nonNull.int('id'); t.nonNull.int('productId'); t.string('name'); t.nonNull.string('productName')
 } })
 const SahimBarcodeDiscovery = objectType({ name: 'SahimBarcodeDiscovery', definition(t) {
   t.nonNull.string('status'); t.nonNull.int('retryAfterSeconds'); t.field('existing', { type: SahimExistingBarcode }); t.field('external', { type: SahimExternalProduct }); t.nonNull.list.nonNull.field('matches', { type: SahimTemplateMatch })
@@ -204,6 +204,11 @@ const Query = extendType({
       resolve: (_parent, { barcode }, ctx: Context) => ctx.prisma.variant.findUnique({ where: { barcode: requireGtin(barcode) } }),
     })
     t.nonNull.field('sahimDiscoverBarcode', {
+      type: SahimBarcodeDiscovery,
+      args: { barcode: nonNull(stringArg()) },
+      resolve: (_parent, { barcode }, ctx: Context) => discoverBarcode(ctx.prisma, barcode, fetch, sharedLookupBudget),
+    })
+    t.nonNull.field('adminDiscoverBarcode', {
       type: SahimBarcodeDiscovery,
       args: { barcode: nonNull(stringArg()) },
       resolve: (_parent, { barcode }, ctx: Context) => discoverBarcode(ctx.prisma, barcode, fetch, sharedLookupBudget),

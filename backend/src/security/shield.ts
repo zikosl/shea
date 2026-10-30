@@ -77,6 +77,7 @@ export const permissions = shield(
       mySahimContributions: isContributor,
       sahimBarcodeLookup: isContributor,
       sahimDiscoverBarcode: isContributor,
+      adminDiscoverBarcode: isAdmin,
       findManyProductTemplateRequests: isAdmin,
       myCatalogSubmissions: isPartner,
       findMyProductTemplateRequests: isPartner,

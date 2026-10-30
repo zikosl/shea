@@ -195,11 +195,11 @@ export function rankTemplate(source: ExternalSuggestion, candidate: { name: stri
 }
 
 export async function discoverBarcode(prisma: PrismaClient, rawCode: string, fetcher: typeof fetch = fetch, sharedBudget?: () => Promise<boolean>): Promise<{
-  status: 'EXISTING' | 'PENDING' | 'FOUND' | 'NOT_FOUND' | 'UNAVAILABLE' | 'RATE_LIMITED'; retryAfterSeconds: number; existing: { id: number; name: string | null; productName: string } | null; external: ExternalSuggestion | null; matches: Match[]
+  status: 'EXISTING' | 'PENDING' | 'FOUND' | 'NOT_FOUND' | 'UNAVAILABLE' | 'RATE_LIMITED'; retryAfterSeconds: number; existing: { id: number; productId: number; name: string | null; productName: string } | null; external: ExternalSuggestion | null; matches: Match[]
 }> {
   const code = requireGtin(rawCode)
   const existing = await prisma.variant.findUnique({ where: { barcode: code }, include: { product: true } })
-  if (existing) return { status: 'EXISTING', retryAfterSeconds: 0, existing: { id: existing.id, name: existing.name, productName: existing.product.name }, external: null, matches: [] }
+  if (existing) return { status: 'EXISTING', retryAfterSeconds: 0, existing: { id: existing.id, productId: existing.productId, name: existing.name, productName: existing.product.name }, external: null, matches: [] }
   const pending = await prisma.catalogContribution.findMany({ where: { status: 'PENDING' }, select: { payload: true } })
   if (pending.some(item => {
     const payload = item.payload as Record<string, any>
