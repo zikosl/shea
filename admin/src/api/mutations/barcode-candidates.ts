@@ -17,3 +17,9 @@ export const SUBMIT_BARCODE_CANDIDATE = gql`
     submitBarcodeCandidate(variantId: $variantId, barcode: $barcode, sourceUrl: $sourceUrl, sourceName: $sourceName) { id status }
   }
 `;
+
+export const IMPORT_EXTERNAL_CATALOG_IMAGE = gql`
+  mutation ImportExternalCatalogImage($url: String!) {
+    importExternalCatalogImage(url: $url) { filename url }
+  }
+`;

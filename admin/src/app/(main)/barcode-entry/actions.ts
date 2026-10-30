@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { ADMIN_DISCOVER_BARCODE } from "@/api/queries/barcode-entry";
+import { IMPORT_EXTERNAL_CATALOG_IMAGE } from "@/api/mutations/barcode-candidates";
 import { requestServerGraphQL } from "@/lib/server-request";
 import { createItem, getSearchItem, setCatalogVariantBarcode } from "../product-templates/actions";
 import { createVariantItem, getVariants, updateVariantItem } from "../product-templates/[itemId]/variants/actions";
@@ -22,11 +23,20 @@ function normalizeBarcode(barcode: string) {
 
 function normalizeImageUrl(value?: string | null) {
   if (!value?.trim()) return null;
+  if (/^\/uploads\/[a-zA-Z0-9/_-]+\.(?:jpe?g|png|webp)$/i.test(value.trim())) return value.trim();
   try {
     const url = new URL(value.trim());
     if (url.protocol !== "https:" || url.username || url.password) throw new Error();
     return url.toString();
   } catch { throw new Error("Use a valid HTTPS image URL."); }
+}
+
+async function persistImage(value?: string | null) {
+  const image = normalizeImageUrl(value);
+  if (!image) return null;
+  if (image.startsWith("/uploads/")) return image;
+  const result = await requestServerGraphQL<{ importExternalCatalogImage: { url: string } }>(IMPORT_EXTERNAL_CATALOG_IMAGE, { url: image });
+  return result.importExternalCatalogImage.url;
 }
 
 export async function discoverAdminBarcode(barcode: string) {
@@ -45,13 +55,15 @@ export async function getBarcodeTemplateVariants(productId: number) {
 }
 
 export async function assignBarcodeToVariant(variantId: number, productId: number, barcode: string, imageUrl?: string | null) {
-  const image = normalizeImageUrl(imageUrl);
-  if (image) {
+  if (imageUrl) {
     const result = await getVariants(productId, "", 1, 100);
     const variant = result.variants.find((item) => Number(item.id) === variantId);
-    if (variant && !variant.images?.length) await updateVariantItem(productId, variantId, {
-      name: variant.name ?? "", name_ar: variant.name_ar ?? "", description: variant.description ?? "", description_ar: variant.description_ar ?? "", sku: variant.sku ?? "", tags: variant.tags?.map((tag) => tag.value) ?? [], images: [image],
-    });
+    if (variant && !variant.images?.length) {
+      const image = await persistImage(imageUrl);
+      if (image) await updateVariantItem(productId, variantId, {
+        name: variant.name ?? "", name_ar: variant.name_ar ?? "", description: variant.description ?? "", description_ar: variant.description_ar ?? "", sku: variant.sku ?? "", tags: variant.tags?.map((tag) => tag.value) ?? [], images: [image],
+      });
+    }
   }
   await setCatalogVariantBarcode(productId, variantId, normalizeBarcode(barcode));
   revalidatePath("/barcode-entry");
@@ -62,7 +74,7 @@ export async function addBarcodeVariant(input: { productId: number; barcode: str
   const barcode = normalizeBarcode(input.barcode);
   if (!Number.isSafeInteger(input.productId) || input.productId < 1) throw new Error("Choose a valid product template.");
   if (!input.name.trim()) throw new Error("Variant name is required.");
-  const imageUrl = normalizeImageUrl(input.imageUrl);
+  const imageUrl = await persistImage(input.imageUrl);
   if (!imageUrl) throw new Error("A variant image is required.");
   const variantId = await createVariantItem(input.productId, { name: input.name, name_ar: input.nameAr, description: input.description, sku: "", tags: input.tags, images: [imageUrl], barcode });
   if (!variantId) throw new Error("Variant was created, but its ID was not returned. Open the template and finish barcode assignment there.");
@@ -72,7 +84,7 @@ export async function addBarcodeVariant(input: { productId: number; barcode: str
 
 export async function createBarcodeProduct(input: { barcode: string; name: string; nameAr: string; description: string; variantName?: string; brandId: number; categoryId: number; productTypeId?: number; imageUrl?: string | null; tags: string[] }) {
   const barcode = normalizeBarcode(input.barcode);
-  const imageUrl = normalizeImageUrl(input.imageUrl);
+  const imageUrl = await persistImage(input.imageUrl);
   if (!input.name.trim() || !input.brandId || !input.categoryId) throw new Error("Name, category, and brand are required.");
   if (!imageUrl) throw new Error("A variant image is required.");
   const template = await createItem({

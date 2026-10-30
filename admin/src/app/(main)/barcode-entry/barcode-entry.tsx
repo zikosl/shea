@@ -8,14 +8,50 @@ import { AlertCircle, Barcode, Check, ExternalLink, Loader2, PackageSearch, Sear
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FileUploader } from "@/components/ui/file-upload";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { FILE_UPLOAD } from "@/api/mutations";
 import { resolvePublicAssetUrl } from "@/constant";
+import { useUploadFile } from "@/hooks/use-upload-file";
 import type { CatalogFilterOptions } from "@/lib/catalog-filter-options";
 import { addBarcodeVariant, assignBarcodeToVariant, createBarcodeProduct, discoverAdminBarcode, getBarcodeTemplateVariants, searchBarcodeTemplates, type BarcodeDiscovery } from "./actions";
 
 type CatalogMatch = Awaited<ReturnType<typeof searchBarcodeTemplates>>[number];
 type VariantRow = Awaited<ReturnType<typeof getBarcodeTemplateVariants>>[number];
+
+function ImagePicker({ imageUrl, externalUrl, onChange }: { imageUrl: string; externalUrl?: string | null; onChange: (url: string) => void }) {
+  const { uploadFiles, progresses, isUploading } = useUploadFile(FILE_UPLOAD);
+  const preview = imageUrl || externalUrl || "";
+  async function upload(files: File[]) {
+    const results = await uploadFiles(files);
+    if (results[0]?.url) onChange(results[0].url);
+  }
+  return <div className="space-y-2">
+    <Label>Variant image <span className="text-destructive">required</span></Label>
+    {preview && <div className="flex items-center gap-3 rounded-md border p-2"><div className="relative h-20 w-20 shrink-0 overflow-hidden rounded bg-muted">{preview.startsWith("/") ? <Image unoptimized fill src={resolvePublicAssetUrl(preview)} alt="Product preview" className="object-contain" /> : <img src={preview} alt="Open Facts product preview" className="h-full w-full object-contain" />}</div><div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{imageUrl ? (imageUrl.startsWith("/uploads/") ? "Image uploaded to Shea" : "Open Facts image selected") : "Open Facts image preview"}</p><p className="text-xs text-muted-foreground">External images are copied into Shea storage when you save.</p></div>{imageUrl && <Button type="button" size="sm" variant="ghost" onClick={() => onChange("")}>Clear</Button>}</div>}
+    <FileUploader accept={{ "image/jpeg": [".jpg", ".jpeg"], "image/png": [".png"], "image/webp": [".webp"] }} maxSize={8 * 1024 * 1024} maxFiles={1} disabled={isUploading} progresses={progresses} onUpload={upload} className="h-28" />
+    <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs text-muted-foreground">Choose, drag, or paste an image into the upload area.</p>{externalUrl && <Button type="button" size="sm" variant="outline" disabled={isUploading} onClick={() => onChange(externalUrl)}>Use Open Facts image</Button>}</div>
+  </div>;
+}
+
+function CatalogFilters({ options, nicheId, categoryId, productTypeId, brandId, setNicheId, setCategoryId, setProductTypeId, setBrandId }: {
+  options: CatalogFilterOptions; nicheId: string; categoryId: string; productTypeId: string; brandId: string;
+  setNicheId: (value: string) => void; setCategoryId: (value: string) => void; setProductTypeId: (value: string) => void; setBrandId: (value: string) => void;
+}) {
+  const categories = options.categories.filter((item) => !nicheId || String(item.niche_id) === nicheId);
+  const productTypes = options.productTypes.filter((item) => !categoryId || String(item.category_id) === categoryId);
+  const brands = options.brands.filter((item) => !nicheId || !item.niche_id || String(item.niche_id) === nicheId);
+  return <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+    <select aria-label="Niche" className="h-9 rounded-md border bg-background px-3 text-sm" value={nicheId} onChange={(event) => { setNicheId(event.target.value); setCategoryId(""); setProductTypeId(""); setBrandId(""); }}><option value="">All niches</option>{options.niches.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
+    <select aria-label="Category" className="h-9 rounded-md border bg-background px-3 text-sm" value={categoryId} onChange={(event) => { setCategoryId(event.target.value); setProductTypeId(""); }}><option value="">All categories</option>{categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
+    <select aria-label="Product type" className="h-9 rounded-md border bg-background px-3 text-sm" value={productTypeId} onChange={(event) => setProductTypeId(event.target.value)}><option value="">All product types</option>{productTypes.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
+    <select aria-label="Brand" className="h-9 rounded-md border bg-background px-3 text-sm" value={brandId} onChange={(event) => setBrandId(event.target.value)}><option value="">All brands</option>{brands.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
+  </div>;
+}
 
 export default function BarcodeEntry({ options }: { options: CatalogFilterOptions }) {
   const [barcode, setBarcode] = useState("");
@@ -27,132 +63,131 @@ export default function BarcodeEntry({ options }: { options: CatalogFilterOption
   const [quantity, setQuantity] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [tagsText, setTagsText] = useState("");
-  const [searchText, setSearchText] = useState("");
-  const [nicheId, setNicheId] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [productTypeId, setProductTypeId] = useState("");
-  const [brandId, setBrandId] = useState("");
+  const [matchSearch, setMatchSearch] = useState("");
+  const [matchFilters, setMatchFilters] = useState({ niche: "", category: "", productType: "", brand: "" });
   const [matches, setMatches] = useState<CatalogMatch[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<CatalogMatch | null>(null);
   const [variants, setVariants] = useState<VariantRow[]>([]);
-  const [variantName, setVariantName] = useState("");
-  const [variantNameAr, setVariantNameAr] = useState("");
-  const [variantDescription, setVariantDescription] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [destination, setDestination] = useState<"existing" | "new">("new");
+  const [createFilters, setCreateFilters] = useState({ niche: "", category: "", productType: "", brand: "" });
+  const [templateSearch, setTemplateSearch] = useState("");
+  const [templateOptions, setTemplateOptions] = useState<CatalogMatch[]>([]);
+  const [targetTemplate, setTargetTemplate] = useState<CatalogMatch | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const categories = useMemo(() => options.categories.filter((item) => !nicheId || String(item.niche_id) === nicheId), [options.categories, nicheId]);
-  const productTypes = useMemo(() => options.productTypes.filter((item) => !categoryId || String(item.category_id) === categoryId), [options.productTypes, categoryId]);
-  const brands = useMemo(() => options.brands.filter((item) => !nicheId || !item.niche_id || String(item.niche_id) === nicheId), [options.brands, nicheId]);
+  const external = discovery?.external;
   const tags = useMemo(() => tagsText.split(",").map((tag) => tag.trim()).filter(Boolean), [tagsText]);
+  const setMatchFilter = (key: keyof typeof matchFilters, value: string) => setMatchFilters((current) => ({ ...current, [key]: value }));
+  const setCreateFilter = (key: keyof typeof createFilters, value: string) => setCreateFilters((current) => ({ ...current, [key]: value }));
 
-  function applyExternalSuggestion(result: BarcodeDiscovery) {
-    const external = result.external;
+  function setDetails(result: BarcodeDiscovery) {
     setDiscovery(result);
-    if (external) {
-      setName(external.name);
-      setNameAr(external.nameAr);
-      setDescription(external.description);
-      setBrandName(external.brand);
-      setQuantity(external.quantity);
-      setImageUrl(external.imageUrl ?? "");
-      setTagsText(external.tags.join(", "));
-      const matchedBrand = options.brands.find((brand) => brand.name.trim().toLocaleLowerCase() === external.brand.trim().toLocaleLowerCase());
-      if (matchedBrand) {
-        setBrandId(String(matchedBrand.id));
-        if (matchedBrand.niche_id) setNicheId(String(matchedBrand.niche_id));
-      }
-      setSearchText(external.name);
-      setVariantName(external.quantity || "Standard");
-      setVariantNameAr("");
-      setVariantDescription(external.description);
-    }
+    const item = result.external;
+    setName(item?.name ?? "");
+    setNameAr(item?.nameAr ?? "");
+    setDescription(item?.description ?? "");
+    setBrandName(item?.brand ?? "");
+    setQuantity(item?.quantity ?? "");
+    setImageUrl("");
+    setTagsText(item?.tags.join(", ") ?? "");
+    setMatchSearch(item?.name ?? "");
+    setTargetTemplate(null);
+    setTemplateOptions([]);
+    setSelectedTemplate(null);
+    setVariants([]);
   }
 
   function lookup() {
     startTransition(async () => {
       try {
         const result = await discoverAdminBarcode(barcode);
-        applyExternalSuggestion(result);
-        setSelectedTemplate(null);
-        setVariants([]);
+        setDetails(result);
         if (result.status === "EXISTING") toast.info("This barcode is already assigned in Shea.");
         else if (result.status === "PENDING") toast.info("This barcode is already waiting for review.");
         else if (result.status === "RATE_LIMITED") toast.warning(`External lookup limit reached. Try again in ${result.retryAfterSeconds}s.`);
-        else if (result.status === "UNAVAILABLE") toast.warning("External lookup is unavailable. You can still search Shea manually.");
-        else if (result.status === "NOT_FOUND") toast.info("No external product found. Search Shea or create a new product.");
+        else if (result.status === "UNAVAILABLE") toast.warning("External lookup is unavailable. You can still match or create in Shea.");
+        else if (result.status === "NOT_FOUND") toast.info("Open Facts has no result. You can enter product details or search Shea.");
       } catch (error) { toast.error(error instanceof Error ? error.message : "Barcode lookup failed."); }
     });
   }
 
-  function searchCatalog() {
+  function searchTemplates(search: string, filters: typeof matchFilters, destinationList: "match" | "create") {
     startTransition(async () => {
       try {
-        const result = await searchBarcodeTemplates({ search: searchText, nicheId: nicheId ? Number(nicheId) : undefined, categoryId: categoryId ? Number(categoryId) : undefined, productTypeId: productTypeId ? Number(productTypeId) : undefined, brandId: brandId ? Number(brandId) : undefined });
-        setMatches(result);
-        setSelectedTemplate(null);
-        setVariants([]);
-        if (!result.length) toast.info("No matching templates. Adjust filters or create a new product.");
-      } catch (error) { toast.error(error instanceof Error ? error.message : "Could not search the catalog."); }
+        const result = await searchBarcodeTemplates({ search, nicheId: filters.niche ? Number(filters.niche) : undefined, categoryId: filters.category ? Number(filters.category) : undefined, productTypeId: filters.productType ? Number(filters.productType) : undefined, brandId: filters.brand ? Number(filters.brand) : undefined });
+        if (destinationList === "match") {
+          setMatches(result);
+          setSelectedTemplate(null);
+          setVariants([]);
+        } else setTemplateOptions(result);
+        if (!result.length) toast.info("No templates found. Adjust the search or filters.");
+      } catch (error) { toast.error(error instanceof Error ? error.message : "Could not search templates."); }
     });
   }
 
-  function chooseTemplate(template: CatalogMatch) {
+  function chooseTemplate(item: CatalogMatch) {
     startTransition(async () => {
       try {
-        setSelectedTemplate(template);
-        setVariants(await getBarcodeTemplateVariants(template.id));
-      } catch (error) { toast.error(error instanceof Error ? error.message : "Could not load template variants."); }
+        setSelectedTemplate(item);
+        setVariants(await getBarcodeTemplateVariants(item.id));
+      } catch (error) { toast.error(error instanceof Error ? error.message : "Could not load variants."); }
     });
   }
 
-  function chooseSuggestedTemplate(match: BarcodeDiscovery["matches"][number]) {
-    const item: CatalogMatch = { id: match.templateId, name: match.name, brand: match.brand || "No brand", category: options.categories.find((category) => Number(category.id) === match.categoryId)?.name ?? "Category", image: null, variantCount: match.variants.length };
-    setMatches((current) => current.some((candidate) => candidate.id === item.id) ? current : [item, ...current]);
-    chooseTemplate(item);
-  }
-
-  function finish(work: () => Promise<unknown>, success: string) {
+  function finish(work: () => Promise<unknown>, success: string, closeDialog = false) {
     startTransition(async () => {
-      try { await work(); toast.success(success); }
-      catch (error) { toast.error(error instanceof Error ? error.message : "Could not save this barcode."); }
+      try {
+        await work();
+        toast.success(success);
+        if (closeDialog) setDialogOpen(false);
+      } catch (error) { toast.error(error instanceof Error ? error.message : "Could not save this barcode."); }
     });
   }
 
-  const external = discovery?.external;
-  const canCreate = Boolean(name.trim() && categoryId && brandId);
+  const openAddDialog = () => {
+    const matchedBrand = options.brands.find((item) => item.name.trim().toLocaleLowerCase() === brandName.trim().toLocaleLowerCase());
+    setCreateFilters({ niche: matchedBrand?.niche_id ? String(matchedBrand.niche_id) : "", category: "", productType: "", brand: matchedBrand ? String(matchedBrand.id) : "" });
+    setTemplateOptions([]);
+    setTargetTemplate(null);
+    setDialogOpen(true);
+  };
+  const canSaveNewProduct = Boolean(name.trim() && createFilters.category && createFilters.brand && imageUrl);
+  const matchCard = (item: CatalogMatch, onSelect: () => void, selected = false) => <button key={item.id} type="button" onClick={onSelect} className={`flex w-full items-center gap-3 rounded-md border p-3 text-left transition-colors hover:bg-accent ${selected ? "border-primary bg-accent" : ""}`}><div className="relative h-12 w-12 shrink-0 overflow-hidden rounded bg-muted">{item.image ? <Image unoptimized fill src={resolvePublicAssetUrl(item.image)} alt="" className="object-contain" /> : null}</div><span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{item.name}</span><span className="block truncate text-xs text-muted-foreground">{item.brand} · {item.category} · {item.variantCount} variants</span></span><span className="text-xs text-primary">Select</span></button>;
 
   return <div className="mx-auto max-w-5xl space-y-4 pb-10">
-    <Card><CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
-      <div className="flex-1 space-y-2"><label htmlFor="barcode" className="text-sm font-medium">Scan or enter barcode</label><div className="relative"><Barcode className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input id="barcode" inputMode="numeric" value={barcode} onChange={(event) => setBarcode(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") lookup(); }} placeholder="EAN / UPC" className="pl-10 font-mono tracking-wider" /></div><p className="text-xs text-muted-foreground">Existing Shea assignments are checked before any external lookup.</p></div>
-      <Button type="button" disabled={pending || !barcode.trim()} onClick={lookup}>{pending ? <Loader2 className="animate-spin" /> : <Search />} Look up</Button>
-    </CardContent></Card>
+    <Card><CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-end"><div className="flex-1 space-y-2"><Label htmlFor="barcode">Scan or enter barcode</Label><div className="relative"><Barcode className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input id="barcode" inputMode="numeric" value={barcode} onChange={(event) => setBarcode(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") lookup(); }} placeholder="EAN / UPC" className="pl-10 font-mono tracking-wider" /><p className="pt-1 text-xs text-muted-foreground">Shea is checked first. External data is only a suggestion until you confirm.</p></div></div><Button type="button" disabled={pending || !barcode.trim()} onClick={lookup}>{pending ? <Loader2 className="animate-spin" /> : <Search />} Look up</Button></CardContent></Card>
 
     {discovery?.status === "EXISTING" && discovery.existing && <Card className="border-emerald-500/30"><CardContent className="flex flex-wrap items-center justify-between gap-3 p-4"><div className="flex items-center gap-3"><Check className="h-5 w-5 text-emerald-600" /><div><p className="font-medium">Barcode already assigned</p><p className="text-sm text-muted-foreground">{discovery.existing.productName} · {discovery.existing.name ?? "Variant"}</p></div></div><Button asChild variant="outline"><Link href={`/product-templates/${discovery.existing.productId}/variants`}>Open product</Link></Button></CardContent></Card>}
     {discovery?.status === "PENDING" && <Card><CardContent className="flex items-center gap-3 p-4"><AlertCircle className="h-5 w-5 text-amber-600" /><p className="text-sm">This barcode is already in a pending contribution. Review it there instead of creating a duplicate.</p><Button asChild size="sm" variant="outline" className="ml-auto"><Link href="/sahim">Open review queue</Link></Button></CardContent></Card>}
 
-    {discovery && !external && discovery.status !== "EXISTING" && discovery.status !== "PENDING" && <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Product details</CardTitle></CardHeader><CardContent className="grid gap-3 sm:grid-cols-2"><label className="space-y-1 text-xs text-muted-foreground">Product name<Input value={name} onChange={(event) => setName(event.target.value)} /></label><label className="space-y-1 text-xs text-muted-foreground">Arabic name (optional)<Input dir="rtl" value={nameAr} onChange={(event) => setNameAr(event.target.value)} /></label><label className="space-y-1 text-xs text-muted-foreground sm:col-span-2">Description (optional)<Textarea value={description} onChange={(event) => setDescription(event.target.value)} className="min-h-20" /></label><label className="space-y-1 text-xs text-muted-foreground sm:col-span-2">Variant image URL (required)<Input type="url" value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="https://..." /></label></CardContent></Card>}
+    {discovery && discovery.status !== "EXISTING" && discovery.status !== "PENDING" && <Tabs defaultValue="external" className="space-y-4">
+      <TabsList className="grid h-auto w-full grid-cols-2"><TabsTrigger value="external">Open Facts / add product</TabsTrigger><TabsTrigger value="match">Match in Shea</TabsTrigger></TabsList>
 
-    {discovery && !external && discovery.status !== "EXISTING" && discovery.status !== "PENDING" && <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Product details</CardTitle></CardHeader><CardContent className="grid gap-3 sm:grid-cols-2"><label className="space-y-1 text-xs text-muted-foreground">Product name<Input value={name} onChange={(event) => setName(event.target.value)} /></label><label className="space-y-1 text-xs text-muted-foreground">Arabic name (optional)<Input dir="rtl" value={nameAr} onChange={(event) => setNameAr(event.target.value)} /></label><label className="space-y-1 text-xs text-muted-foreground sm:col-span-2">Description (optional)<Textarea value={description} onChange={(event) => setDescription(event.target.value)} className="min-h-20" /></label><label className="space-y-1 text-xs text-muted-foreground sm:col-span-2">Variant image URL (required)<Input type="url" value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="https://..." /></label></CardContent></Card>}
+      <TabsContent value="external" className="space-y-4">
+        {external ? <Card><CardHeader className="pb-3"><div className="flex flex-wrap items-center justify-between gap-2"><CardTitle className="text-base">External product suggestion</CardTitle><Badge variant="outline">{external.sourceName} · verify before adding</Badge></div></CardHeader><CardContent className="space-y-4"><div className="grid gap-4 md:grid-cols-[180px_minmax(0,1fr)]"><div className="space-y-2"><div className="h-44 overflow-hidden rounded-lg border bg-muted/30">{external.imageUrl ? <img src={external.imageUrl} alt={external.name} className="h-full w-full object-contain" /> : <div className="grid h-full place-items-center text-sm text-muted-foreground">No external image</div>}</div><p className="text-xs text-muted-foreground">Image is copied to Shea storage only when you choose to add the product.</p></div><div className="grid gap-3 sm:grid-cols-2"><div className="space-y-1"><Label>Product name</Label><Input value={name} onChange={(event) => setName(event.target.value)} /></div><div className="space-y-1"><Label>Brand from lookup</Label><Input value={brandName} onChange={(event) => setBrandName(event.target.value)} /></div><div className="space-y-1"><Label>Variant / package</Label><Input value={quantity} onChange={(event) => setQuantity(event.target.value)} placeholder="Package size or variant" /></div><div className="space-y-1"><Label>Tags</Label><Input value={tagsText} onChange={(event) => setTagsText(event.target.value)} placeholder="Comma-separated" /></div><div className="space-y-1 sm:col-span-2"><Label>Arabic name (optional)</Label><Input dir="rtl" value={nameAr} onChange={(event) => setNameAr(event.target.value)} /></div><div className="space-y-1 sm:col-span-2"><Label>Description</Label><Textarea className="min-h-20" value={description} onChange={(event) => setDescription(event.target.value)} /></div></div></div>
+          <ImagePicker imageUrl={imageUrl} externalUrl={external.imageUrl} onChange={setImageUrl} />
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4"><a href={external.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm text-primary underline">View Open Facts source <ExternalLink className="h-3 w-3" /></a><Button type="button" disabled={pending || !name.trim() || !imageUrl} onClick={openAddDialog}>Add product…</Button></div>
+        </CardContent></Card> : <Card><CardContent className="space-y-3 p-5"><div><h2 className="font-medium">No Open Facts product found</h2><p className="text-sm text-muted-foreground">You can still enter the product details and add it to Shea, or use the matching tab to find an existing item.</p></div><div className="grid gap-3 sm:grid-cols-2"><div className="space-y-1"><Label>Product name</Label><Input value={name} onChange={(event) => setName(event.target.value)} /></div><div className="space-y-1"><Label>Arabic name (optional)</Label><Input dir="rtl" value={nameAr} onChange={(event) => setNameAr(event.target.value)} /></div><div className="space-y-1 sm:col-span-2"><Label>Description (optional)</Label><Textarea className="min-h-20" value={description} onChange={(event) => setDescription(event.target.value)} /></div></div><ImagePicker imageUrl={imageUrl} onChange={setImageUrl} /><Button type="button" disabled={pending || !name.trim() || !imageUrl} onClick={openAddDialog}>Add product…</Button></CardContent></Card>}
+      </TabsContent>
 
-    {external && <Card className="border-emerald-600/20 bg-emerald-600/[0.035]"><CardHeader className="pb-3"><div className="flex flex-wrap items-center justify-between gap-2"><CardTitle className="text-base">External product suggestion</CardTitle><Badge variant="outline">{external.sourceName} · verify details</Badge></div></CardHeader><CardContent className="flex flex-col gap-4 sm:flex-row">
-      <div className="h-28 w-28 shrink-0 overflow-hidden rounded-lg border bg-background">{external.imageUrl ? <img src={external.imageUrl} alt={external.name} className="h-full w-full object-contain" /> : <div className="grid h-full place-items-center text-xs text-muted-foreground">No image</div>}</div>
-      <div className="min-w-0 flex-1 space-y-3"><div className="grid gap-3 sm:grid-cols-2"><label className="space-y-1 text-xs text-muted-foreground">Product name<Input value={name} onChange={(event) => setName(event.target.value)} /></label><label className="space-y-1 text-xs text-muted-foreground">Brand from lookup<Input value={brandName} onChange={(event) => setBrandName(event.target.value)} /></label><label className="space-y-1 text-xs text-muted-foreground">Package / variant<Input value={quantity} onChange={(event) => { setQuantity(event.target.value); setVariantName(event.target.value || "Standard"); }} /></label><label className="space-y-1 text-xs text-muted-foreground">Tags, comma separated<Input value={tagsText} onChange={(event) => setTagsText(event.target.value)} /></label><label className="space-y-1 text-xs text-muted-foreground sm:col-span-2">Variant image URL<Input type="url" value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="https://..." /></label></div><label className="block space-y-1 text-xs text-muted-foreground">Description<Textarea value={description} onChange={(event) => setDescription(event.target.value)} className="min-h-20" /></label><a href={external.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-primary underline">View source <ExternalLink className="h-3 w-3" /></a></div>
-    </CardContent></Card>}
+      <TabsContent value="match" className="space-y-4">
+        {discovery.matches.length > 0 && <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Suggested matches</CardTitle></CardHeader><CardContent className="space-y-2">{discovery.matches.map((match) => {
+          const item: CatalogMatch = { id: match.templateId, name: match.name, brand: match.brand || "No brand", category: options.categories.find((category) => Number(category.id) === match.categoryId)?.name ?? "Category", image: null, variantCount: match.variants.length };
+          return <div key={match.templateId} className="flex flex-wrap items-center gap-3 rounded-md border p-3"><span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{match.name}</span><span className="block text-xs text-muted-foreground">{match.brand || "No brand"} · {match.reason}</span></span><Badge variant={match.score >= 80 ? "default" : "outline"}>{match.score}%</Badge><Button type="button" size="sm" variant="outline" disabled={pending} onClick={() => chooseTemplate(item)}>Review match</Button></div>;
+        })}</CardContent></Card>}
+        <Card><CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-base"><PackageSearch className="h-4 w-4" /> Search Shea catalog</CardTitle></CardHeader><CardContent className="space-y-3"><CatalogFilters options={options} nicheId={matchFilters.niche} categoryId={matchFilters.category} productTypeId={matchFilters.productType} brandId={matchFilters.brand} setNicheId={(value) => { setMatchFilter("niche", value); setMatchFilter("category", ""); setMatchFilter("productType", ""); setMatchFilter("brand", ""); }} setCategoryId={(value) => { setMatchFilter("category", value); setMatchFilter("productType", ""); }} setProductTypeId={(value) => setMatchFilter("productType", value)} setBrandId={(value) => setMatchFilter("brand", value)} /><div className="flex gap-2"><Input value={matchSearch} onChange={(event) => setMatchSearch(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") searchTemplates(matchSearch, matchFilters, "match"); }} placeholder="Search by product or template name" /><Button type="button" variant="outline" disabled={pending} onClick={() => searchTemplates(matchSearch, matchFilters, "match")}><Search /> Search</Button></div>
+          {matches.length > 0 && <div className="max-h-72 space-y-2 overflow-y-auto pr-1">{matches.map((item) => matchCard(item, () => chooseTemplate(item), selectedTemplate?.id === item.id))}</div>}
+          {selectedTemplate && <div className="space-y-2 rounded-lg border bg-muted/20 p-3"><div><h3 className="font-medium">{selectedTemplate.name}</h3><p className="text-xs text-muted-foreground">Select the exact existing variant. No new variant will be created in this tab.</p></div>{variants.length ? <div className="divide-y rounded-md border bg-background">{variants.map((variant) => <div key={variant.id} className="flex flex-wrap items-center justify-between gap-3 p-3"><span className="min-w-0"><span className="block truncate text-sm font-medium">{variant.name}</span><span className="text-xs text-muted-foreground">{variant.barcode ? `Barcode: ${variant.barcode}` : "No barcode"}</span></span><Button type="button" size="sm" variant="outline" disabled={pending || Boolean(variant.barcode)} onClick={() => finish(() => assignBarcodeToVariant(variant.id, selectedTemplate.id, barcode, imageUrl), "Barcode assigned")}>{variant.barcode ? "Already coded" : "Assign to this variant"}</Button></div>)}</div> : <p className="text-sm text-muted-foreground">This template has no variants to select.</p>}</div>}
+        </CardContent></Card>
+      </TabsContent>
 
-    {discovery?.matches.length ? <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Possible Shea matches</CardTitle></CardHeader><CardContent className="space-y-2">{discovery.matches.map((match) => <div key={match.templateId} className="flex flex-wrap items-center gap-3 rounded-md border p-3"><span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{match.name}</span><span className="block text-xs text-muted-foreground">{match.brand || "No brand"} · {match.reason}</span></span><Badge variant={match.score >= 80 ? "default" : "outline"}>{match.score}%</Badge><Button type="button" size="sm" variant="outline" onClick={() => chooseSuggestedTemplate(match)}>Review match</Button></div>)}</CardContent></Card> : null}
-
-    {discovery && discovery.status !== "EXISTING" && discovery.status !== "PENDING" && <Card><CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-base"><PackageSearch className="h-4 w-4" /> Find a matching Shea product</CardTitle></CardHeader><CardContent className="space-y-3">
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4"><select aria-label="Filter by niche" className="h-9 rounded-md border bg-background px-3 text-sm" value={nicheId} onChange={(event) => { setNicheId(event.target.value); setCategoryId(""); setProductTypeId(""); setBrandId(""); }}><option value="">All niches</option>{options.niches.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select><select aria-label="Filter by category" className="h-9 rounded-md border bg-background px-3 text-sm" value={categoryId} onChange={(event) => { setCategoryId(event.target.value); setProductTypeId(""); }}><option value="">All categories</option>{categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select><select aria-label="Filter by product type" className="h-9 rounded-md border bg-background px-3 text-sm" value={productTypeId} onChange={(event) => setProductTypeId(event.target.value)}><option value="">All product types</option>{productTypes.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select><select aria-label="Filter by brand" className="h-9 rounded-md border bg-background px-3 text-sm" value={brandId} onChange={(event) => setBrandId(event.target.value)}><option value="">All brands</option>{brands.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div>
-      <div className="flex gap-2"><Input value={searchText} onChange={(event) => setSearchText(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") searchCatalog(); }} placeholder="Search product or template name" /><Button type="button" variant="outline" disabled={pending} onClick={searchCatalog}><Search /> Search</Button></div>
-      {matches.length > 0 && <div className="max-h-80 space-y-2 overflow-y-auto pr-1">{matches.map((item) => <button key={item.id} type="button" onClick={() => chooseTemplate(item)} className={`flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent ${selectedTemplate?.id === item.id ? "border-primary bg-accent" : ""}`}><div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-md bg-muted">{item.image ? <Image unoptimized fill src={resolvePublicAssetUrl(item.image)} alt="" className="object-contain" /> : null}</div><span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{item.name}</span><span className="block truncate text-xs text-muted-foreground">{item.brand} · {item.category} · {item.variantCount} variants</span></span><span className="text-xs text-primary">Select</span></button>)}</div>}
-      {selectedTemplate && <div className="space-y-3 rounded-lg border bg-muted/20 p-3"><div><h3 className="font-medium">{selectedTemplate.name}</h3><p className="text-xs text-muted-foreground">Choose an existing variant to assign this code, or add a new package variant.</p></div>{variants.length > 0 && <div className="divide-y rounded-md border bg-background">{variants.map((variant) => <div key={variant.id} className="flex items-center justify-between gap-3 p-3"><span className="min-w-0"><span className="block truncate text-sm">{variant.name}</span><span className="text-xs text-muted-foreground">{variant.barcode ? `Barcode: ${variant.barcode}` : "No barcode"}</span></span><Button type="button" size="sm" variant="outline" disabled={pending || Boolean(variant.barcode)} onClick={() => finish(() => assignBarcodeToVariant(variant.id, selectedTemplate.id, barcode), "Barcode assigned")}>{variant.barcode ? "Already coded" : "Assign barcode"}</Button></div>)}</div>}
-        <div className="grid gap-2 sm:grid-cols-2"><label className="space-y-1 text-xs text-muted-foreground">New variant name<Input value={variantName} onChange={(event) => setVariantName(event.target.value)} /></label><label className="space-y-1 text-xs text-muted-foreground">Arabic name (optional)<Input dir="rtl" value={variantNameAr} onChange={(event) => setVariantNameAr(event.target.value)} /></label></div><label className="block space-y-1 text-xs text-muted-foreground">Variant description (optional)<Textarea value={variantDescription} onChange={(event) => setVariantDescription(event.target.value)} className="min-h-20" /></label><label className="block space-y-1 text-xs text-muted-foreground">Variant image URL (required)<Input type="url" value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="https://..." /></label><Button type="button" disabled={pending || !variantName.trim() || !imageUrl.trim()} onClick={() => finish(() => addBarcodeVariant({ productId: selectedTemplate.id, barcode, name: variantName, nameAr: variantNameAr, description: variantDescription, tags, imageUrl }), "Variant created and barcode assigned")}>Add variant to this template</Button>
-      </div>}
-      {discovery.matches.length > 0 && <p className="text-xs text-muted-foreground">Suggested matches are ranked by product name, brand, and package size. Confirm the actual package before assigning.</p>}
-    </CardContent></Card>}
-
-    {discovery && discovery.status !== "EXISTING" && discovery.status !== "PENDING" && <Card><CardHeader className="pb-3"><CardTitle className="text-base">Create a new product template</CardTitle></CardHeader><CardContent className="space-y-3"><p className="text-sm text-muted-foreground">Use this only when no existing template is the right match. The barcode will be assigned to its first variant.</p><div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4"><select aria-label="New product niche" className="h-9 rounded-md border bg-background px-3 text-sm" value={nicheId} onChange={(event) => { setNicheId(event.target.value); setCategoryId(""); setBrandId(""); }}><option value="">Choose niche</option>{options.niches.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select><select aria-label="New product category" className="h-9 rounded-md border bg-background px-3 text-sm" value={categoryId} onChange={(event) => { setCategoryId(event.target.value); setProductTypeId(""); }}><option value="">Choose category</option>{categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select><select aria-label="New product type" className="h-9 rounded-md border bg-background px-3 text-sm" value={productTypeId} onChange={(event) => setProductTypeId(event.target.value)}><option value="">No product type</option>{productTypes.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select><select aria-label="New product brand" className="h-9 rounded-md border bg-background px-3 text-sm" value={brandId} onChange={(event) => setBrandId(event.target.value)}><option value="">Choose brand</option>{brands.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div><label className="block space-y-1 text-xs text-muted-foreground">Variant name / package (optional)<Input value={variantName} onChange={(event) => setVariantName(event.target.value)} placeholder="e.g. 400 g" /></label><label className="block space-y-1 text-xs text-muted-foreground">Variant image URL (required)<Input type="url" value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="https://..." /></label><Button type="button" disabled={pending || !canCreate || !imageUrl.trim()} onClick={() => finish(() => createBarcodeProduct({ barcode, name, nameAr, description, variantName, brandId: Number(brandId), categoryId: Number(categoryId), productTypeId: productTypeId ? Number(productTypeId) : undefined, imageUrl, tags }), "Product created and barcode assigned")}>{pending ? <Loader2 className="animate-spin" /> : <Check />} Create product and variant</Button></CardContent></Card>}
-
-    {discovery?.status === "NOT_FOUND" && <p className="text-xs text-muted-foreground">Open Facts did not find this code. You can still match a Shea template or create the product manually.</p>}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent className="sm:max-w-2xl"><DialogHeader><DialogTitle>Add product to Shea</DialogTitle><DialogDescription>Choose catalog placement and whether to extend an existing template or create a new one.</DialogDescription></DialogHeader>
+        <div className="space-y-4"><div className="grid grid-cols-2 gap-2"><Button type="button" variant={destination === "existing" ? "secondary" : "outline"} onClick={() => setDestination("existing")}>Add as a variant</Button><Button type="button" variant={destination === "new" ? "secondary" : "outline"} onClick={() => setDestination("new")}>New template + variant</Button></div><CatalogFilters options={options} nicheId={createFilters.niche} categoryId={createFilters.category} productTypeId={createFilters.productType} brandId={createFilters.brand} setNicheId={(value) => { setCreateFilter("niche", value); setCreateFilter("category", ""); setCreateFilter("productType", ""); setCreateFilter("brand", ""); }} setCategoryId={(value) => { setCreateFilter("category", value); setCreateFilter("productType", ""); }} setProductTypeId={(value) => setCreateFilter("productType", value)} setBrandId={(value) => setCreateFilter("brand", value)} />
+          {destination === "existing" ? <div className="space-y-2"><p className="text-sm text-muted-foreground">Search within the selected filters, then add this package as a new variant.</p><div className="flex gap-2"><Input value={templateSearch} onChange={(event) => setTemplateSearch(event.target.value)} placeholder="Template name" onKeyDown={(event) => { if (event.key === "Enter") searchTemplates(templateSearch, createFilters, "create"); }} /><Button type="button" variant="outline" disabled={pending} onClick={() => searchTemplates(templateSearch, createFilters, "create")}><Search /></Button></div><div className="max-h-48 space-y-2 overflow-y-auto">{templateOptions.map((item) => matchCard(item, () => setTargetTemplate(item), targetTemplate?.id === item.id))}</div>{targetTemplate && <p className="text-sm">Selected: <strong>{targetTemplate.name}</strong></p>}</div> : <p className="text-sm text-muted-foreground">A new template and its first variant will be created with the selected niche, category, optional product type, and brand.</p>}
+        </div>
+        <DialogFooter><Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>{destination === "existing" ? <Button type="button" disabled={pending || !targetTemplate || !quantity.trim() || !imageUrl} onClick={() => finish(() => addBarcodeVariant({ productId: targetTemplate!.id, barcode, name: quantity || name, nameAr, description, tags, imageUrl }), "Variant created and barcode assigned", true)}>{pending && <Loader2 className="animate-spin" />} Add variant</Button> : <Button type="button" disabled={pending || !canSaveNewProduct} onClick={() => finish(() => createBarcodeProduct({ barcode, name, nameAr, description, variantName: quantity, brandId: Number(createFilters.brand), categoryId: Number(createFilters.category), productTypeId: createFilters.productType ? Number(createFilters.productType) : undefined, imageUrl, tags }), "Product and variant created", true)}>{pending && <Loader2 className="animate-spin" />} Create product</Button>}</DialogFooter>
+      </DialogContent></Dialog>
+    </Tabs>}
   </div>;
 }

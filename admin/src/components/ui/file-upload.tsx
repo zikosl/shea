@@ -202,6 +202,25 @@ export function FileUploader(props: FileUploaderProps) {
                 {({ getRootProps, getInputProps, isDragActive }) => (
                     <div
                         {...getRootProps()}
+                        onPaste={(event) => {
+                            const pastedImages = Array.from(event.clipboardData.items)
+                                .filter((item) => item.type.startsWith("image/"))
+                                .map((item) => item.getAsFile())
+                                .filter((file): file is File => file !== null);
+                            if (!pastedImages.length) return;
+                            event.preventDefault();
+                            const accepted = pastedImages.filter((file) => {
+                                const matchesType = Object.entries(accept ?? {}).some(([mime, extensions]) => {
+                                    const mimeMatches = mime.endsWith("/*") ? file.type.startsWith(mime.slice(0, -1)) : file.type === mime;
+                                    const extensionMatches = extensions.some((extension) => file.name.toLowerCase().endsWith(extension.toLowerCase()));
+                                    return mimeMatches || extensionMatches;
+                                });
+                                if (!matchesType) toast.error(`File ${file.name} has an unsupported type`);
+                                else if (file.size > maxSize) toast.error(`File ${file.name} is larger than ${formatBytes(maxSize)}`);
+                                return matchesType && file.size <= maxSize;
+                            });
+                            if (accepted.length) onDrop(accepted, []);
+                        }}
                         className={cn(
                             "group relative grid h-52 w-full cursor-pointer place-items-center rounded-lg border-2 border-dashed border-muted-foreground/25 px-5 py-2.5 text-center transition hover:bg-muted/25",
                             "ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
@@ -234,7 +253,7 @@ export function FileUploader(props: FileUploaderProps) {
                                 </div>
                                 <div className="space-y-px">
                                     <p className="font-medium text-muted-foreground">
-                                        {"Drag n drop files here, or click to select files"}
+                                    {"Drag and drop, click to select, or paste an image here"}
                                     </p>
                                     <p className="text-sm text-muted-foreground/70">
                                         {"You can upload"}

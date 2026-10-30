@@ -140,6 +140,7 @@ export const permissions = shield(
       markTestFlightInvitationSent: isAdmin,
       uploadSahimPhoto: isContributor,
       uploadSahimReviewPhoto: isAdmin,
+      importExternalCatalogImage: isAdmin,
       updateSahimContributionImage: isAdmin,
       copySahimProductImageToVariants: isAdmin,
       reviewSahimContribution: isAdmin,

@@ -246,6 +246,18 @@ const Mutation = extendType({
         return storeReviewImage(Buffer.from(await file.arrayBuffer()), file.type)
       },
     })
+    t.nonNull.field('importExternalCatalogImage', {
+      type: 'FileUploadResponse',
+      args: { url: nonNull(stringArg()) },
+      resolve: async (_parent, { url }, ctx: Context) => {
+        let parsed: URL
+        try { parsed = new URL(url) } catch { throw new GraphQLError('INVALID_IMAGE_URL') }
+        if (parsed.protocol !== 'https:' || !/^images\.open(?:food|beauty|products|petfood)facts\.org$/.test(parsed.hostname)) throw new GraphQLError('EXTERNAL_IMAGE_HOST_NOT_ALLOWED')
+        const stored = await importReviewImage(parsed.toString())
+        await ctx.prisma.auditLog.create({ data: { actorId: getUserId(ctx), action: 'EXTERNAL_CATALOG_IMAGE_IMPORTED', entity: 'ProductImage', entityId: stored.filename, metadata: { source: parsed.hostname } } })
+        return { filename: stored.filename, mimetype: 'image/*', encoding: 'binary', url: stored.url }
+      },
+    })
     t.field('createContributor', {
       type: Contributor,
       args: { email: nonNull(stringArg()), name: nonNull(stringArg()) },

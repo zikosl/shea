@@ -830,6 +830,7 @@ type Mutation {
   uploadFile(file: File!): FileUploadResponse
   uploadSahimPhoto(file: File!): FileUploadResponse!
   uploadSahimReviewPhoto(file: File!): FileUploadResponse!
+  importExternalCatalogImage(url: String!): FileUploadResponse!
   upsertPricing(name: PricingName!, price: Int!): Pricing
   verifyClientPhoneChange(code: String!, phone: String!): AuthPayload
   verifyOtp(appVersion: String, code: String!, deviceKey: String, deviceName: String, phone: String!, platform: String): AuthPayload
