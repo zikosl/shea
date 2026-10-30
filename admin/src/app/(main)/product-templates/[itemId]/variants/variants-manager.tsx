@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-import { createVariantCombinations, deleteVariantItem, moveVariantToTemplate, searchVariantMoveTargets, submitPhysicalBarcode, updateVariantItem, type VariantMoveTarget } from "./actions";
+import { createVariantCombinations, createVariantItem, deleteVariantItem, moveVariantToTemplate, searchVariantMoveTargets, submitPhysicalBarcode, updateVariantItem, type VariantMoveTarget } from "./actions";
 
 type Props = {
   productId: number;
@@ -37,6 +37,11 @@ export default function VariantsManager({ productId, productName, categoryId, va
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [createOpen, setCreateOpen] = useState(false);
+  const [createSingleOpen, setCreateSingleOpen] = useState(false);
+  const [newVariantName, setNewVariantName] = useState("");
+  const [newVariantNameAr, setNewVariantNameAr] = useState("");
+  const [newVariantSku, setNewVariantSku] = useState("");
+  const [newVariantTags, setNewVariantTags] = useState("");
   const [dimensions, setDimensions] = useState([""]);
   const [editing, setEditing] = useState<ProductVariant | null>(null);
   const [editName, setEditName] = useState("");
@@ -140,7 +145,10 @@ export default function VariantsManager({ productId, productName, categoryId, va
           <h1 className="text-2xl font-semibold tracking-tight">Variants</h1>
           <p className="mt-1 text-sm text-muted-foreground">Manage the sellable combinations for {productName}.</p>
         </div>
-        <Button onClick={() => setCreateOpen(true)}><Plus /> Create combinations</Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => setCreateSingleOpen(true)}><Plus /> Create one variant</Button>
+          <Button onClick={() => setCreateOpen(true)}><Layers3 /> Create combinations</Button>
+        </div>
       </div>
 
       <form className="relative max-w-md" method="get">
@@ -197,6 +205,62 @@ export default function VariantsManager({ productId, productName, categoryId, va
           </div>
         </div>
       ) : null}
+
+      <Dialog open={createSingleOpen} onOpenChange={setCreateSingleOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Create one variant</DialogTitle>
+            <DialogDescription>Add a single sellable option to {productName}. You can add images and submit a barcode for review after creation.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="new-variant-name">Variant name</Label>
+                <Input id="new-variant-name" autoFocus value={newVariantName} onChange={(event) => setNewVariantName(event.target.value)} placeholder="e.g. 260g, Black, Vanilla" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-variant-name-ar">Arabic name <span className="font-normal text-muted-foreground">(optional)</span></Label>
+                <Input id="new-variant-name-ar" dir="rtl" lang="ar" value={newVariantNameAr} onChange={(event) => setNewVariantNameAr(event.target.value)} placeholder="اسم الخيار" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-variant-tags">Tags <span className="font-normal text-muted-foreground">(optional)</span></Label>
+              <Input id="new-variant-tags" value={newVariantTags} onChange={(event) => setNewVariantTags(event.target.value)} placeholder="e.g. 260g, Milk chocolate" />
+              <p className="text-xs text-muted-foreground">Enter comma-separated tags. Add a name or at least one tag.</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-variant-sku">SKU <span className="font-normal text-muted-foreground">(optional)</span></Label>
+              <Input id="new-variant-sku" value={newVariantSku} onChange={(event) => setNewVariantSku(event.target.value)} placeholder="Generated automatically if blank" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setCreateSingleOpen(false)}>Cancel</Button>
+            <Button
+              type="button"
+              disabled={isPending || (!newVariantName.trim() && !newVariantTags.split(",").some((tag) => tag.trim()))}
+              onClick={() => run(
+                () => createVariantItem(productId, {
+                  name: newVariantName,
+                  name_ar: newVariantNameAr,
+                  sku: newVariantSku,
+                  tags: newVariantTags.split(","),
+                }),
+                "Variant created",
+                () => {
+                  setCreateSingleOpen(false);
+                  setNewVariantName("");
+                  setNewVariantNameAr("");
+                  setNewVariantSku("");
+                  setNewVariantTags("");
+                  router.replace(`/product-templates/${productId}/variants`);
+                },
+              )}
+            >
+              {isPending && <Loader2 className="animate-spin" />} Create variant
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent>

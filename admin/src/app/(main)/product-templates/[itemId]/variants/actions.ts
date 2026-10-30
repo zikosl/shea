@@ -81,6 +81,27 @@ export async function createVariantCombinations(productId: number, dimensions: s
   revalidatePath(`/product-templates/${productId}/variants`);
 }
 
+export async function createVariantItem(
+  productId: number,
+  data: { name: string; name_ar: string; sku: string; tags: string[] },
+) {
+  if (!Number.isInteger(productId) || productId < 1) throw new Error("Invalid product template");
+  const tags = Array.from(new Set(data.tags.map((tag) => tag.trim()).filter(Boolean)));
+  const name = data.name.trim();
+  if (!name && !tags.length) throw new Error("Add a variant name or at least one tag");
+
+  await requestServerGraphQL(CREATE_VARIANTS, {
+    productId,
+    data: [{
+      name: name || undefined,
+      name_ar: data.name_ar.trim() || undefined,
+      sku: data.sku.trim() || undefined,
+      tags,
+    }],
+  });
+  revalidatePath(`/product-templates/${productId}/variants`);
+}
+
 export async function updateVariantItem(
   productId: number,
   id: number,
