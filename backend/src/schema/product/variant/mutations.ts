@@ -29,6 +29,7 @@ const ProductVariantInput = inputObjectType({
         t.string("description_ar")
         t.string("sku")
         t.list.string("tags")
+        t.list.string("images")
     },
 })
 
@@ -41,7 +42,7 @@ export const VariantMutation = extendType({
                 productId: nonNull(intArg()),
                 data: nonNull(list(nonNull("ProductVariantInput"))),
             },
-            resolve: async (_parent, { productId, data }: { productId: number, data: Array<{ name?: string | null; name_ar?: string | null; description?: string | null; description_ar?: string | null; sku?: string | null; tags?: Array<string | null> | null }> }, ctx: Context) => {
+            resolve: async (_parent, { productId, data }: { productId: number, data: Array<{ name?: string | null; name_ar?: string | null; description?: string | null; description_ar?: string | null; sku?: string | null; tags?: Array<string | null> | null; images?: Array<string | null> | null }> }, ctx: Context) => {
                 const product = await ctx.prisma.productTemplate.findUnique({
                     where: { id: productId },
                 });
@@ -54,9 +55,15 @@ export const VariantMutation = extendType({
                             .filter((tag): tag is string => Boolean(tag?.trim()))
                             .map((tag) => tag.trim()),
                     ));
+                    const images = Array.from(new Set(
+                        (variant.images ?? [])
+                            .filter((url): url is string => Boolean(url?.trim()))
+                            .map((url) => url.trim()),
+                    ));
                     if (!providedName && !tags.length) {
                         throw new GraphQLError("Every variant needs a name or at least one tag");
                     }
+                    if (images.length > 6) throw new GraphQLError("A variant can have at most 6 images");
 
                     const suffix = tags
                         .map((tag) => tag.toUpperCase().replace(/[^A-Z0-9]+/g, "-").replace(/^-|-$/g, ""))
@@ -76,6 +83,7 @@ export const VariantMutation = extendType({
                         description_ar: variant.description_ar?.trim() || null,
                         sku: variant.sku?.trim() || `${productSlug}-${generatedSuffix}`.substring(0, 50),
                         tags,
+                        images,
                     };
                 });
 
@@ -101,6 +109,9 @@ export const VariantMutation = extendType({
                             productId,
                             tags: {
                                 create: variant.tags.map((value) => ({ value })),
+                            },
+                            images: {
+                                create: variant.images.map((url) => ({ url })),
                             },
                         },
                     })),

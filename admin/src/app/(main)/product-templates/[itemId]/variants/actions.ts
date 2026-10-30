@@ -83,12 +83,14 @@ export async function createVariantCombinations(productId: number, dimensions: s
 
 export async function createVariantItem(
   productId: number,
-  data: { name: string; name_ar: string; sku: string; tags: string[] },
+  data: { name: string; name_ar: string; sku: string; tags: string[]; images: string[] },
 ) {
   if (!Number.isInteger(productId) || productId < 1) throw new Error("Invalid product template");
   const tags = Array.from(new Set(data.tags.map((tag) => tag.trim()).filter(Boolean)));
+  const images = Array.from(new Set(data.images.map((url) => url.trim()).filter(Boolean)));
   const name = data.name.trim();
   if (!name && !tags.length) throw new Error("Add a variant name or at least one tag");
+  if (images.length > 6) throw new Error("A variant can have at most 6 images");
 
   await requestServerGraphQL(CREATE_VARIANTS, {
     productId,
@@ -97,6 +99,7 @@ export async function createVariantItem(
       name_ar: data.name_ar.trim() || undefined,
       sku: data.sku.trim() || undefined,
       tags,
+      images,
     }],
   });
   revalidatePath(`/product-templates/${productId}/variants`);

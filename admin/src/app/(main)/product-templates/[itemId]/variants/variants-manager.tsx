@@ -42,6 +42,7 @@ export default function VariantsManager({ productId, productName, categoryId, va
   const [newVariantNameAr, setNewVariantNameAr] = useState("");
   const [newVariantSku, setNewVariantSku] = useState("");
   const [newVariantTags, setNewVariantTags] = useState("");
+  const [newVariantImages, setNewVariantImages] = useState<string[]>([]);
   const [dimensions, setDimensions] = useState([""]);
   const [editing, setEditing] = useState<ProductVariant | null>(null);
   const [editName, setEditName] = useState("");
@@ -133,6 +134,12 @@ export default function VariantsManager({ productId, productName, categoryId, va
   async function uploadVariantImages(files: File[]) {
     const uploaded = await uploadFiles(files);
     setEditImages((current) => Array.from(new Set([...current, ...uploaded.map((file) => file.url)])).slice(0, 6));
+  }
+
+  async function uploadNewVariantImages(files: File[]) {
+    const remaining = Math.max(0, 6 - newVariantImages.length);
+    const uploaded = await uploadFiles(files.slice(0, remaining));
+    setNewVariantImages((current) => Array.from(new Set([...current, ...uploaded.map((file) => file.url)])).slice(0, 6));
   }
 
   return (
@@ -232,18 +239,24 @@ export default function VariantsManager({ productId, productName, categoryId, va
               <Label htmlFor="new-variant-sku">SKU <span className="font-normal text-muted-foreground">(optional)</span></Label>
               <Input id="new-variant-sku" value={newVariantSku} onChange={(event) => setNewVariantSku(event.target.value)} placeholder="Generated automatically if blank" />
             </div>
+            <div className="space-y-3">
+              <Label>Variant images <span className="font-normal text-muted-foreground">(up to 6)</span></Label>
+              <FileUploader multiple maxFiles={Math.max(1, 6 - newVariantImages.length)} maxSize={10 * 1024 * 1024} progresses={progresses} onUpload={uploadNewVariantImages} disabled={isUploading || newVariantImages.length >= 6} />
+              {newVariantImages.length ? <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">{newVariantImages.map((url) => <div key={url} className="relative aspect-square overflow-hidden rounded-lg border"><Image unoptimized fill src={resolvePublicAssetUrl(url)} alt="Variant preview" className="object-cover" /><Button type="button" variant="secondary" size="icon" className="absolute right-1 top-1 h-7 w-7" onClick={() => setNewVariantImages((images) => images.filter((image) => image !== url))} aria-label="Remove variant image"><X /></Button></div>)}</div> : null}
+            </div>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setCreateSingleOpen(false)}>Cancel</Button>
             <Button
               type="button"
-              disabled={isPending || (!newVariantName.trim() && !newVariantTags.split(",").some((tag) => tag.trim()))}
+              disabled={isPending || isUploading || (!newVariantName.trim() && !newVariantTags.split(",").some((tag) => tag.trim()))}
               onClick={() => run(
                 () => createVariantItem(productId, {
                   name: newVariantName,
                   name_ar: newVariantNameAr,
                   sku: newVariantSku,
                   tags: newVariantTags.split(","),
+                  images: newVariantImages,
                 }),
                 "Variant created",
                 () => {
@@ -252,11 +265,12 @@ export default function VariantsManager({ productId, productName, categoryId, va
                   setNewVariantNameAr("");
                   setNewVariantSku("");
                   setNewVariantTags("");
+                  setNewVariantImages([]);
                   router.replace(`/product-templates/${productId}/variants`);
                 },
               )}
             >
-              {isPending && <Loader2 className="animate-spin" />} Create variant
+              {(isPending || isUploading) && <Loader2 className="animate-spin" />} Create variant
             </Button>
           </DialogFooter>
         </DialogContent>
