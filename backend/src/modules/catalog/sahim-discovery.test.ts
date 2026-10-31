@@ -79,7 +79,7 @@ test('new barcodes return ranked Shea templates with external details for human 
   const prisma = {
     variant: { findUnique: async () => null },
     catalogContribution: { findMany: async () => [] },
-    productTemplate: { findMany: async () => [{ id: 7, name: 'Hazelnut Cream', name_ar: '', description: '', category_id: 4, category: { niche_id: 2 }, product_type_id: null, brand_id: 3, Brand: { name: 'Nutella' }, variants: [{ id: 9, name: '100 g', name_ar: null, barcode: null }, { id: 8, name: '250 g', name_ar: null, barcode: null }] }] },
+    productTemplate: { findMany: async () => [{ id: 7, name: 'Hazelnut Cream', name_ar: '', description: '', category_id: 4, category: { niche_id: 2 }, product_type_id: null, brand_id: 3, Brand: { name: 'Nutella' }, images: [], variants: [{ id: 9, name: '100 g', name_ar: null, barcode: null, images: [{ url: '/uploads/nutella-100g.jpg' }] }, { id: 8, name: '250 g', name_ar: null, barcode: null, images: [] }] }] },
   } as unknown as PrismaClient
   const fetcher = async () => new Response(JSON.stringify({ status: 'success_with_errors', product: {
     product_name: 'Nutella Hazelnut Cream', brands: 'Nutella', quantity: '250 g',
@@ -90,6 +90,7 @@ test('new barcodes return ranked Shea templates with external details for human 
   assert.equal(result.matches[0]?.templateId, 7)
   assert.equal(result.matches[0]?.categoryId, 4)
   assert.equal(result.matches[0]?.description, '')
+  assert.equal(result.matches[0]?.image, '/uploads/nutella-100g.jpg')
   assert.match(result.matches[0]?.reason ?? '', /Brand matches/)
   assert.equal(result.matches[0]?.variants[0]?.id, 8)
   assert.equal(result.matches[0]?.variants[0]?.sizeHint, 'MATCH')

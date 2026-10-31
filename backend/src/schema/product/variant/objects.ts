@@ -23,10 +23,14 @@ const Variant = objectType({
         t.nullable.string('barcode')
         t.nullable.string('barcodeSource')
         t.nonNull.int('productId')
+        t.nonNull.int('partnerProductCount', {
+            resolve: async (parent, _args, ctx) => (parent as any)._count?.products ?? ctx.prisma.product.count({ where: { variantId: parent.id } }),
+        })
 
         t.list.field("tags", {
             type: "Tag",
             resolve: (parent, _args, ctx) => {
+                if (Array.isArray((parent as any).tags)) return (parent as any).tags;
                 return ctx.prisma.tag
                     .findMany({
                         where: { variantId: parent.id },
@@ -37,6 +41,7 @@ const Variant = objectType({
         t.field('product', {
             type: 'ProductTemplate',
             resolve: async (parent, _args, ctx) => {
+                if ((parent as any).product) return (parent as any).product;
                 return ctx.prisma.productTemplate.findUnique({
                     where: { id: parent.productId },
                 })
@@ -45,6 +50,7 @@ const Variant = objectType({
 
         t.string('image', {
             resolve: async (parent, _args, ctx) => {
+                if (Array.isArray((parent as any).images)) return (parent as any).images[0]?.url ?? "";
                 const image = await ctx.prisma.productImage.findFirst({
                     where: { variantId: parent.id },
                 })
@@ -54,6 +60,7 @@ const Variant = objectType({
         t.list.field('images', {
             type: 'ProductImage',
             resolve: async (parent, _args, ctx) => {
+                if (Array.isArray((parent as any).images)) return (parent as any).images;
                 return ctx.prisma.productImage.findMany({
                     where: { variantId: parent.id },
                 })

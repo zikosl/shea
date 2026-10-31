@@ -14,7 +14,7 @@ export type ExternalSuggestion = {
 }
 
 type ExternalResult = { status: 'FOUND' | 'NOT_FOUND' | 'UNAVAILABLE' | 'RATE_LIMITED'; suggestion: ExternalSuggestion | null; retryAfterSeconds: number }
-type Match = { templateId: number; name: string; description: string; brand: string; categoryId: number; nicheId: number | null; productTypeId: number | null; brandId: number | null; score: number; reason: string; variants: { id: number; name: string | null; barcode: string | null; sizeHint: 'MATCH' | 'DIFFERENT' | 'UNKNOWN' }[] }
+type Match = { templateId: number; name: string; description: string; image: string | null; brand: string; categoryId: number; nicheId: number | null; productTypeId: number | null; brandId: number | null; score: number; reason: string; variants: { id: number; name: string | null; barcode: string | null; sizeHint: 'MATCH' | 'DIFFERENT' | 'UNKNOWN' }[] }
 const cache = new Map<string, { expires: number; value: ExternalResult }>()
 const lookupTimes: number[] = []
 let providerCooldownUntil = 0
@@ -220,7 +220,12 @@ export async function discoverBarcode(prisma: PrismaClient, rawCode: string, fet
       { variants: { some: { name: { contains: word, mode: 'insensitive' as const } } } },
       { variants: { some: { name_ar: { contains: word, mode: 'insensitive' as const } } } },
     ]) },
-    include: { Brand: { select: { name: true } }, category: { select: { niche_id: true } }, variants: { select: { id: true, name: true, name_ar: true, barcode: true } } },
+    include: {
+      Brand: { select: { name: true } },
+      category: { select: { niche_id: true } },
+      images: { select: { url: true }, orderBy: { id: 'asc' }, take: 1 },
+      variants: { select: { id: true, name: true, name_ar: true, barcode: true, images: { select: { url: true }, orderBy: { id: 'asc' }, take: 1 } } },
+    },
     take: 40,
   })))
   const candidates = [...new Map(batches.flat().map(candidate => [candidate.id, candidate])).values()]
@@ -232,7 +237,8 @@ export async function discoverBarcode(prisma: PrismaClient, rawCode: string, fet
         id: variant.id, name: variant.name, barcode: variant.barcode,
         sizeHint: variantSizeHint(sourceSizes, candidate.name, `${variant.name ?? ''} ${variant.name_ar ?? ''}`),
       })).sort((a, b) => ({ MATCH: 0, UNKNOWN: 1, DIFFERENT: 2 })[a.sizeHint] - ({ MATCH: 0, UNKNOWN: 1, DIFFERENT: 2 })[b.sizeHint])
-      return { templateId: candidate.id, name: candidate.name, description: candidate.description ?? '', brand: candidate.Brand?.name ?? '', categoryId: candidate.category_id, nicheId: candidate.category.niche_id, productTypeId: candidate.product_type_id, brandId: candidate.brand_id, score, reason, variants }
+      const image = candidate.images?.[0]?.url ?? candidate.variants.find((variant) => variant.images?.[0]?.url)?.images?.[0]?.url ?? null
+      return { templateId: candidate.id, name: candidate.name, description: candidate.description ?? '', image, brand: candidate.Brand?.name ?? '', categoryId: candidate.category_id, nicheId: candidate.category.niche_id, productTypeId: candidate.product_type_id, brandId: candidate.brand_id, score, reason, variants }
     })
   return { status: 'FOUND', retryAfterSeconds: 0, existing: null, external: external.suggestion, matches }
 }

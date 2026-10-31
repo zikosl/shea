@@ -133,7 +133,7 @@ const SahimCandidateVariant = objectType({ name: 'SahimCandidateVariant', defini
   t.nonNull.int('id'); t.string('name'); t.string('barcode'); t.nonNull.string('sizeHint')
 } })
 const SahimTemplateMatch = objectType({ name: 'SahimTemplateMatch', definition(t) {
-  t.nonNull.int('templateId'); t.nonNull.string('name'); t.nonNull.string('description'); t.nonNull.string('brand'); t.nonNull.int('categoryId'); t.int('nicheId'); t.int('productTypeId'); t.int('brandId'); t.nonNull.int('score'); t.nonNull.string('reason'); t.nonNull.list.nonNull.field('variants', { type: SahimCandidateVariant })
+  t.nonNull.int('templateId'); t.nonNull.string('name'); t.nonNull.string('description'); t.string('image'); t.nonNull.string('brand'); t.nonNull.int('categoryId'); t.int('nicheId'); t.int('productTypeId'); t.int('brandId'); t.nonNull.int('score'); t.nonNull.string('reason'); t.nonNull.list.nonNull.field('variants', { type: SahimCandidateVariant })
 } })
 const SahimExistingBarcode = objectType({ name: 'SahimExistingBarcode', definition(t) {
   t.nonNull.int('id'); t.nonNull.int('productId'); t.string('name'); t.nonNull.string('productName')

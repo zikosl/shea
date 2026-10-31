@@ -12,7 +12,7 @@ export type BarcodeDiscovery = {
   retryAfterSeconds: number;
   existing: { id: number; productId: number; name: string | null; productName: string } | null;
   external: { name: string; nameAr: string; description: string; brand: string; quantity: string; tags: string[]; imageUrl: string | null; sourceUrl: string; sourceName: string } | null;
-  matches: Array<{ templateId: number; name: string; description: string; brand: string; categoryId: number; nicheId: number | null; productTypeId: number | null; brandId: number | null; score: number; reason: string; variants: Array<{ id: number; name: string | null; barcode: string | null; sizeHint: string }> }>;
+  matches: Array<{ templateId: number; name: string; description: string; image: string | null; brand: string; categoryId: number; nicheId: number | null; productTypeId: number | null; brandId: number | null; score: number; reason: string; variants: Array<{ id: number; name: string | null; barcode: string | null; sizeHint: string }> }>;
 };
 
 function normalizeBarcode(barcode: string) {

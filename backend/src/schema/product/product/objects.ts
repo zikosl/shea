@@ -157,6 +157,7 @@ const ProductTemplate = objectType({
         t.field('category', {
             type: 'Category',
             resolve: async (parent, _args, ctx) => {
+                if ((parent as any).category) return (parent as any).category
                 return ctx.prisma.category.findUnique({
                     where: { id: parent.category_id ?? undefined },
                 })

@@ -97,6 +97,12 @@ export const VariantQuery = extendType({
                         orderBy: [{ productId: 'asc' }, { id: 'asc' }],
                         skip: (page - 1) * limit,
                         take: limit,
+                        include: {
+                            _count: { select: { products: true } },
+                            tags: true,
+                            images: true,
+                            product: { include: { category: true } },
+                        },
                     }),
                 ])
                 return { variants, totalVariants }

@@ -47,6 +47,15 @@ export const DELETE_VARIANTS = gql`
   }
 `;
 
+export const MERGE_VARIANTS = gql`
+  mutation MergeVariants($targetId: Int!, $sourceIds: [Int!]!) {
+    mergeVariants(targetId: $targetId, sourceIds: $sourceIds) {
+      id
+      productId
+    }
+  }
+`;
+
 export const MOVE_VARIANT_TO_TEMPLATE = gql`
   mutation MoveVariantToTemplate($variantId: Int!, $targetTemplateId: Int!) {
     moveVariantToTemplate(variantId: $variantId, targetTemplateId: $targetTemplateId) {

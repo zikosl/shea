@@ -275,6 +275,106 @@ export const VariantMutation = extendType({
                 }, { timeout: 15000 });
             },
         });
+        t.nonNull.field("mergeVariants", {
+            type: "Variant",
+            args: {
+                targetId: nonNull(intArg()),
+                sourceIds: nonNull(list(nonNull(intArg()))),
+            },
+            resolve: async (_parent, { targetId, sourceIds }: { targetId: number; sourceIds: number[] }, ctx: Context) => {
+                const uniqueSourceIds = [...new Set(sourceIds)].filter((id) => id !== targetId);
+                if (!Number.isSafeInteger(targetId) || targetId < 1 || !uniqueSourceIds.length || uniqueSourceIds.length > 25) {
+                    throw new GraphQLError("Select 2 to 26 variants to merge");
+                }
+
+                return ctx.prisma.$transaction(async (tx) => {
+                    const [target, sources] = await Promise.all([
+                        tx.variant.findUnique({
+                            where: { id: targetId },
+                            include: { products: { select: { id: true, partnerId: true } }, tags: { select: { value: true } }, images: { select: { id: true, url: true } } },
+                        }),
+                        tx.variant.findMany({
+                            where: { id: { in: uniqueSourceIds } },
+                            include: { products: { select: { id: true, partnerId: true } }, tags: { select: { value: true } }, images: { select: { id: true, url: true } }, barcodeCandidates: true },
+                        }),
+                    ]);
+                    if (!target) throw new GraphQLError("MERGE_TARGET_NOT_FOUND");
+                    if (sources.length !== uniqueSourceIds.length) throw new GraphQLError("One or more source variants no longer exist");
+                    if (sources.some((variant) => variant.productId !== target.productId)) {
+                        throw new GraphQLError("VARIANT_MERGE_TEMPLATE_MISMATCH");
+                    }
+
+                    const allVariants = [target, ...sources];
+                    const partnerOwner = new Map<number, number>();
+                    for (const variant of allVariants) {
+                        for (const product of variant.products) {
+                            const previousVariant = partnerOwner.get(product.partnerId);
+                            if (previousVariant !== undefined && previousVariant !== variant.id) {
+                                throw new GraphQLError("VARIANT_MERGE_PARTNER_COLLISION");
+                            }
+                            partnerOwner.set(product.partnerId, variant.id);
+                        }
+                    }
+
+                    const barcodes = [...new Set(allVariants.map((variant) => variant.barcode).filter((value): value is string => Boolean(value)))];
+                    if (barcodes.length > 1) throw new GraphQLError("VARIANT_MERGE_BARCODE_CONFLICT");
+                    const skus = [...new Set(allVariants.map((variant) => variant.sku).filter((value): value is string => Boolean(value)))];
+                    if (skus.length > 1) throw new GraphQLError("VARIANT_MERGE_SKU_CONFLICT");
+
+                    const tags = [...new Set(allVariants.flatMap((variant) => variant.tags.map((tag) => tag.value.trim()).filter(Boolean)))];
+                    const sourceBarcodeOwner = sources.find((variant) => variant.barcode);
+                    await tx.variant.update({
+                        where: { id: targetId },
+                        data: {
+                            sku: target.sku ?? skus[0] ?? null,
+                            barcode: target.barcode ?? barcodes[0] ?? null,
+                            barcodeSource: target.barcode ? target.barcodeSource : sourceBarcodeOwner?.barcodeSource ?? null,
+                            barcodeVerifiedAt: target.barcode ? target.barcodeVerifiedAt : sourceBarcodeOwner?.barcodeVerifiedAt ?? null,
+                            name: target.name ?? sources.find((variant) => variant.name)?.name ?? null,
+                            name_ar: target.name_ar ?? sources.find((variant) => variant.name_ar)?.name_ar ?? null,
+                            description: target.description ?? sources.find((variant) => variant.description)?.description ?? null,
+                            description_ar: target.description_ar ?? sources.find((variant) => variant.description_ar)?.description_ar ?? null,
+                        },
+                    });
+
+                    const sourceIdsSet = sources.map((variant) => variant.id);
+                    await tx.product.updateMany({ where: { variantId: { in: sourceIdsSet } }, data: { variantId: targetId } });
+                    await tx.productImage.updateMany({ where: { variantId: { in: sourceIdsSet } }, data: { variantId: targetId } });
+                    await tx.tag.deleteMany({ where: { variantId: { in: [...sourceIdsSet, targetId] } } });
+                    if (tags.length) await tx.tag.createMany({ data: tags.map((value) => ({ value, variantId: targetId })) });
+
+                    const targetCandidates = await tx.barcodeCandidate.findMany({ where: { variantId: targetId }, select: { barcode: true, sourceUrl: true } });
+                    const targetCandidateKeys = new Set(targetCandidates.map((candidate) => `${candidate.barcode}\u0000${candidate.sourceUrl}`));
+                    for (const candidate of sources.flatMap((variant) => variant.barcodeCandidates)) {
+                        const key = `${candidate.barcode}\u0000${candidate.sourceUrl}`;
+                        if (targetCandidateKeys.has(key)) await tx.barcodeCandidate.delete({ where: { id: candidate.id } });
+                        else {
+                            await tx.barcodeCandidate.update({ where: { id: candidate.id }, data: { variantId: targetId } });
+                            targetCandidateKeys.add(key);
+                        }
+                    }
+
+                    await tx.variant.deleteMany({ where: { id: { in: sourceIdsSet } } });
+                    await tx.auditLog.create({
+                        data: {
+                            actorId: getUserId(ctx),
+                            action: "VARIANTS_MERGED",
+                            entity: "Variant",
+                            entityId: String(targetId),
+                            metadata: {
+                                targetId,
+                                sourceIds: sourceIdsSet,
+                                movedPartnerProductIds: sources.flatMap((variant) => variant.products.map((product) => product.id)),
+                                preservedTags: tags,
+                                preservedBarcodes: barcodes,
+                                preservedSkus: skus,
+                            },
+                        },
+                    });
+                    return tx.variant.findUniqueOrThrow({ where: { id: targetId } });
+                }, { timeout: 15000 });
+            },
+        });
         t.nonNull.field("moveVariantToTemplate", {
             type: "Variant",
             args: {

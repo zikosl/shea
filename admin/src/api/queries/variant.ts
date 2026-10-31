@@ -11,13 +11,16 @@ export const ADMIN_CATALOG_VARIANTS = gql`
         sku
         barcode
         productId
-        image
+        partnerProductCount
+        description
+        description_ar
+        tags { id value }
+        images { id url }
         product {
           id
           name
           name_ar
           category { id name name_ar }
-          images { url }
         }
       }
     }

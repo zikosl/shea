@@ -15,6 +15,7 @@ import {
 } from "./_constant/request";
 import { MERGE_PRODUCT_TEMPLATES } from "@/api/mutations/productTemplate";
 import { DELETE_PRODUCT_TEMPLATES } from "@/api/mutations/productTemplate";
+import { DELETE_VARIANTS, MERGE_VARIANTS } from "@/api/mutations/variant";
 import { SET_VARIANT_BARCODE } from "@/api/mutations/barcode-candidates";
 import { FIND_TEMPLATE_MERGE_DATA, SEARCH_TEMPLATE_MERGE_CANDIDATES } from "@/api/queries/productTemplate";
 import { ADMIN_CATALOG_VARIANTS } from "@/api/queries/variant";
@@ -25,8 +26,12 @@ export type CatalogVariantRow = {
   name_ar?: string | null;
   sku?: string | null;
   barcode?: string | null;
+  description?: string | null;
+  description_ar?: string | null;
   productId: number;
-  image?: string | null;
+  partnerProductCount: number;
+  tags?: Array<{ id: number; value: string }>;
+  images?: Array<{ id: number; url: string }>;
   product: { id: number; name?: string | null; name_ar?: string | null; category?: { id: number; name: string; name_ar?: string | null } | null; images?: Array<{ url: string }> };
 };
 
@@ -201,6 +206,43 @@ export async function setCatalogVariantBarcode(productId: number, variantId: num
   await requestServerGraphQL(SET_VARIANT_BARCODE, { variantId, barcode: normalized });
   revalidatePath(`/${link}`);
   revalidatePath(`/product-templates/${productId}/variants`);
+}
+
+export async function deleteCatalogVariants(variants: Array<{ id: number; productId: number }>) {
+  const unique = [...new Map(variants.map((variant) => [variant.id, variant])).values()];
+  if (!unique.length || unique.length > 100 || unique.some((variant) => !Number.isSafeInteger(variant.id) || variant.id < 1 || !Number.isSafeInteger(variant.productId) || variant.productId < 1)) {
+    throw new Error("Select between 1 and 100 valid variants.");
+  }
+  try {
+    const result = await requestServerGraphQL<{ deleteVariants: number }>(DELETE_VARIANTS, { ids: unique.map((variant) => variant.id) });
+    revalidatePath(`/${link}`);
+    for (const productId of new Set(unique.map((variant) => variant.productId))) revalidatePath(`/product-templates/${productId}/variants`);
+    return result.deleteVariants;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Could not delete selected variants.";
+    if (message.includes("VARIANT_HAS_PARTNER_PRODUCTS")) throw new Error("Some selected variants are used by partner products. No variants were deleted.");
+    if (message.includes("must keep at least one variant")) throw new Error("Each template must keep at least one variant. No variants were deleted.");
+    throw error;
+  }
+}
+
+export async function mergeCatalogVariants(targetId: number, sourceIds: number[], productId: number) {
+  const uniqueSourceIds = [...new Set(sourceIds)].filter((id) => id !== targetId);
+  if (!Number.isSafeInteger(targetId) || targetId < 1 || !Number.isSafeInteger(productId) || productId < 1 || !uniqueSourceIds.length || uniqueSourceIds.length > 25) {
+    throw new Error("Select 2 to 26 variants from the same template.");
+  }
+  try {
+    await requestServerGraphQL(MERGE_VARIANTS, { targetId, sourceIds: uniqueSourceIds });
+    revalidatePath(`/${link}`);
+    revalidatePath(`/product-templates/${productId}/variants`);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Could not merge selected variants.";
+    if (message.includes("VARIANT_MERGE_TEMPLATE_MISMATCH")) throw new Error("Variants can only be merged when they belong to the same template.");
+    if (message.includes("VARIANT_MERGE_PARTNER_COLLISION")) throw new Error("These variants are both listed by the same partner. Remove or consolidate that partner listing first; nothing was changed.");
+    if (message.includes("VARIANT_MERGE_BARCODE_CONFLICT")) throw new Error("The variants have different assigned barcodes. Resolve the barcode conflict before merging.");
+    if (message.includes("VARIANT_MERGE_SKU_CONFLICT")) throw new Error("The variants have different SKUs. Resolve the SKU conflict before merging.");
+    throw error;
+  }
 }
 
 export async function updateItem(id: string, itemData: ProductTemplatePayload) {
