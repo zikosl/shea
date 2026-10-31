@@ -173,9 +173,27 @@ export const VariantMutation = extendType({
                         if (tags.length) await tx.tag.createMany({ data: tags.map((value) => ({ value, variantId: id })) });
                     }
                     if (data.images) {
-                        await tx.productImage.deleteMany({ where: { variantId: id } });
-                        if (data.images.length) {
-                            await tx.productImage.createMany({ data: data.images.filter((url): url is string => Boolean(url?.trim())).map((url) => ({ url: url.trim(), variantId: id })) });
+                        const imageUrls = Array.from(new Set(
+                            data.images
+                                .filter((url): url is string => Boolean(url?.trim()))
+                                .map((url) => url.trim()),
+                        ));
+
+                        // ProductImage URLs are globally unique, so reconnect existing rows
+                        // instead of deleting and recreating them (which can violate url's
+                        // unique constraint when another catalog record already uses a URL).
+                        await tx.productImage.deleteMany({
+                            where: {
+                                variantId: id,
+                                ...(imageUrls.length ? { url: { notIn: imageUrls } } : {}),
+                            },
+                        });
+                        for (const url of imageUrls) {
+                            await tx.productImage.upsert({
+                                where: { url },
+                                create: { url, variantId: id },
+                                update: { variantId: id, product_template_id: null },
+                            });
                         }
                     }
                 });
