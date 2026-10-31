@@ -754,9 +754,11 @@ type Mutation {
   deletePartner(id: Int!): Partner
   deleteProduct(id: Int!): Product
   deleteProductTemplate(id: Int!): ProductTemplate
+  deleteProductTemplates(ids: [Int!]!): Int!
   deleteProductType(id: Int!): ProductType
   deleteSchedule(id: Int!): PartnerDeliverySchedule
   deleteVariant(id: Int!): Variant
+  deleteVariants(ids: [Int!]!): Int!
   deliverOrder(id: Int!): OrderDispatch
   driverOrder(id: Int!, status: DispatchStatus!): OrderDispatch
   logout(tokenId: String): Boolean

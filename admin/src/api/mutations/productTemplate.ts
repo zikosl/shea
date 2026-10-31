@@ -65,6 +65,12 @@ const DELETE_PRODUCT_TEMPLATE = gql`
   }
 `;
 
+const DELETE_PRODUCT_TEMPLATES = gql`
+  mutation DeleteProductTemplates($ids: [Int!]!) {
+    deleteProductTemplates(ids: $ids)
+  }
+`;
+
 const MERGE_PRODUCT_TEMPLATES = gql`
   mutation MergeProductTemplates($targetId: Int!, $sourceIds: [Int!]!) {
     mergeProductTemplates(targetId: $targetId, sourceIds: $sourceIds) {
@@ -79,5 +85,6 @@ export {
   UPDATE_PRODUCT_TEMPLATE,
   UPDATE_PRODUCT_TEMPLATE_IMAGES,
   DELETE_PRODUCT_TEMPLATE,
+  DELETE_PRODUCT_TEMPLATES,
   MERGE_PRODUCT_TEMPLATES,
 }

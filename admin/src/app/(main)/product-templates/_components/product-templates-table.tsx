@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
-import { ArrowRight, Check, Combine, Loader2, TriangleAlert, X } from "lucide-react";
+import { ArrowRight, Check, Combine, Loader2, Trash2, TriangleAlert, X } from "lucide-react";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/table/data-table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-import { getTemplateForMerge, mergeProductTemplates, type MergeTemplate } from "../actions";
+import { deleteItems, getTemplateForMerge, mergeProductTemplates, type MergeTemplate } from "../actions";
 import { Item } from "../_constant";
 import { columns } from "./tables/columns";
 import { useProductTemplateSelection } from "./product-template-selection";
@@ -37,6 +37,8 @@ export default function ProductTemplatesTable({ data, totalItems }: Props) {
   const [mergeOpen, setMergeOpen] = useState(false);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [merging, setMerging] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [step, setStep] = useState<Step>("choose");
   const [templates, setTemplates] = useState<MergeTemplate[]>([]);
   const [targetId, setTargetId] = useState<number | null>(null);
@@ -113,6 +115,24 @@ export default function ProductTemplatesTable({ data, totalItems }: Props) {
     router.refresh();
   };
 
+  const confirmDelete = async () => {
+    setDeleting(true);
+    try {
+      const count = await deleteItems(selectedIds);
+      toast.success(`${count} product template${count === 1 ? "" : "s"} deleted.`);
+      clearSelection();
+      setDeleteOpen(false);
+      router.refresh();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not delete the selected templates.";
+      toast.error(message.includes("TEMPLATE_HAS_PARTNER_PRODUCTS")
+        ? "Some selected templates are used by partner products. Remove those listings first; no templates were deleted."
+        : message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const selectionColumn: ColumnDef<Item> = {
     id: "select",
     header: () => <Checkbox checked={selectedOnPage > 0 && !allVisibleSelected ? "indeterminate" : allVisibleSelected} onCheckedChange={(checked) => togglePage(checked === true)} aria-label="Select all templates on this page" />,
@@ -129,12 +149,30 @@ export default function ProductTemplatesTable({ data, totalItems }: Props) {
       <div className="flex flex-wrap items-center gap-2">
         <Button type="button" variant="ghost" size="sm" onClick={clearSelection} className="gap-1.5"><X className="h-4 w-4" /> Clear</Button>
         <Button type="button" disabled={selectedItems.length < 2 || mixedCategories} onClick={() => void beginMerge()} className="gap-2"><Combine className="h-4 w-4" /> Merge templates</Button>
+        <Button type="button" variant="destructive" disabled={selectedIds.length > 50} onClick={() => setDeleteOpen(true)} className="gap-2"><Trash2 className="h-4 w-4" /> Delete selected</Button>
       </div>
       {mixedCategories && <p className="basis-full text-xs text-amber-700">Choose templates from one category to merge them.</p>}
+      {selectedIds.length > 50 && <p className="basis-full text-xs text-amber-700">Bulk deletion is limited to 50 templates per operation. Clear some selections first.</p>}
       {selectedItems.length === 1 && <p className="basis-full text-xs text-muted-foreground">Select at least one more template to enable merging.</p>}
     </div>}
 
     <DataTable columns={[selectionColumn, ...columns]} data={data} totalItems={totalItems} />
+
+    <Dialog open={deleteOpen} onOpenChange={(open) => !deleting && setDeleteOpen(open)}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete {selectedIds.length} product template{selectedIds.length === 1 ? "" : "s"}?</DialogTitle>
+          <DialogDescription>This permanently removes the selected templates and their unused variants, tags and images. Templates with partner listings block the entire operation, so no partial deletion occurs.</DialogDescription>
+        </DialogHeader>
+        <div className="max-h-48 overflow-y-auto rounded-lg border divide-y">
+          {selectedItems.map((item) => <div key={item.id} className="flex items-center justify-between gap-3 px-3 py-2 text-sm"><span className="truncate">{item.name}</span><span className="shrink-0 text-xs text-muted-foreground">{item.variantCount ?? 0} variants</span></div>)}
+        </div>
+        <DialogFooter>
+          <Button type="button" variant="outline" disabled={deleting} onClick={() => setDeleteOpen(false)}>Cancel</Button>
+          <Button type="button" variant="destructive" disabled={deleting || selectedIds.length === 0 || selectedIds.length > 50} onClick={() => void confirmDelete()}>{deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Delete templates</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 
     <Dialog open={mergeOpen} onOpenChange={(open) => !open && closeMerge()}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">

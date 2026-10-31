@@ -14,6 +14,7 @@ import {
   UPDATE_ITEM_IMAGES,
 } from "./_constant/request";
 import { MERGE_PRODUCT_TEMPLATES } from "@/api/mutations/productTemplate";
+import { DELETE_PRODUCT_TEMPLATES } from "@/api/mutations/productTemplate";
 import { SET_VARIANT_BARCODE } from "@/api/mutations/barcode-candidates";
 import { FIND_TEMPLATE_MERGE_DATA, SEARCH_TEMPLATE_MERGE_CANDIDATES } from "@/api/queries/productTemplate";
 import { ADMIN_CATALOG_VARIANTS } from "@/api/queries/variant";
@@ -236,6 +237,20 @@ export async function deleteItem(id: string) {
 
   revalidatePath(`/${link}`);
   return response.deleteProductTemplate.id;
+}
+
+export async function deleteItems(ids: string[]) {
+  const numericIds = [...new Set(ids.map((id) => Number.parseInt(id, 10)))];
+  if (!numericIds.length || numericIds.some((id) => !Number.isSafeInteger(id) || id < 1)) {
+    throw new Error("Select at least one valid product template.");
+  }
+
+  const response = await requestServerGraphQL<{ deleteProductTemplates: number }>(
+    DELETE_PRODUCT_TEMPLATES,
+    { ids: numericIds },
+  );
+  revalidatePath(`/${link}`);
+  return response.deleteProductTemplates;
 }
 
 export async function getTemplateForMerge(id: number) {

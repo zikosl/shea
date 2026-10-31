@@ -18,8 +18,9 @@ import { FileUploader } from "@/components/ui/file-upload";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 
-import { createVariantCombinations, createVariantItem, deleteVariantItem, moveVariantToTemplate, searchVariantMoveTargets, submitPhysicalBarcode, updateVariantItem, type VariantMoveTarget } from "./actions";
+import { createVariantCombinations, createVariantItem, deleteVariantItem, deleteVariantItems, moveVariantToTemplate, searchVariantMoveTargets, submitPhysicalBarcode, updateVariantItem, type VariantMoveTarget } from "./actions";
 
 type Props = {
   productId: number;
@@ -54,6 +55,8 @@ export default function VariantsManager({ productId, productName, categoryId, va
   const [candidateBarcode, setCandidateBarcode] = useState("");
   const [editImages, setEditImages] = useState<string[]>([]);
   const [deleting, setDeleting] = useState<ProductVariant | null>(null);
+  const [selectedVariantIds, setSelectedVariantIds] = useState<number[]>([]);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [movingVariant, setMovingVariant] = useState<ProductVariant | null>(null);
   const [moveSearch, setMoveSearch] = useState("");
   const [moveTargets, setMoveTargets] = useState<VariantMoveTarget[]>([]);
@@ -71,6 +74,24 @@ export default function VariantsManager({ productId, productName, categoryId, va
     ? validDimensions.reduce((count, values) => count * values.length, 1)
     : 0;
   const pageCount = Math.max(1, Math.ceil(total / limit));
+  const deletableVariants = variants.filter((variant) => variant.productCount === 0);
+  const selectedDeletableCount = variants.filter((variant) => selectedVariantIds.includes(Number(variant.id)) && variant.productCount === 0).length;
+  const allDeletableSelected = deletableVariants.length > 0 && selectedDeletableCount === deletableVariants.length;
+
+  useEffect(() => {
+    setSelectedVariantIds([]);
+  }, [page, search]);
+
+  function toggleVariantSelection(id: number, checked: boolean) {
+    setSelectedVariantIds((current) => checked ? [...new Set([...current, id])] : current.filter((selectedId) => selectedId !== id));
+  }
+
+  function togglePageVariants(checked: boolean) {
+    const pageIds = deletableVariants.map((variant) => Number(variant.id));
+    setSelectedVariantIds((current) => checked
+      ? [...new Set([...current, ...pageIds])]
+      : current.filter((id) => !pageIds.includes(id)));
+  }
 
   useEffect(() => {
     const query = moveSearch.trim();
@@ -163,10 +184,24 @@ export default function VariantsManager({ productId, productName, categoryId, va
         <Input name="search" defaultValue={search} placeholder="Search name or SKU..." className="pl-9" />
       </form>
 
+      {selectedVariantIds.length ? <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3">
+        <p className="text-sm"><span className="font-medium">{selectedVariantIds.length} selected</span><span className="text-muted-foreground"> · only variants without partner listings can be deleted</span></p>
+        <div className="flex items-center gap-2">
+          <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedVariantIds([])}><X className="mr-1 h-4 w-4" />Clear</Button>
+          <Button type="button" variant="destructive" size="sm" disabled={selectedDeletableCount === 0 || selectedDeletableCount >= allVariantCount} onClick={() => setBulkDeleteOpen(true)}><Trash2 className="mr-1 h-4 w-4" />Delete selected</Button>
+        </div>
+        {selectedDeletableCount >= allVariantCount && <p className="basis-full text-xs text-amber-700">A product template must keep at least one variant.</p>}
+      </div> : null}
+
       {variants.length ? (
         <div className="overflow-hidden rounded-xl border bg-card">
+          <div className="flex items-center gap-3 border-b bg-muted/30 px-4 py-2 text-xs text-muted-foreground">
+            <Checkbox checked={allDeletableSelected ? true : selectedDeletableCount ? "indeterminate" : false} disabled={!deletableVariants.length} onCheckedChange={(checked) => togglePageVariants(checked === true)} aria-label="Select all deletable variants on this page" />
+            <span>Select deletable variants on this page</span>
+          </div>
           {variants.map((variant, index) => (
-            <div key={variant.id} className={`grid gap-4 p-4 sm:grid-cols-[56px_minmax(0,1fr)_auto] sm:items-center ${index ? "border-t" : ""}`}>
+            <div key={variant.id} className={`grid grid-cols-[24px_56px_minmax(0,1fr)] gap-3 p-4 sm:grid-cols-[24px_56px_minmax(0,1fr)_auto] sm:items-center ${index ? "border-t" : ""}`}>
+              <Checkbox checked={selectedVariantIds.includes(Number(variant.id))} disabled={variant.productCount > 0} onCheckedChange={(checked) => toggleVariantSelection(Number(variant.id), checked === true)} aria-label={`Select ${variant.name || "unnamed variant"}`} />
               <div className="relative h-14 w-14 overflow-hidden rounded-lg border bg-muted">
                 {variant.images[0] ? (
                   <Image unoptimized fill src={resolvePublicAssetUrl(variant.images[0].url)} alt="" className="object-cover" />
@@ -186,7 +221,7 @@ export default function VariantsManager({ productId, productName, categoryId, va
                   {variant.tags.map((tag) => <Badge key={tag.id} variant="outline">{tag.value}</Badge>)}
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2 sm:justify-end">
+              <div className="col-span-3 flex flex-wrap gap-2 sm:col-span-1 sm:justify-end">
                 <Button type="button" variant="outline" size="sm" onClick={() => beginEdit(variant)}><Pencil /> Edit</Button>
                 <Button type="button" variant="outline" size="sm" onClick={() => { setMovingVariant(variant); setMoveTarget(null); setMoveSearch(""); }}><ArrowRightLeft /> Move</Button>
                 <Button type="button" variant="ghost" size="icon" disabled={variant.productCount > 0} onClick={() => setDeleting(variant)} aria-label="Delete variant"><Trash2 /></Button>
@@ -321,6 +356,14 @@ export default function VariantsManager({ productId, productName, categoryId, va
 
       <Dialog open={Boolean(deleting)} onOpenChange={(open) => !open && setDeleting(null)}>
         <DialogContent><DialogHeader><DialogTitle>Delete this variant?</DialogTitle><DialogDescription>This removes the variant and its images. Variants already used by a partner cannot be deleted.</DialogDescription></DialogHeader><DialogFooter><Button type="button" variant="outline" onClick={() => setDeleting(null)}>Cancel</Button><Button type="button" variant="destructive" disabled={isPending} onClick={() => deleting && run(() => deleteVariantItem(productId, Number(deleting.id)), "Variant deleted", () => setDeleting(null))}>{isPending && <Loader2 className="animate-spin" />} Delete variant</Button></DialogFooter></DialogContent>
+      </Dialog>
+
+      <Dialog open={bulkDeleteOpen} onOpenChange={(open) => !isPending && setBulkDeleteOpen(open)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Delete {selectedDeletableCount} selected variant{selectedDeletableCount === 1 ? "" : "s"}?</DialogTitle><DialogDescription>This permanently removes these variants, their tags and images. Variants linked to partner products cannot be selected, and each template will keep at least one variant.</DialogDescription></DialogHeader>
+          <div className="max-h-52 divide-y overflow-y-auto rounded-lg border">{variants.filter((variant) => selectedVariantIds.includes(Number(variant.id)) && variant.productCount === 0).map((variant) => <div key={variant.id} className="px-3 py-2 text-sm">{variant.name || "Unnamed variant"}{variant.sku ? <span className="ml-2 text-xs text-muted-foreground">{variant.sku}</span> : null}</div>)}</div>
+          <DialogFooter><Button type="button" variant="outline" disabled={isPending} onClick={() => setBulkDeleteOpen(false)}>Cancel</Button><Button type="button" variant="destructive" disabled={isPending || selectedDeletableCount === 0 || selectedDeletableCount >= allVariantCount} onClick={() => run(async () => { await deleteVariantItems(productId, selectedVariantIds); setSelectedVariantIds([]); }, `${selectedDeletableCount} variants deleted`, () => setBulkDeleteOpen(false))}>{isPending && <Loader2 className="animate-spin" />}Delete variants</Button></DialogFooter>
+        </DialogContent>
       </Dialog>
 
       <Dialog open={Boolean(movingVariant)} onOpenChange={(open) => !open && !isPending && closeMoveDialog()}>

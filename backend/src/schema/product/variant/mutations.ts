@@ -230,6 +230,51 @@ export const VariantMutation = extendType({
                 });
             },
         });
+        t.nonNull.int("deleteVariants", {
+            args: { ids: nonNull(list(nonNull(intArg()))) },
+            resolve: async (_parent, { ids }: { ids: number[] }, ctx: Context) => {
+                const uniqueIds = [...new Set(ids)];
+                if (!uniqueIds.length || uniqueIds.length > 100 || uniqueIds.some((id) => !Number.isSafeInteger(id) || id < 1)) {
+                    throw new GraphQLError("Select between 1 and 100 valid variants");
+                }
+
+                return ctx.prisma.$transaction(async (tx) => {
+                    const variants = await tx.variant.findMany({
+                        where: { id: { in: uniqueIds } },
+                        select: { id: true, productId: true, _count: { select: { products: true } } },
+                    });
+                    if (variants.length !== uniqueIds.length) throw new GraphQLError("One or more variants no longer exist");
+                    if (variants.some((variant) => variant._count.products > 0)) {
+                        throw new GraphQLError("VARIANT_HAS_PARTNER_PRODUCTS");
+                    }
+
+                    const counts = await tx.variant.groupBy({
+                        by: ["productId"],
+                        where: { productId: { in: [...new Set(variants.map((variant) => variant.productId))] } },
+                        _count: { _all: true },
+                    });
+                    const selectedByTemplate = new Map<number, number>();
+                    for (const variant of variants) selectedByTemplate.set(variant.productId, (selectedByTemplate.get(variant.productId) ?? 0) + 1);
+                    if (counts.some((count) => count._count._all <= (selectedByTemplate.get(count.productId) ?? 0))) {
+                        throw new GraphQLError("A product template must keep at least one variant");
+                    }
+
+                    await tx.productImage.deleteMany({ where: { variantId: { in: uniqueIds } } });
+                    await tx.tag.deleteMany({ where: { variantId: { in: uniqueIds } } });
+                    await tx.variant.deleteMany({ where: { id: { in: uniqueIds } } });
+                    await tx.auditLog.create({
+                        data: {
+                            actorId: getUserId(ctx),
+                            action: "VARIANTS_DELETED",
+                            entity: "Variant",
+                            entityId: uniqueIds.join(","),
+                            metadata: { variantIds: uniqueIds, productTemplateIds: [...new Set(variants.map((variant) => variant.productId))] },
+                        },
+                    });
+                    return uniqueIds.length;
+                }, { timeout: 15000 });
+            },
+        });
         t.nonNull.field("moveVariantToTemplate", {
             type: "Variant",
             args: {

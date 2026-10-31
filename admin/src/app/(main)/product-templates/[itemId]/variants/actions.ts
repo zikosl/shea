@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { CREATE_VARIANTS, DELETE_VARIANT, MOVE_VARIANT_TO_TEMPLATE, UPDATE_VARIANT } from "@/api/mutations";
+import { CREATE_VARIANTS, DELETE_VARIANT, DELETE_VARIANTS, MOVE_VARIANT_TO_TEMPLATE, UPDATE_VARIANT } from "@/api/mutations";
 import { FIND_MANY_VARIANTS } from "@/api/queries";
 import { SEARCH_TEMPLATE_MERGE_CANDIDATES } from "@/api/queries/productTemplate";
 import { requestServerGraphQL } from "@/lib/server-request";
@@ -134,6 +134,22 @@ export async function updateVariantItem(
 export async function deleteVariantItem(productId: number, id: number) {
   await requestServerGraphQL(DELETE_VARIANT, { id });
   revalidatePath(`/product-templates/${productId}/variants`);
+}
+
+export async function deleteVariantItems(productId: number, ids: number[]) {
+  const uniqueIds = [...new Set(ids)];
+  if (!uniqueIds.length) throw new Error("Select at least one variant.");
+  try {
+    const response = await requestServerGraphQL<{ deleteVariants: number }>(DELETE_VARIANTS, { ids: uniqueIds });
+    revalidatePath(`/product-templates/${productId}/variants`);
+    revalidatePath("/product-templates");
+    return response.deleteVariants;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Could not delete the selected variants.";
+    if (message.includes("VARIANT_HAS_PARTNER_PRODUCTS")) throw new Error("Some selected variants are used by partner products. Remove those listings first; no variants were deleted.");
+    if (message.includes("must keep at least one variant")) throw new Error("Each product template must keep at least one variant. No variants were deleted.");
+    throw error;
+  }
 }
 
 export async function submitPhysicalBarcode(productId: number, variantId: number, barcode: string) {

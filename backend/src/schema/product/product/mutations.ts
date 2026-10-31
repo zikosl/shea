@@ -48,6 +48,52 @@ const AdminPartnerProductUpdateInput = inputObjectType({
     },
 })
 
+async function deleteProductTemplatesSafely(ctx: Context, ids: number[]) {
+    const uniqueIds = [...new Set(ids)]
+    if (!uniqueIds.length || uniqueIds.length > 50 || uniqueIds.some((id) => !Number.isSafeInteger(id) || id < 1)) {
+        throw new GraphQLError('Select between 1 and 50 valid product templates')
+    }
+
+    return ctx.prisma.$transaction(async (tx) => {
+        const templates = await tx.productTemplate.findMany({
+            where: { id: { in: uniqueIds } },
+            include: { variants: { select: { id: true, _count: { select: { products: true } } } } },
+        })
+        if (templates.length !== uniqueIds.length) throw new GraphQLError('One or more product templates no longer exist')
+
+        const blocked = templates.flatMap((template) => template.variants
+            .filter((variant) => variant._count.products > 0)
+            .map((variant) => ({ templateId: template.id, variantId: variant.id })))
+        if (blocked.length) {
+            throw new GraphQLError(`TEMPLATE_HAS_PARTNER_PRODUCTS:${blocked.map((item) => item.templateId).join(',')}`)
+        }
+
+        const variantIds = templates.flatMap((template) => template.variants.map((variant) => variant.id))
+        if (variantIds.length) {
+            await tx.productImage.deleteMany({ where: { variantId: { in: variantIds } } })
+            await tx.tag.deleteMany({ where: { variantId: { in: variantIds } } })
+            await tx.variant.deleteMany({ where: { id: { in: variantIds } } })
+        }
+        await tx.productImage.deleteMany({ where: { product_template_id: { in: uniqueIds } } })
+        await tx.productTemplateRequest.updateMany({
+            where: { approvedTemplateId: { in: uniqueIds } },
+            data: { approvedTemplateId: null },
+        })
+        await tx.productTemplate.deleteMany({ where: { id: { in: uniqueIds } } })
+        await tx.auditLog.create({
+            data: {
+                actorId: getUserId(ctx),
+                action: 'PRODUCT_TEMPLATES_DELETED',
+                entity: 'ProductTemplate',
+                entityId: uniqueIds.join(','),
+                metadata: { templateIds: uniqueIds, deletedVariantIds: variantIds },
+            },
+        })
+
+        return templates
+    }, { timeout: 15000 })
+}
+
 const ProductMutation = extendType({
     type: 'Mutation',
     definition(t) {
@@ -328,10 +374,15 @@ const ProductTemplateMutation = extendType({
                 id: nonNull(intArg()),
             },
             resolve: async (_parent, { id }, ctx: Context) => {
-                const deletedProduct = await ctx.prisma.productTemplate.delete({
-                    where: { id },
-                })
-                return deletedProduct
+                const deleted = await deleteProductTemplatesSafely(ctx, [id])
+                return deleted[0]
+            },
+        })
+        t.nonNull.int('deleteProductTemplates', {
+            args: { ids: nonNull(list(nonNull(intArg()))) },
+            resolve: async (_parent, { ids }: { ids: number[] }, ctx: Context) => {
+                const deleted = await deleteProductTemplatesSafely(ctx, ids)
+                return deleted.length
             },
         })
         t.nonNull.field('mergeProductTemplates', {

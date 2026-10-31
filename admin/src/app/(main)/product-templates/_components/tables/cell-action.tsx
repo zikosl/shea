@@ -35,8 +35,11 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
         toast.success(`${response} deleted successfully`);
       }
       router.replace(`/${link}`);
-    } catch (_error) {
-      toast.error("Something went wrong");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not delete this product template.";
+      toast.error(message.includes("TEMPLATE_HAS_PARTNER_PRODUCTS")
+        ? "This template has variants listed by partners. Remove those listings before deleting it."
+        : message);
     } finally {
       setLoading(false);
       setOpen(false);
