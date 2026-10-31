@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { ADMIN_DISCOVER_BARCODE } from "@/api/queries/barcode-entry";
 import { IMPORT_EXTERNAL_CATALOG_IMAGE } from "@/api/mutations/barcode-candidates";
 import { requestServerGraphQL } from "@/lib/server-request";
-import { createItem, getSearchItem, setCatalogVariantBarcode } from "../product-templates/actions";
+import { createItem, getCatalogVariants, getSearchItem, setCatalogVariantBarcode } from "../product-templates/actions";
 import { createVariantItem, getVariants, updateVariantItem } from "../product-templates/[itemId]/variants/actions";
 
 export type BarcodeDiscovery = {
@@ -41,12 +41,53 @@ async function persistImage(value?: string | null) {
 
 export async function discoverAdminBarcode(barcode: string) {
   const result = await requestServerGraphQL<{ adminDiscoverBarcode: BarcodeDiscovery }>(ADMIN_DISCOVER_BARCODE, { barcode: normalizeBarcode(barcode) });
-  return result.adminDiscoverBarcode;
+  const discovery = result.adminDiscoverBarcode;
+  if (!discovery.matches.length) return discovery;
+
+  // Older deployed APIs omit the match image field; hydrate thumbnails in one catalog request.
+  const imageFields = discovery.matches.map((_, index) => `match${index}: findOneProductTemplate(id: $id${index}) { id images { url } }`);
+  const imageDeclarations = discovery.matches.map((_, index) => `$id${index}: Int!`);
+  const imageVariables = Object.fromEntries(discovery.matches.map((match, index) => [`id${index}`, match.templateId]));
+  let imageByTemplate = new Map<number, string | null>();
+  try {
+    const imageResult = await requestServerGraphQL<Record<string, { id: number; images: Array<{ url: string }> } | null>>(
+      `query BarcodeMatchImages(${imageDeclarations.join(", ")}) { ${imageFields.join(" ")} }`,
+      imageVariables,
+    );
+    imageByTemplate = new Map(Object.values(imageResult).filter((item): item is { id: number; images: Array<{ url: string }> } => Boolean(item)).map((item) => [item.id, item.images[0]?.url ?? null]));
+  } catch {
+    // Keep lookup usable if the deployment also lacks the template-image query fields.
+  }
+  return {
+    ...discovery,
+    matches: discovery.matches.map((match) => ({ ...match, image: match.image ?? imageByTemplate.get(match.templateId) ?? null })),
+  };
 }
 
 export async function searchBarcodeTemplates(input: { search: string; nicheId?: number; categoryId?: number; productTypeId?: number; brandId?: number }) {
   const result = await getSearchItem({ search: input.search, page: 1, limit: 30, niche_id: input.nicheId, category_id: input.categoryId, product_type_id: input.productTypeId, brand_id: input.brandId });
   return result.items.map((item) => ({ id: Number(item.id), name: item.name, brand: item.brand?.name ?? "No brand", category: item.category?.name ?? "Uncategorized", image: item.images?.[0]?.url ?? null, variantCount: item.variantCount ?? 0 }));
+}
+
+export async function searchBarcodeVariants(input: { search: string; nicheId?: number; categoryId?: number; productTypeId?: number; brandId?: number }) {
+  const result = await getCatalogVariants({
+    search: input.search,
+    page: 1,
+    limit: 100,
+    niche_id: input.nicheId,
+    category_id: input.categoryId,
+    product_type_id: input.productTypeId,
+    brand_id: input.brandId,
+  });
+  return result.items.map((variant) => ({
+    id: Number(variant.id),
+    productId: Number(variant.productId),
+    name: variant.name || variant.tags?.map((tag) => tag.value).join(" / ") || "Standard",
+    barcode: variant.barcode ?? null,
+    image: variant.images?.[0]?.url ?? variant.product.images?.[0]?.url ?? null,
+    productName: variant.product.name ?? "Unnamed product",
+    categoryName: variant.product.category?.name ?? "Uncategorized",
+  }));
 }
 
 export async function getBarcodeTemplateVariants(productId: number) {

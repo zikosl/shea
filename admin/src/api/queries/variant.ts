@@ -20,6 +20,7 @@ export const ADMIN_CATALOG_VARIANTS = gql`
           id
           name
           name_ar
+          images { url }
           category { id name name_ar }
         }
       }
