@@ -189,8 +189,34 @@ export function FileUploader(props: FileUploaderProps) {
 
     const isDisabled = disabled || (files?.length ?? 0) >= maxFiles
 
+    const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
+        if (isDisabled) return
+
+        const clipboard = event.clipboardData
+        const pastedFiles = [
+            ...Array.from(clipboard.items)
+                .filter((item) => item.kind === "file" && item.type.startsWith("image/"))
+                .map((item) => item.getAsFile())
+                .filter((file): file is File => file !== null),
+            ...Array.from(clipboard.files).filter((file) => file.type.startsWith("image/")),
+        ]
+        const uniqueFiles = Array.from(new Map(pastedFiles.map((file) => [`${file.name}:${file.size}:${file.lastModified}`, file])).values())
+        if (!uniqueFiles.length) return
+
+        event.preventDefault()
+        const namedFiles = uniqueFiles.map((file, index) => {
+            if (file.name) return file
+            const extension = file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1] || "png"
+            return new File([file], `pasted-image-${Date.now()}-${index}.${extension}`, {
+                type: file.type,
+                lastModified: file.lastModified,
+            })
+        })
+        onDrop(namedFiles, [])
+    }
+
     return (
-        <div className="relative flex flex-col gap-6 overflow-hidden">
+        <div className="relative flex flex-col gap-6 overflow-hidden" onPasteCapture={handlePaste}>
             <Dropzone
                 onDrop={onDrop}
                 accept={accept}
@@ -202,25 +228,6 @@ export function FileUploader(props: FileUploaderProps) {
                 {({ getRootProps, getInputProps, isDragActive }) => (
                     <div
                         {...getRootProps()}
-                        onPaste={(event) => {
-                            const pastedImages = Array.from(event.clipboardData.items)
-                                .filter((item) => item.type.startsWith("image/"))
-                                .map((item) => item.getAsFile())
-                                .filter((file): file is File => file !== null);
-                            if (!pastedImages.length) return;
-                            event.preventDefault();
-                            const accepted = pastedImages.filter((file) => {
-                                const matchesType = Object.entries(accept ?? {}).some(([mime, extensions]) => {
-                                    const mimeMatches = mime.endsWith("/*") ? file.type.startsWith(mime.slice(0, -1)) : file.type === mime;
-                                    const extensionMatches = extensions.some((extension) => file.name.toLowerCase().endsWith(extension.toLowerCase()));
-                                    return mimeMatches || extensionMatches;
-                                });
-                                if (!matchesType) toast.error(`File ${file.name} has an unsupported type`);
-                                else if (file.size > maxSize) toast.error(`File ${file.name} is larger than ${formatBytes(maxSize)}`);
-                                return matchesType && file.size <= maxSize;
-                            });
-                            if (accepted.length) onDrop(accepted, []);
-                        }}
                         className={cn(
                             "group relative grid h-52 w-full cursor-pointer place-items-center rounded-lg border-2 border-dashed border-muted-foreground/25 px-5 py-2.5 text-center transition hover:bg-muted/25",
                             "ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",

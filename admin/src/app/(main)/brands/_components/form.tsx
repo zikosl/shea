@@ -161,9 +161,6 @@ export default function ItemForm({
 
                     <FileUploader
                       maxSize={25 * 1024 * 1024}
-                      onValueChange={(file) =>
-                        field.onChange(file)
-                      }
                       progresses={progresses}
                       onUpload={handleUpload}
                       disabled={isUploading}
