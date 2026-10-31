@@ -8,7 +8,7 @@ export const ADMIN_DISCOVER_BARCODE = gql`
       existing { id productId name productName }
       external { name nameAr description brand quantity tags imageUrl sourceUrl sourceName }
       matches {
-        templateId name description image brand categoryId nicheId productTypeId brandId score reason
+        templateId name description brand categoryId nicheId productTypeId brandId score reason
         variants { id name barcode sizeHint }
       }
     }
