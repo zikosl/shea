@@ -100,6 +100,12 @@ enum ProductTemplateRequestStatus {
   MERGED
 }
 
+enum ProductTemplateCatalogStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
 enum CatalogProposalEntityType {
   CATEGORY
   PRODUCT_TYPE
@@ -277,8 +283,8 @@ model User {
   addresses          Address[]
   pushTokens         PushToken[]
   sales              Sale[]
-  cashSessionsOpened CashSession[]        @relation("CashSessionOpenedBy")
-  cashSessionsClosed CashSession[]        @relation("CashSessionClosedBy")
+  cashSessionsOpened CashSession[]         @relation("CashSessionOpenedBy")
+  cashSessionsClosed CashSession[]         @relation("CashSessionClosedBy")
   stockMovements     StockMovement[]
   orderStatusChanges OrderStatusHistory[]
 }
@@ -299,7 +305,7 @@ model Address {
 }
 
 model Token {
-  id           String   @id @default(uuid())
+  id           String    @id @default(uuid())
   userId       Int
   refreshToken String
   expiresAt    DateTime
@@ -309,11 +315,11 @@ model Token {
   appVersion   String?
   ipAddress    String?
   userAgent    String?
-  lastSeenAt   DateTime @default(now())
+  lastSeenAt   DateTime  @default(now())
   revokedAt    DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, revokedAt, expiresAt])
   @@index([userId, deviceKey])
@@ -412,10 +418,10 @@ model Admin {
 }
 
 model Contributor {
-  userId    Int     @id
-  name      String
-  active    Boolean @default(true)
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int     @id
+  name   String
+  active Boolean @default(true)
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum CatalogContributionKind {
@@ -743,18 +749,18 @@ model StockReservation {
 }
 
 model Device {
-  id         String    @id @default(uuid())
-  deviceKey  String    @unique
-  partnerId  Int
-  name       String?
-  platform   Platform
-  appVersion String?
-  lastSyncAt DateTime?
-  revokedAt  DateTime?
+  id                      String    @id @default(uuid())
+  deviceKey               String    @unique
+  partnerId               Int
+  name                    String?
+  platform                Platform
+  appVersion              String?
+  lastSyncAt              DateTime?
+  revokedAt               DateTime?
   transferTargetPartnerId Int?
-  transferAuthorizedAt DateTime?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  transferAuthorizedAt    DateTime?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
 
   partner          Partner           @relation(fields: [partnerId], references: [userId], onDelete: Cascade)
   sales            Sale[]
@@ -848,23 +854,23 @@ model Sale {
 }
 
 model SaleItem {
-  id          String   @id @default(uuid())
-  saleId      String
-  productId   Int
-  quantity    Float
-  unitPrice   Float
-  discount    Float    @default(0)
-  tax         Float    @default(0)
-  total       Float
-  costPrice   Float    @default(0)
-  profit      Float    @default(0)
-  returnedQuantity Float @default(0)
-  productName String
-  variantName String?
-  createdAt   DateTime @default(now())
+  id               String   @id @default(uuid())
+  saleId           String
+  productId        Int
+  quantity         Float
+  unitPrice        Float
+  discount         Float    @default(0)
+  tax              Float    @default(0)
+  total            Float
+  costPrice        Float    @default(0)
+  profit           Float    @default(0)
+  returnedQuantity Float    @default(0)
+  productName      String
+  variantName      String?
+  createdAt        DateTime @default(now())
 
-  sale    Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id])
+  sale        Sale             @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product     Product          @relation(fields: [productId], references: [id])
   refundItems SaleRefundItem[]
 
   @@index([saleId])
@@ -872,14 +878,14 @@ model SaleItem {
 }
 
 model Payment {
-  id        String        @id @default(uuid())
-  saleId    String
-  method    PaymentMethod
-  status    PaymentStatus @default(PAID)
-  amount    Float
-  refundedAmount Float @default(0)
-  reference String?
-  createdAt DateTime      @default(now())
+  id             String        @id @default(uuid())
+  saleId         String
+  method         PaymentMethod
+  status         PaymentStatus @default(PAID)
+  amount         Float
+  refundedAmount Float         @default(0)
+  reference      String?
+  createdAt      DateTime      @default(now())
 
   sale Sale @relation(fields: [saleId], references: [id], onDelete: Cascade)
 
@@ -1021,12 +1027,13 @@ model TestFlightRequest {
 }
 
 model ProductTemplate {
-  id             Int    @id @default(autoincrement())
-  name           String
-  name_ar        String @default("")
-  description    String @default("")
-  description_ar String @default("")
-  importSourceUrl String? @unique
+  id              Int                          @id @default(autoincrement())
+  name            String
+  name_ar         String                       @default("")
+  description     String                       @default("")
+  description_ar  String                       @default("")
+  importSourceUrl String?                      @unique
+  catalogStatus   ProductTemplateCatalogStatus @default(APPROVED)
 
   category_id     Int
   category        Category     @relation(fields: [category_id], references: [id])
@@ -1036,11 +1043,12 @@ model ProductTemplate {
   Brand    Brand? @relation(fields: [brand_id], references: [id])
   brand_id Int?
 
-  variants Variant[]
-  images   ProductImage[]
-  requests ProductTemplateRequest[] @relation("ApprovedTemplateRequests")
+  variants            Variant[]
+  images              ProductImage[]
+  requests            ProductTemplateRequest[] @relation("ApprovedTemplateRequests")
+  provisionalRequests ProductTemplateRequest[] @relation("ProvisionalTemplateRequests")
 
-  @@index([category_id])
+  @@index([category_id, catalogStatus])
 }
 
 model ProductTemplateRequest {
@@ -1059,6 +1067,7 @@ model ProductTemplateRequest {
   rejectionReason       String?
   adminNote             String?
   approvedTemplateId    Int?
+  provisionalTemplateId Int?
   mergedIntoTemplateId  Int?
   hasOrder              Boolean                      @default(false)
   posLocalId            String?
@@ -1072,6 +1081,7 @@ model ProductTemplateRequest {
   productType         ProductType?                    @relation(fields: [product_type_id], references: [id])
   brand               Brand?                          @relation(fields: [brand_id], references: [id])
   approvedTemplate    ProductTemplate?                @relation("ApprovedTemplateRequests", fields: [approvedTemplateId], references: [id])
+  provisionalTemplate ProductTemplate?                @relation("ProvisionalTemplateRequests", fields: [provisionalTemplateId], references: [id], onDelete: SetNull)
   variants            ProductTemplateRequestVariant[]
   categoryProposal    CatalogProposal?                @relation("RequestCategoryProposal", fields: [categoryProposalId], references: [id], onDelete: SetNull)
   productTypeProposal CatalogProposal?                @relation("RequestProductTypeProposal", fields: [productTypeProposalId], references: [id], onDelete: SetNull)
@@ -1196,22 +1206,22 @@ model ProvisionalProduct {
 
 // ---------- VARIANTS ----------
 model Variant {
-  id             Int     @id @default(autoincrement())
-  name           String? // e.g. "Banana flavor", "Red color"
-  name_ar        String?
-  description    String?
-  description_ar String?
-  sku            String? @unique
-  barcode        String? @unique
-  barcodeSource  String?
+  id                Int       @id @default(autoincrement())
+  name              String? // e.g. "Banana flavor", "Red color"
+  name_ar           String?
+  description       String?
+  description_ar    String?
+  sku               String?   @unique
+  barcode           String?   @unique
+  barcodeSource     String?
   barcodeVerifiedAt DateTime?
 
   productId Int
   product   ProductTemplate @relation(fields: [productId], references: [id])
 
-  images   ProductImage[]
-  products Product[]
-  tags     Tag[]
+  images            ProductImage[]
+  products          Product[]
+  tags              Tag[]
   barcodeCandidates BarcodeCandidate[]
 }
 
@@ -1222,16 +1232,16 @@ enum BarcodeCandidateStatus {
 }
 
 model BarcodeCandidate {
-  id          String                 @id @default(uuid())
-  variantId   Int
-  variant     Variant                @relation(fields: [variantId], references: [id], onDelete: Cascade)
-  barcode     String
-  sourceUrl   String
-  sourceName  String?
-  matchScore  Int                    @default(0)
-  status      BarcodeCandidateStatus @default(PENDING)
-  reviewedAt  DateTime?
-  createdAt   DateTime               @default(now())
+  id         String                 @id @default(uuid())
+  variantId  Int
+  variant    Variant                @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  barcode    String
+  sourceUrl  String
+  sourceName String?
+  matchScore Int                    @default(0)
+  status     BarcodeCandidateStatus @default(PENDING)
+  reviewedAt DateTime?
+  createdAt  DateTime               @default(now())
 
   @@unique([variantId, barcode, sourceUrl])
   @@index([status, createdAt])
@@ -1311,18 +1321,18 @@ model Order {
 }
 
 model OrderQuotation {
-  id         String          @id @default(uuid())
+  id         String               @id @default(uuid())
   orderId    Int
-  status     QuotationStatus @default(DRAFT)
+  status     QuotationStatus      @default(DRAFT)
   subtotal   Float
-  discount   Float           @default(0)
+  discount   Float                @default(0)
   total      Float
   validUntil DateTime?
   note       String?
-  version    Int             @default(1)
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
-  order      Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  version    Int                  @default(1)
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+  order      Order                @relation(fields: [orderId], references: [id], onDelete: Cascade)
   lines      OrderQuotationLine[]
 
   @@index([orderId, createdAt])
@@ -1506,10 +1516,10 @@ model Log {
   entityType String?
   entityId   String?
   action     String?
-  priority   String     @default("NORMAL")
+  priority   String    @default("NORMAL")
   metadata   Json?
-  createdAt  DateTime   @default(now())
-  user       User?      @relation(fields: [userId], references: [id])
+  createdAt  DateTime  @default(now())
+  user       User?     @relation(fields: [userId], references: [id])
   userId     Int?
 
   @@unique([userId, eventKey])
@@ -1541,18 +1551,18 @@ model PushToken {
 }
 
 model PushReceipt {
-  id            String   @id @default(cuid())
-  ticketId      String   @unique
+  id            String            @id @default(cuid())
+  ticketId      String            @unique
   token         String
   userId        Int?
   outboxEventId String?
   status        PushReceiptStatus @default(PENDING)
-  attempts      Int      @default(0)
-  availableAt   DateTime @default(now())
+  attempts      Int               @default(0)
+  availableAt   DateTime          @default(now())
   deliveredAt   DateTime?
   lastError     String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 
   @@index([status, availableAt])
   @@index([token])
@@ -1605,6 +1615,7 @@ view ProductView {
   brand_id            Int
   product_type_id     Int?
   category_id         Int
+  catalogStatus       String
 }
 
 view ProductTemplateView {
@@ -1617,6 +1628,7 @@ view ProductTemplateView {
   brand_id        Int?
   category_id     Int
   niche_id        Int?
+  catalogStatus   String
 }
 
 enum PricingName {
@@ -1664,6 +1676,7 @@ view ProductTemplatePartnerPreview {
   vendorSku         String?
   vendorBarcode     String?
   notes             String?
+  catalogStatus     String
 
   @@unique([product_template_id, partnerId])
   @@map("ProductTemplatePartnerPreview")

@@ -48,6 +48,15 @@ async function clientVisiblePartnerIds(ctx: Context) {
     return partners.map(({ userId }) => userId)
 }
 
+async function templateStatusesForActor(ctx: Context): Promise<string[] | null> {
+    const userId = getOptionalUserId(ctx)
+    if (!userId) return ['APPROVED']
+    const user = await ctx.prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+    if (user?.role === 'ADMIN') return null
+    if (user?.role === 'PARTNER') return ['APPROVED', 'PENDING_REVIEW']
+    return ['APPROVED']
+}
+
 async function attachCatalogPartners(ctx: Context, products: Array<Record<string, unknown>>) {
     const partnerIds = [...new Set(products.map(product => Number(product.partnerId)).filter(Number.isFinite))]
     if (partnerIds.length === 0) return products
@@ -72,6 +81,7 @@ export const ProductQuery = extendType({
                 if (!product) return null
                 const visibleIds = await clientVisiblePartnerIds(ctx)
                 if (visibleIds && !visibleIds.includes(product.partnerId)) return null
+                if (visibleIds && product.catalogStatus !== 'APPROVED') return null
                 return product
             },
         })
@@ -85,9 +95,14 @@ export const ProductQuery = extendType({
             resolve: async (_parent, { id, partnerId }, ctx: Context) => {
                 const visibleIds = await clientVisiblePartnerIds(ctx)
                 if (visibleIds && !visibleIds.includes(partnerId)) return null
+                if (visibleIds) {
+                    const template = await ctx.prisma.productTemplate.findUnique({ where: { id }, select: { catalogStatus: true } })
+                    if (template?.catalogStatus !== 'APPROVED') return null
+                }
                 const product = await ctx.prisma.productTemplatePartnerPreview.findFirst({
                     where: {
                         product_template_id: id, partnerId,
+                        ...(visibleIds ? { catalogStatus: 'APPROVED' } : {}),
                         ...(!getOptionalUserId(ctx) ? { isActive: true } : {}),
                     },
                 })
@@ -125,6 +140,7 @@ export const ProductQuery = extendType({
                 let where: Prisma.ProductViewWhereInput = { partnerId, ...(terms.length ? productSearchWhere(terms) : {}) };
                 const visibleIds = await clientVisiblePartnerIds(ctx)
                 if (visibleIds) where.AND = [...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []), { partnerId: { in: visibleIds } }]
+                if (visibleIds) where.catalogStatus = 'APPROVED'
                 if (brand_id) {
                     where = {
                         ...where,
@@ -205,6 +221,7 @@ export const ProductQuery = extendType({
                 let where: Prisma.ProductTemplatePartnerPreviewWhereInput = { partnerId, ...(terms.length ? previewSearchWhere(terms) : {}) };
                 const visibleIds = await clientVisiblePartnerIds(ctx)
                 if (visibleIds) where.AND = [...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []), { partnerId: { in: visibleIds } }]
+                if (visibleIds) where.catalogStatus = 'APPROVED'
                 if (giftPartnerIds) where.partnerId = partnerId ?? { in: giftPartnerIds }
                 if (availableOnly) {
                     Object.assign(where, {
@@ -395,6 +412,7 @@ export const ProductTemplateQuery = extendType({
                     ...(nicheId ? { niche_id: nicheId } : {}),
                     ...(categoryId ? { category_id: categoryId } : {}),
                     ...(brandId ? { brand_id: brandId } : {}),
+                    catalogStatus: { in: ['APPROVED', 'PENDING_REVIEW'] },
                 }
                 const safeLimit = Math.min(50, Math.max(1, limit))
                 const safePage = Math.max(1, page)
@@ -449,8 +467,9 @@ export const ProductTemplateQuery = extendType({
                 id: nonNull(intArg()),
             },
             resolve: async (_parent, { id }, ctx: Context) => {
+                const statuses = await templateStatusesForActor(ctx)
                 return ctx.prisma.productTemplateView.findFirst({
-                    where: { id },
+                    where: { id, ...(statuses ? { catalogStatus: { in: statuses } } : {}) },
                 })
             },
         })
@@ -483,14 +502,19 @@ export const ProductTemplateQuery = extendType({
                 category_id: intArg(),
                 niche_id: intArg(),
                 brand_id: intArg(),
+                catalogStatus: stringArg(),
                 search: stringArg(),
                 page: nonNull(intArg()),
                 limit: nonNull(intArg()),
                 isFull: booleanArg(),
             },
-            resolve: async (_parent, { search, page, limit, isFull = false, brand_id, product_type_id, niche_id, category_id }, ctx: Context) => {
+            resolve: async (_parent, queryArgs: any, ctx: Context) => {
+                const { search, page, limit, isFull = false, brand_id, product_type_id, niche_id, category_id, catalogStatus } = queryArgs
                 const terms = catalogSearchTerms(search)
                 let where: Prisma.ProductTemplateViewWhereInput = terms.length ? templateSearchWhere(terms) : {};
+                const catalogStatuses = await templateStatusesForActor(ctx)
+                if (catalogStatuses) where.catalogStatus = { in: catalogStatuses }
+                if (catalogStatus && (!catalogStatuses || catalogStatuses.includes(catalogStatus))) where.catalogStatus = catalogStatus
                 if (niche_id) {
                     where = {
                         ...where,

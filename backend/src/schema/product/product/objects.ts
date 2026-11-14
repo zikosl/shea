@@ -141,6 +141,7 @@ const ProductTemplate = objectType({
         t.string('name_ar')
         t.string('description')
         t.string('description_ar')
+        t.string('catalogStatus')
         t.int('product_type_id')
 
         t.field('productType', {
@@ -279,6 +280,7 @@ const ProductView = objectType({
         t.string('vendorSku')
         t.string('vendorBarcode')
         t.string('notes')
+        t.string('catalogStatus')
         t.int('partnerId')
         t.int('product_template_id')
         t.int('variantId')
@@ -386,6 +388,7 @@ const ProductTemplatePartnerPreview = objectType({
         t.nonNull.string('name');
         t.nonNull.string('name_ar');
         t.nonNull.string('description');
+        t.nonNull.string('catalogStatus');
         t.string('description_ar', {
             resolve: async (parent, _args, ctx) => {
                 const template = await ctx.prisma.productTemplate.findUnique({ where: { id: parent.product_template_id }, select: { description_ar: true } })

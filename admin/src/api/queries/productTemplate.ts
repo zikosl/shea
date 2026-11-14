@@ -115,12 +115,13 @@ export const FIND_TEMPLATE_MERGE_DATA = gql`
 `;
 
 export const SEARCH_TEMPLATE_MERGE_CANDIDATES = gql`
-  query SearchTemplateMergeCandidates($search: String!, $category_id: Int, $page: Int!, $limit: Int!) {
-    findManyProductTemplates(search: $search, category_id: $category_id, page: $page, limit: $limit, isFull: false) {
+  query SearchTemplateMergeCandidates($search: String!, $category_id: Int, $catalogStatus: String, $page: Int!, $limit: Int!) {
+    findManyProductTemplates(search: $search, category_id: $category_id, catalogStatus: $catalogStatus, page: $page, limit: $limit, isFull: false) {
       productTemplates {
         id
         name
         name_ar
+        catalogStatus
         category_id
         brand_id
         brand { id name }
@@ -132,7 +133,7 @@ export const SEARCH_TEMPLATE_MERGE_CANDIDATES = gql`
           name_ar
           sku
           barcode
-          products { id }
+          images { id url }
         }
       }
       totalProductTemplates

@@ -27,6 +27,14 @@ export const ProductTemplateRequestVariantInput = inputObjectType({
   },
 })
 
+const ProductTemplateRequestVariantMappingInput = inputObjectType({
+  name: 'ProductTemplateRequestVariantMappingInput',
+  definition(t) {
+    t.nonNull.int('requestVariantId')
+    t.nonNull.int('targetVariantId')
+  },
+})
+
 export const ProductTemplateRequestVariant = objectType({
   name: 'ProductTemplateRequestVariant',
   definition(t) {
@@ -65,6 +73,7 @@ export const ProductTemplateRequest = objectType({
     t.string('rejectionReason')
     t.string('adminNote')
     t.int('approvedTemplateId')
+    t.int('provisionalTemplateId')
     t.int('mergedIntoTemplateId')
     t.boolean('hasOrder')
     t.string('posLocalId')
@@ -212,8 +221,9 @@ export const ProductTemplateRequestMutation = extendType({
         })
         const submittedSkus = variants.map((variant) => variant.sku)
         if (new Set(submittedSkus).size !== submittedSkus.length) throw new Error('DUPLICATE_VARIANT_SKU')
-        return ctx.prisma.productTemplateRequest.create({
-          data: {
+        return ctx.prisma.$transaction(async (tx) => {
+          const request = await tx.productTemplateRequest.create({
+            data: {
             name: requestName,
             name_ar: data.name_ar?.trim() ?? '',
             description: data.description?.trim() ?? '',
@@ -229,7 +239,44 @@ export const ProductTemplateRequestMutation = extendType({
             variants: {
               create: variants,
             },
-          },
+            },
+            include: { variants: true },
+          })
+
+          // Requests with a resolved category can be reused across partner catalogs
+          // while the originating request remains in the Admin review queue.
+          if (!resolvedCategoryId) return request
+
+          const template = await tx.productTemplate.create({
+            data: {
+              name: request.name,
+              name_ar: request.name_ar,
+              description: request.description,
+              category_id: resolvedCategoryId,
+              product_type_id: request.product_type_id,
+              brand_id: request.brand_id,
+              catalogStatus: 'PENDING_REVIEW',
+              images: { create: images.map((url: string) => ({ url })) },
+              variants: {
+                create: request.variants.map((variant) => ({
+                  name: variant.name,
+                  description: variant.description,
+                  sku: variant.sku,
+                  tags: { create: variant.tags.map((value: string) => ({ value })) },
+                  ...(variant.image && !images.includes(variant.image) ? { images: { create: [{ url: variant.image }] } } : {}),
+                })),
+              },
+            },
+            include: { variants: { orderBy: { id: 'asc' } } },
+          })
+          for (const [index, variant] of request.variants.entries()) {
+            const canonicalVariant = template.variants[index]
+            if (canonicalVariant) await tx.productTemplateRequestVariant.update({
+              where: { id: variant.id },
+              data: { resolvedVariantId: canonicalVariant.id },
+            })
+          }
+          return tx.productTemplateRequest.update({ where: { id: request.id }, data: { provisionalTemplateId: template.id } })
         })
       },
     })
@@ -241,86 +288,84 @@ export const ProductTemplateRequestMutation = extendType({
         adminNote: stringArg(),
       },
       resolve: async (_parent, { id, adminNote }, ctx: Context) => {
-        const request = await ctx.prisma.productTemplateRequest.findUnique({
-          where: { id },
-          include: { variants: true },
-        })
-        if (!request) throw new Error('Product request not found')
-        if (request.status !== 'PENDING') throw new Error('Product request already reviewed')
-        if (!request.category_id) throw new Error('CATEGORY_PROPOSAL_MUST_BE_RESOLVED_FIRST')
-        if (request.productTypeProposalId && !request.product_type_id) throw new Error('PRODUCT_TYPE_PROPOSAL_MUST_BE_RESOLVED_FIRST')
-        const requestSkus = request.variants.map((variant) => variant.sku).filter((sku): sku is string => Boolean(sku))
-        const existingSku = requestSkus.length
-          ? await ctx.prisma.variant.findFirst({ where: { sku: { in: requestSkus } }, select: { sku: true } })
-          : null
-        if (existingSku) throw new Error(`SKU_ALREADY_EXISTS_USE_MERGE:${existingSku.sku}`)
+        const reviewed = await ctx.prisma.$transaction(async (tx) => {
+          const request = await tx.productTemplateRequest.findUnique({ where: { id }, include: { variants: true } })
+          if (!request) throw new Error('Product request not found')
+          if (request.status !== 'PENDING') throw new Error('Product request already reviewed')
+          if (!request.category_id) throw new Error('CATEGORY_PROPOSAL_MUST_BE_RESOLVED_FIRST')
+          if (request.productTypeProposalId && !request.product_type_id) throw new Error('PRODUCT_TYPE_PROPOSAL_MUST_BE_RESOLVED_FIRST')
+          const requestSkus = request.variants.map((variant) => variant.sku).filter((sku): sku is string => Boolean(sku))
+          const existingSku = requestSkus.length
+            ? await tx.variant.findFirst({
+                where: {
+                  sku: { in: requestSkus },
+                  ...(request.provisionalTemplateId ? { productId: { not: request.provisionalTemplateId } } : {}),
+                },
+                select: { sku: true },
+              })
+            : null
+          if (existingSku) throw new Error(`SKU_ALREADY_EXISTS_USE_MERGE:${existingSku.sku}`)
 
-        const template = await ctx.prisma.productTemplate.create({
-          data: {
-            name: request.name,
-            name_ar: request.name_ar,
-            description: request.description,
-            category_id: request.category_id,
-            product_type_id: request.product_type_id,
-            brand_id: request.brand_id,
-            images: {
-              create: request.images.map((url: string) => ({ url })),
-            },
-            variants: {
-              create: (request.variants.length ? request.variants : [{ name: 'Default', description: '', sku: null, image: null, tags: [] }]).map((variant: any) => ({
-                name: variant.name,
-                description: variant.description,
-                sku: variant.sku,
-                images: variant.image ? { create: [{ url: variant.image }] } : undefined,
-                tags: { create: (variant.tags ?? []).map((value: string) => ({ value })) },
-              })),
-            },
-          },
-        })
+          const template = request.provisionalTemplateId
+            ? await tx.productTemplate.update({
+                where: { id: request.provisionalTemplateId },
+                data: { catalogStatus: 'APPROVED' },
+              })
+            : await tx.productTemplate.create({
+                data: {
+                  name: request.name,
+                  name_ar: request.name_ar,
+                  description: request.description,
+                  category_id: request.category_id,
+                  product_type_id: request.product_type_id,
+                  brand_id: request.brand_id,
+                  images: { create: request.images.map((url: string) => ({ url })) },
+                  variants: {
+                    create: (request.variants.length ? request.variants : [{ name: 'Default', description: '', sku: null, image: null, tags: [] }]).map((variant: any) => ({
+                      name: variant.name,
+                      description: variant.description,
+                      sku: variant.sku,
+                      images: variant.image && !request.images.includes(variant.image) ? { create: [{ url: variant.image }] } : undefined,
+                      tags: { create: (variant.tags ?? []).map((value: string) => ({ value })) },
+                    })),
+                  },
+                },
+              })
 
-        const createdVariants = await ctx.prisma.variant.findMany({
-          where: { productId: template.id },
-          orderBy: { id: 'asc' },
-        })
-        for (const [index, requestVariant] of request.variants.entries()) {
-          const variant = createdVariants[index]
-          if (!variant) continue
-          await ctx.prisma.productTemplateRequestVariant.update({
-            where: { id: requestVariant.id },
-            data: { resolvedVariantId: variant.id },
-          })
-          const partnerProduct = await ctx.prisma.product.upsert({
-            where: { partnerId_variantId: { partnerId: request.partnerId, variantId: variant.id } },
-            create: {
-              partnerId: request.partnerId,
-              variantId: variant.id,
-              price: requestVariant.price ?? 0,
-              priceOnRequest: requestVariant.price == null,
-              costPrice: requestVariant.costPrice ?? 0,
-              stock: requestVariant.stock ?? 0,
-              reorderThreshold: requestVariant.reorderThreshold ?? 0,
-              trackInventory: requestVariant.trackInventory,
-              isVisibleInPos: true,
-              available: true,
-              isActive: true,
-            },
-            update: {},
-          })
-          await ctx.prisma.provisionalProduct.updateMany({
-            where: { partnerId: request.partnerId, requestVariantId: requestVariant.id },
-            data: { canonicalProductId: partnerProduct.id, visibility: 'PUBLIC' },
-          })
-        }
+          const createdVariants = await tx.variant.findMany({ where: { productId: template.id }, orderBy: { id: 'asc' } })
+          for (const [index, requestVariant] of request.variants.entries()) {
+            const variant = createdVariants[index]
+            if (!variant) continue
+            await tx.productTemplateRequestVariant.update({ where: { id: requestVariant.id }, data: { resolvedVariantId: variant.id } })
+            const partnerProduct = await tx.product.upsert({
+              where: { partnerId_variantId: { partnerId: request.partnerId, variantId: variant.id } },
+              create: {
+                partnerId: request.partnerId,
+                variantId: variant.id,
+                price: requestVariant.price ?? 0,
+                priceOnRequest: requestVariant.price == null,
+                costPrice: requestVariant.costPrice ?? 0,
+                stock: requestVariant.stock ?? 0,
+                reorderThreshold: requestVariant.reorderThreshold ?? 0,
+                trackInventory: requestVariant.trackInventory,
+                isVisibleInPos: true,
+                available: true,
+                isActive: true,
+              },
+              update: {},
+            })
+            await tx.provisionalProduct.updateMany({
+              where: { partnerId: request.partnerId, requestVariantId: requestVariant.id },
+              data: { canonicalProductId: partnerProduct.id, visibility: 'PUBLIC' },
+            })
+          }
 
-        const reviewed = await ctx.prisma.productTemplateRequest.update({
-          where: { id },
-          data: {
-            status: 'APPROVED',
-            approvedTemplateId: template.id,
-            adminNote: adminNote ?? null,
-          },
+          return tx.productTemplateRequest.update({
+            where: { id },
+            data: { status: 'APPROVED', approvedTemplateId: template.id, provisionalTemplateId: template.id, adminNote: adminNote ?? null },
+          })
         })
-        if (request.submissionId) await refreshCatalogSubmissionStatus(ctx.prisma, request.submissionId)
+        if (reviewed.submissionId) await refreshCatalogSubmissionStatus(ctx.prisma, reviewed.submissionId)
         return reviewed
       },
     })
@@ -333,13 +378,19 @@ export const ProductTemplateRequestMutation = extendType({
         adminNote: stringArg(),
       },
       resolve: async (_parent, { id, rejectionReason, adminNote }, ctx: Context) => {
-        const reviewed = await ctx.prisma.productTemplateRequest.update({
-          where: { id },
-          data: {
-            status: 'REJECTED',
-            rejectionReason: rejectionReason ?? null,
-            adminNote: adminNote ?? null,
-          },
+        const reviewed = await ctx.prisma.$transaction(async (tx) => {
+          const request = await tx.productTemplateRequest.findUnique({ where: { id } })
+          if (!request) throw new Error('Product request not found')
+          if (request.status !== 'PENDING') throw new Error('Product request already reviewed')
+          const updated = await tx.productTemplateRequest.update({
+            where: { id },
+            data: { status: 'REJECTED', rejectionReason: rejectionReason ?? null, adminNote: adminNote ?? null },
+          })
+          if (request.provisionalTemplateId) await tx.productTemplate.update({
+            where: { id: request.provisionalTemplateId },
+            data: { catalogStatus: 'REJECTED' },
+          })
+          return updated
         })
         if (reviewed.submissionId) await refreshCatalogSubmissionStatus(ctx.prisma, reviewed.submissionId)
         return reviewed
@@ -352,8 +403,9 @@ export const ProductTemplateRequestMutation = extendType({
         id: nonNull(intArg()),
         targetTemplateId: nonNull(intArg()),
         adminNote: stringArg(),
+        variantMappings: list(arg({ type: 'ProductTemplateRequestVariantMappingInput' })),
       },
-      resolve: async (_parent, { id, targetTemplateId, adminNote }, ctx: Context) => {
+      resolve: async (_parent, { id, targetTemplateId, adminNote, variantMappings }, ctx: Context) => {
         const request = await ctx.prisma.productTemplateRequest.findUnique({
           where: { id },
           include: { variants: true },
@@ -362,6 +414,7 @@ export const ProductTemplateRequestMutation = extendType({
         if (!request) {
           throw new Error('PRODUCT_TEMPLATE_REQUEST_NOT_FOUND')
         }
+        if (request.status !== 'PENDING') throw new Error('PRODUCT_TEMPLATE_REQUEST_ALREADY_REVIEWED')
 
         const targetTemplate = await ctx.prisma.productTemplate.findUnique({
           where: { id: targetTemplateId },
@@ -371,49 +424,69 @@ export const ProductTemplateRequestMutation = extendType({
         if (!targetTemplate) {
           throw new Error('TARGET_PRODUCT_TEMPLATE_NOT_FOUND')
         }
+        if (request.category_id !== targetTemplate.category_id) throw new Error('TEMPLATE_CATEGORY_MISMATCH')
+        if (targetTemplate.catalogStatus !== 'APPROVED') throw new Error('MERGE_TARGET_NOT_APPROVED')
 
-        for (const requestVariant of request.variants) {
-          const normalized = requestVariant.name?.trim().toLowerCase()
-          const targetVariant = targetTemplate.variants.find((variant: any) =>
-            (requestVariant.sku && variant.sku === requestVariant.sku) ||
-            (normalized && variant.name?.trim().toLowerCase() === normalized),
-          ) ?? (targetTemplate.variants.length === 1 ? targetTemplate.variants[0] : null)
+        const requestedMappings = new Map((variantMappings ?? []).map((mapping: any) => [mapping.requestVariantId, mapping.targetVariantId]))
+        const resolved = request.variants.map((requestVariant) => {
+          const mappedId = requestedMappings.get(requestVariant.id)
+          const targetVariant = mappedId
+            ? targetTemplate.variants.find((variant: any) => variant.id === mappedId)
+            : targetTemplate.variants.find((variant: any) =>
+                (requestVariant.sku && variant.sku === requestVariant.sku) ||
+                (requestVariant.name?.trim().toLocaleLowerCase() && variant.name?.trim().toLocaleLowerCase() === requestVariant.name.trim().toLocaleLowerCase()),
+              ) ?? (targetTemplate.variants.length === 1 ? targetTemplate.variants[0] : null)
           if (!targetVariant) throw new Error('VARIANT_MAPPING_REQUIRED')
-          await ctx.prisma.productTemplateRequestVariant.update({
-            where: { id: requestVariant.id },
-            data: { resolvedVariantId: targetVariant.id },
-          })
-          const partnerProduct = await ctx.prisma.product.upsert({
-            where: { partnerId_variantId: { partnerId: request.partnerId, variantId: targetVariant.id } },
-            create: {
-              partnerId: request.partnerId,
-              variantId: targetVariant.id,
-              price: requestVariant.price ?? 0,
-              priceOnRequest: requestVariant.price == null,
-              costPrice: requestVariant.costPrice ?? 0,
-              stock: requestVariant.stock ?? 0,
-              reorderThreshold: requestVariant.reorderThreshold ?? 0,
-              trackInventory: requestVariant.trackInventory,
-              isVisibleInPos: true,
-              available: true,
-              isActive: true,
-            },
-            update: {},
-          })
-          await ctx.prisma.provisionalProduct.updateMany({
-            where: { partnerId: request.partnerId, requestVariantId: requestVariant.id },
-            data: { canonicalProductId: partnerProduct.id, visibility: 'PUBLIC' },
-          })
-        }
-
-        const reviewed = await ctx.prisma.productTemplateRequest.update({
-          where: { id },
-          data: {
-            status: 'MERGED',
-            mergedIntoTemplateId: targetTemplateId,
-            adminNote: adminNote ?? null,
-          },
+          return { requestVariant, targetVariant }
         })
+
+        const reviewed = await ctx.prisma.$transaction(async (tx) => {
+          for (const { requestVariant, targetVariant } of resolved) {
+            await tx.productTemplateRequestVariant.update({ where: { id: requestVariant.id }, data: { resolvedVariantId: targetVariant.id } })
+            const partnerProduct = await tx.product.upsert({
+              where: { partnerId_variantId: { partnerId: request.partnerId, variantId: targetVariant.id } },
+              create: {
+                partnerId: request.partnerId,
+                variantId: targetVariant.id,
+                price: requestVariant.price ?? 0,
+                priceOnRequest: requestVariant.price == null,
+                costPrice: requestVariant.costPrice ?? 0,
+                stock: requestVariant.stock ?? 0,
+                reorderThreshold: requestVariant.reorderThreshold ?? 0,
+                trackInventory: requestVariant.trackInventory,
+                isVisibleInPos: true,
+                available: true,
+                isActive: true,
+              },
+              update: {},
+            })
+            await tx.provisionalProduct.updateMany({
+              where: { partnerId: request.partnerId, requestVariantId: requestVariant.id },
+              data: { canonicalProductId: partnerProduct.id, visibility: 'PUBLIC' },
+            })
+          }
+
+          if (request.provisionalTemplateId && request.provisionalTemplateId !== targetTemplateId) {
+            const sourceImages = await tx.productImage.findMany({ where: { product_template_id: request.provisionalTemplateId } })
+            const targetImages = await tx.productImage.findMany({ where: { product_template_id: targetTemplateId }, select: { url: true } })
+            const targetUrls = new Set(targetImages.map((image) => image.url))
+            for (const image of sourceImages) {
+              if (targetUrls.has(image.url)) await tx.productImage.delete({ where: { id: image.id } })
+              else await tx.productImage.update({ where: { id: image.id }, data: { product_template_id: targetTemplateId } })
+            }
+            // Preserve source variant IDs so partner products, orders, and barcode links remain valid.
+            await tx.variant.updateMany({ where: { productId: request.provisionalTemplateId }, data: { productId: targetTemplateId } })
+            await tx.productTemplateRequest.updateMany({ where: { provisionalTemplateId: request.provisionalTemplateId }, data: { provisionalTemplateId: targetTemplateId } })
+            await tx.productTemplate.delete({ where: { id: request.provisionalTemplateId } })
+          }
+
+          const updateResult = await tx.productTemplateRequest.updateMany({
+            where: { id },
+            data: { status: 'MERGED', mergedIntoTemplateId: targetTemplateId, adminNote: adminNote ?? null },
+          })
+          if (updateResult.count !== 1) throw new Error('PRODUCT_TEMPLATE_REQUEST_ALREADY_REVIEWED')
+          return tx.productTemplateRequest.findUniqueOrThrow({ where: { id } })
+        }, { timeout: 15000 })
         if (request.submissionId) await refreshCatalogSubmissionStatus(ctx.prisma, request.submissionId)
         return reviewed
       },

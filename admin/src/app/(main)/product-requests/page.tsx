@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { CheckCircle2, ClipboardCheck, PackagePlus, Sparkles, XCircle } from "lucide-react";
+import { CheckCircle2, ClipboardCheck, PackagePlus, Share2, XCircle } from "lucide-react";
 
 import { ResourcePage } from "@/components/admin-panel/resource-page";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { resolvePublicAssetUrl } from "@/constant";
 import { getCatalogFilterOptions } from "@/lib/catalog-filter-options";
 
-import { approveRequest, getProductTemplateMergeCandidates, getProductTemplateRequests, mergeRequest, rejectRequest } from "./actions";
+import { approveRequest, getProductTemplateRequests, rejectRequest } from "./actions";
+import { MergeRequestDialog } from "./merge-request-dialog";
 
 export const metadata = {
   title: "Dashboard: Product Requests",
@@ -20,7 +21,7 @@ type SearchParams = { search?: string; niche_id?: string; category_id?: string; 
 export default async function ProductRequestsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const params = await searchParams;
   const numberParam = (value?: string) => value && Number.isInteger(Number(value)) ? Number(value) : undefined;
-  const [result, options, mergeCandidates] = await Promise.all([
+  const [result, options] = await Promise.all([
     getProductTemplateRequests({
       search: params.search?.trim() || undefined,
       niche_id: numberParam(params.niche_id),
@@ -28,9 +29,9 @@ export default async function ProductRequestsPage({ searchParams }: { searchPara
       product_type_id: numberParam(params.product_type_id),
     }),
     getCatalogFilterOptions(),
-    getProductTemplateMergeCandidates(),
   ]);
   const { requests, totalRequests } = result;
+  const sharedWithPartners = requests.filter((request) => request.provisionalTemplateId).length;
 
   return (
     <ResourcePage
@@ -59,7 +60,7 @@ export default async function ProductRequestsPage({ searchParams }: { searchPara
               </div>
               <div>
                 <p className="text-2xl font-semibold tracking-tight">{totalRequests}</p>
-                <p className="text-sm text-muted-foreground">Pending reviews</p>
+                <p className="text-sm text-muted-foreground">Matching pending requests</p>
               </div>
             </CardContent>
           </Card>
@@ -70,18 +71,18 @@ export default async function ProductRequestsPage({ searchParams }: { searchPara
               </div>
               <div>
                 <p className="text-2xl font-semibold tracking-tight">{requests.length}</p>
-                <p className="text-sm text-muted-foreground">Loaded on this page</p>
+                <p className="text-sm text-muted-foreground">Shown on this page</p>
               </div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="flex items-center gap-3 p-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl border bg-muted">
-                <Sparkles className="h-4 w-4" />
+                <Share2 className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-2xl font-semibold tracking-tight">Admin</p>
-                <p className="text-sm text-muted-foreground">Approve or reject safely</p>
+                <p className="text-2xl font-semibold tracking-tight">{sharedWithPartners}</p>
+                <p className="text-sm text-muted-foreground">Shared on this page</p>
               </div>
             </CardContent>
           </Card>
@@ -105,10 +106,6 @@ export default async function ProductRequestsPage({ searchParams }: { searchPara
           <div className="grid gap-4">
             {requests.map((request) => {
             const image = resolvePublicAssetUrl(request.images?.[0] || request.variants?.find((variant) => variant.image)?.image);
-            const scopedCandidates = mergeCandidates
-              .filter((candidate) => !request.category?.id || candidate.category_id === request.category.id)
-              .slice(0, 100);
-
             return (
               <Card key={request.id} className="overflow-hidden">
                 <CardHeader className="flex flex-row items-start justify-between gap-4 border-b">
@@ -153,6 +150,7 @@ export default async function ProductRequestsPage({ searchParams }: { searchPara
                         </Badge>
                       ))}
                     </div>
+                    {request.provisionalTemplateId ? <Badge variant="secondary" className="w-fit">Shared in partner catalog · pending review</Badge> : null}
                   </div>
                   <div className="flex min-w-36 flex-col gap-2">
                     <form action={approveRequest}>
@@ -169,16 +167,12 @@ export default async function ProductRequestsPage({ searchParams }: { searchPara
                         Reject
                       </Button>
                     </form>
-                    <form action={mergeRequest} className="grid gap-2">
-                      <input type="hidden" name="id" value={request.id} />
-                      <select name="targetTemplateId" required className="h-10 min-w-0 rounded-md border bg-background px-3 text-sm">
-                        <option value="">Choose matching product</option>
-                        {scopedCandidates.map((candidate) => (
-                          <option key={candidate.id} value={candidate.id}>{candidate.name}{candidate.name_ar ? ` / ${candidate.name_ar}` : ""}</option>
-                        ))}
-                      </select>
-                      <Button variant="outline" type="submit" disabled={!scopedCandidates.length}>Merge into selected</Button>
-                    </form>
+                    <MergeRequestDialog
+                      requestId={request.id}
+                      requestName={request.name}
+                      categoryId={request.category?.id}
+                      variants={request.variants ?? []}
+                    />
                   </div>
                 </CardContent>
               </Card>

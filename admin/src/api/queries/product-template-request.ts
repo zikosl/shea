@@ -10,6 +10,7 @@ export const FIND_MANY_PRODUCT_TEMPLATE_REQUESTS = gql`
         description
         images
         status
+        provisionalTemplateId
         rejectionReason
         adminNote
         createdAt
@@ -35,6 +36,7 @@ export const FIND_MANY_PRODUCT_TEMPLATE_REQUESTS = gql`
           id
           name
           sku
+          resolvedVariantId
           image
           price
           stock
