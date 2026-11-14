@@ -552,6 +552,7 @@ export const ProductTemplateRequestQuery = extendType({
 export default {
   ProductTemplateRequestStatusEnum,
   ProductTemplateRequestVariantInput,
+  ProductTemplateRequestVariantMappingInput,
   ProductTemplateRequestVariant,
   ProductTemplateRequest,
   ProductTemplateRequestResult,

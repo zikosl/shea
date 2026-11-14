@@ -761,10 +761,11 @@ type Mutation {
   deleteVariants(ids: [Int!]!): Int!
   deliverOrder(id: Int!): OrderDispatch
   driverOrder(id: Int!, status: DispatchStatus!): OrderDispatch
+  importExternalCatalogImage(url: String!): FileUploadResponse!
   logout(tokenId: String): Boolean
   markTestFlightInvitationSent(id: String!): TestFlightInviteRequest!
   mergeCatalogProposal(adminNote: String, id: String!, targetId: Int!): CatalogProposal
-  mergeProductTemplateRequest(adminNote: String, id: Int!, targetTemplateId: Int!): ProductTemplateRequest
+  mergeProductTemplateRequest(adminNote: String, id: Int!, targetTemplateId: Int!, variantMappings: [ProductTemplateRequestVariantMappingInput]): ProductTemplateRequest
   mergeProductTemplates(sourceIds: [Int!]!, targetId: Int!): ProductTemplate!
   mergeVariants(sourceIds: [Int!]!, targetId: Int!): Variant!
   moveVariantToTemplate(targetTemplateId: Int!, variantId: Int!): Variant!
@@ -805,6 +806,7 @@ type Mutation {
   setPartnerCapabilityOverride(capability: CapabilityCode!, effect: CapabilityOverrideEffect, partnerId: Int!): PartnerCapabilityOverride
   setProductsAvailability(available: Boolean!, ids: [Int!]!): BulkProductAvailabilityResult
   setStoreDeploymentMode(mode: StoreDeploymentMode!, storeId: String!): Store!
+  setVariantBarcode(barcode: String!, variantId: Int!): Variant!
   signIn(appVersion: String, deviceKey: String, deviceName: String, email: String!, password: String!, platform: String): AuthPayload
   submitBarcodeCandidate(barcode: String!, sourceName: String, sourceUrl: String!, variantId: Int!): BarcodeCandidate!
   submitCatalogProposal(categoryId: Int, description: String, deviceId: String, entityType: CatalogProposalEntityType!, image: String, localId: String!, name: String!, name_ar: String, nicheId: Int!, parentProposalId: String): CatalogProposal
@@ -833,7 +835,6 @@ type Mutation {
   uploadFile(file: File!): FileUploadResponse
   uploadSahimPhoto(file: File!): FileUploadResponse!
   uploadSahimReviewPhoto(file: File!): FileUploadResponse!
-  importExternalCatalogImage(url: String!): FileUploadResponse!
   upsertPricing(name: PricingName!, price: Int!): Pricing
   verifyClientPhoneChange(code: String!, phone: String!): AuthPayload
   verifyOtp(appVersion: String, code: String!, deviceKey: String, deviceName: String, phone: String!, platform: String): AuthPayload
@@ -1268,6 +1269,7 @@ type ProductResult {
 type ProductTemplate {
   brand: Brand
   brand_id: Int
+  catalogStatus: String
   category: Category
   category_id: Int
   description: String
@@ -1287,6 +1289,7 @@ type ProductTemplate {
 type ProductTemplatePartnerPreview {
   available: Boolean!
   brand_id: Int
+  catalogStatus: String!
   category_id: Int!
   costPrice: Float
   customDescription: String
@@ -1350,6 +1353,7 @@ type ProductTemplateRequest {
   productType: ProductType
   productTypeProposalId: String
   product_type_id: Int
+  provisionalTemplateId: Int
   rejectionReason: String
   status: ProductTemplateRequestStatus
   updatedAt: DateTime
@@ -1399,6 +1403,11 @@ input ProductTemplateRequestVariantInput {
   trackInventory: Boolean
 }
 
+input ProductTemplateRequestVariantMappingInput {
+  requestVariantId: Int!
+  targetVariantId: Int!
+}
+
 type ProductTemplateResult {
   productTemplates: [ProductTemplate!]!
   totalProductTemplates: Int
@@ -1431,8 +1440,10 @@ input ProductVariantInput {
 
 type ProductView {
   available: Boolean
+  barcode: String
   brand: Brand
   brand_id: Int
+  catalogStatus: String
   category: Category
   category_id: Int
   costPrice: Float
@@ -1507,7 +1518,9 @@ type ProvisionalProduct {
 
 type Query {
   adminCatalogSubmissions(status: CatalogSubmissionStatus): [CatalogSubmission!]!
+  adminCatalogVariants(brandId: Int, categoryId: Int, limit: Int!, nicheId: Int, page: Int!, productTypeId: Int, search: String): VariantResult
   adminDashboardStats: AdminDashboardStats!
+  adminDiscoverBarcode(barcode: String!): SahimBarcodeDiscovery!
   adminDispatchBoard: AdminDispatchBoard!
   adminPartnerCatalogProducts(limit: Int!, page: Int!, partnerId: Int!, search: String): ProductViewResult
   adminPartnerCatalogTemplates(brandId: Int, categoryId: Int, limit: Int!, nicheId: Int, page: Int!, partnerId: Int!, search: String): AdminPartnerCatalogTemplateResult
@@ -1530,7 +1543,7 @@ type Query {
   findManyPricing: [Pricing]!
   findManyProductPartners(availableOnly: Boolean, brand_id: Int, category_id: Int, giftEligible: Boolean, isFull: Boolean, limit: Int!, niche_id: Int, order: QueryOrder, page: Int!, partnerId: Int, product_type_id: Int, search: String): ProductTemplatePartnerPreviewResult
   findManyProductTemplateRequests(category_id: Int, limit: Int!, niche_id: Int, page: Int!, product_type_id: Int, search: String, status: ProductTemplateRequestStatus): ProductTemplateRequestResult
-  findManyProductTemplates(brand_id: Int, category_id: Int, isFull: Boolean, limit: Int!, niche_id: Int, page: Int!, product_type_id: Int, search: String): ProductTemplateResult
+  findManyProductTemplates(brand_id: Int, catalogStatus: String, category_id: Int, isFull: Boolean, limit: Int!, niche_id: Int, page: Int!, product_type_id: Int, search: String): ProductTemplateResult
   findManyProductTypes(brand_id: Int, category_id: Int, isFull: Boolean, limit: Int!, niche_id: Int, page: Int!, partnerId: Int, search: String): ProductTypeResult
   findManyProducts(brand_id: Int, category_id: Int, isFull: Boolean, limit: Int!, niche_id: Int, order: QueryOrder, page: Int!, partnerId: Int, product_type_id: Int, search: String): ProductViewResult
   findManySchedule: [PartnerDeliverySchedule]!
@@ -1587,7 +1600,6 @@ type Query {
   partnerStatistics: PartnerStatisticsResult!
   posBootstrap(deviceKey: String!): PosBootstrap!
   previewCheckout(data: OrderInput!): CheckoutPreview!
-  adminDiscoverBarcode(barcode: String!): SahimBarcodeDiscovery!
   sahimBarcodeLookup(barcode: String!): Variant
   sahimDiscoverBarcode(barcode: String!): SahimBarcodeDiscovery!
   sahimReviewQueue: [SahimContribution!]!
@@ -1653,8 +1665,8 @@ type SahimContribution {
 
 type SahimExistingBarcode {
   id: Int!
-  productId: Int!
   name: String
+  productId: Int!
   productName: String!
 }
 
@@ -1913,9 +1925,9 @@ type Variant {
   images: [ProductImage]
   name: String
   name_ar: String
+  partnerProductCount: Int!
   product: ProductTemplate
   productId: Int!
-  partnerProductCount: Int!
   products: [Product]
   sku: String
   tags: [Tag]
